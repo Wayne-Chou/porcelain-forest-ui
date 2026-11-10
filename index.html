@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="img/logo.png" />
+    <title>建豐健康科技 - 網站地圖</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* =========================================================
+       * 網站地圖（開發用入口頁，電腦瀏覽器檢視）
+       * ========================================================= */
+      :root {
+        --bg: #ece7df;
+        --card: #f7f4ee;
+        --line: #d9cfbe;
+        --line-soft: #c7bba6;
+        --forest: #1f3b33;
+        --ink: #1a2420;
+        --muted: #6f6656;
+
+        --font-sans:
+          -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC",
+          sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", serif;
+
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 72px 16px 96px;
+      }
+      @media (min-width: 720px) {
+        .wrap {
+          padding-left: 40px;
+          padding-right: 40px;
+        }
+      }
+
+      .title {
+        margin: 0 0 48px;
+        font-family: var(--font-serif);
+        font-size: 52px;
+        line-height: 1.2;
+        font-weight: 600;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+      }
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* 卡片 */
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 32px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 32px;
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 0.3s var(--ease-out),
+          box-shadow 0.3s var(--ease-out),
+          border-color 0.3s;
+      }
+      a.card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 36px -18px rgba(31, 59, 51, 0.35);
+        border-color: var(--line-soft);
+      }
+      a.card:focus-visible {
+        outline: 3px solid var(--forest);
+        outline-offset: 4px;
+      }
+      .card.is-todo {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .card-name {
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+      .card-desc {
+        font-size: 24px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1 class="title">網站地圖</h1>
+      <div class="grid" id="grid"></div>
+    </main>
+
+    <script>
+      /* =========================================================
+       * 頁面清單：新增頁面只要在這裡加一筆
+       * status："done" 已完成（可點擊）／"todo" 製作中（半透明、不能點）
+       * ========================================================= */
+      const PAGES = [
+        { file: "pages/login.html",    name: "登入",       desc: "帳號密碼登入頁", status: "done" },
+        { file: "pages/home.html",     name: "首頁",       desc: "選擇測驗、查看今日數據與影像上傳", status: "done" },
+        // 受測名單需要網址參數（測驗、場域），預覽時帶入 SPPB 和第一個場域 tpe-01；preview=1 顯示進度狀態切換工具列
+        { file: "pages/roster.html?test=sppb&field=tpe-01&preview=1", name: "受測名單", desc: "選擇場域後的人員名單，可新增人員、開始或重測", status: "done" },
+        { file: "pages/assess.html",   name: "鑑測進行中", desc: "測驗引導與鏡頭畫面", status: "todo" },
+        { file: "pages/report.html",   name: "鑑測報告",   desc: "鑑測結果與歷史紀錄", status: "todo" },
+        { file: "pages/subjects.html", name: "受測者管理", desc: "受測者名單與個人資料", status: "todo" },
+        { file: "pages/settings.html", name: "系統設定",   desc: "設備與帳號設定", status: "todo" },
+      ];
+
+      const esc = (s) =>
+        String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+      function cardHTML(p) {
+        const inner = `
+          <div class="card-name">${esc(p.name)}</div>
+          <div class="card-desc">${esc(p.desc)}</div>`;
+        return p.status === "done"
+          ? `<a class="card" href="${esc(p.file)}" target="_blank" rel="noopener">${inner}</a>`
+          : `<div class="card is-todo" aria-disabled="true">${inner}</div>`;
+      }
+
+      document.getElementById("grid").innerHTML = PAGES.map(cardHTML).join("");
+    </script>
+  </body>
+</html>

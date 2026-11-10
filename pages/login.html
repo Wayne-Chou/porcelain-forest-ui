@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - 登入</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
+    />
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
+       * 登入頁
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --card-deep: #e6dccb; /* 圖示底 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6; /* 虛線、未選中指示點 */
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420; /* 主要文字 */
+        --muted: #6f6656; /* 次要文字 */
+        --on-forest: #f6f1e8; /* 森林綠上的文字 */
+        --danger: #b5473a; /* 錯誤訊息 */
+
+        --font-sans:
+          -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC",
+          sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", serif;
+
+        --pad: 96px;
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow: hidden;
+      }
+      .serif {
+        font-family: var(--font-serif);
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      /* 進場動畫 */
+      .rise {
+        animation: rise 0.9s calc(var(--d, 0) * 1s) var(--ease-out) both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ===== 版面：水平垂直置中 =====
+       * 內容高度：Logo 120 → 間距 32 → 標題 97 → 間距 56 → 卡片 647 = 約 952px
+       * --vh：可見高度（visualViewport.height），鍵盤彈出時變小，內容在鍵盤上方重新置中
+       * --vv-top：可見區域的頂部位置（iOS 鍵盤彈出時畫面可能被往上推）
+       */
+      .login {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: var(--vv-top, 0px);
+        height: var(--vh, 100dvh);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: env(safe-area-inset-top) var(--pad) env(safe-area-inset-bottom);
+        transition: height 0.35s var(--ease-out);
+      }
+      /* 可見高度放不下全部內容時：改成靠上排列，並可捲動讓登入按鈕保持可見 */
+      .login.is-tight {
+        justify-content: flex-start;
+        padding-top: calc(24px + env(safe-area-inset-top));
+        overflow-y: auto;
+        scrollbar-width: none;
+      }
+      .login.is-tight::-webkit-scrollbar {
+        display: none;
+      }
+      .login > * {
+        flex: 0 0 auto;
+      }
+
+      /* Logo：瓷白圓角方框 */
+      .logo {
+        display: block;
+        width: 120px;
+        height: 120px;
+        padding: 18px;
+        border-radius: 34px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        object-fit: contain;
+      }
+
+      /* 標題 */
+      .title {
+        margin: 32px 0 0;
+        font-size: 88px;
+        line-height: 1.1;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      /* 表單卡片 */
+      .card {
+        width: 100%;
+        margin-top: 56px;
+        padding: 56px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 48px;
+      }
+      .field + .field {
+        margin-top: 24px;
+      }
+      .label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 26px;
+        line-height: 1.25;
+        font-weight: 700;
+      }
+      .input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 104px;
+        border-radius: 28px;
+        background: var(--bg);
+        border: 2px solid var(--line);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .input-wrap:focus-within {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .input-icon {
+        flex: 0 0 auto;
+        margin-left: 30px;
+        font-size: 36px;
+        color: var(--brass-text);
+      }
+      .input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0 24px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 32px;
+        user-select: text;
+        -webkit-user-select: text;
+      }
+      .input::placeholder {
+        color: var(--line-soft);
+      }
+      .eye-btn {
+        flex: 0 0 auto;
+        width: 88px;
+        height: 88px;
+        margin-right: 8px;
+        border-radius: 22px;
+        display: grid;
+        place-items: center;
+        font-size: 36px;
+        color: var(--muted);
+      }
+      .eye-btn:active {
+        background: var(--card-deep);
+      }
+
+      /* 錯誤狀態 */
+      .error {
+        display: none;
+        margin-top: 10px;
+        font-size: 24px;
+        line-height: 30px;
+        color: var(--danger);
+        font-weight: 600;
+      }
+      .field.has-error .input-wrap {
+        border-color: var(--danger);
+        box-shadow: none;
+      }
+      .field.has-error .error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* 登入按鈕 */
+      .submit {
+        margin-top: 48px;
+        width: 100%;
+        height: 112px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 36px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        transition:
+          transform 0.2s var(--ease-out),
+          opacity 0.2s;
+      }
+      .submit:active {
+        transform: scale(0.98);
+      }
+      .submit:disabled {
+        opacity: 0.85;
+        cursor: default;
+      }
+      .spin {
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="login" id="login">
+      <img
+        class="logo rise"
+        style="--d: 0.05"
+        src="../img/logo.png"
+        alt="建豐健康科技"
+      />
+
+      <h1 class="title serif rise" style="--d: 0.15">登入</h1>
+
+      <form class="card rise" style="--d: 0.25" id="loginForm" novalidate>
+        <div class="field" id="fieldAccount">
+          <label class="label" for="account">帳號</label>
+          <div class="input-wrap">
+            <i class="ti ti-user input-icon" aria-hidden="true"></i>
+            <input
+              class="input"
+              id="account"
+              name="account"
+              type="text"
+              autocomplete="username"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="next"
+            />
+          </div>
+          <div class="error" role="alert">
+            <i class="ti ti-alert-circle"></i><span>請輸入帳號</span>
+          </div>
+        </div>
+
+        <div class="field" id="fieldPassword">
+          <label class="label" for="password">密碼</label>
+          <div class="input-wrap">
+            <i class="ti ti-lock input-icon" aria-hidden="true"></i>
+            <input
+              class="input"
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              enterkeyhint="go"
+            />
+            <button
+              class="eye-btn"
+              type="button"
+              id="eyeBtn"
+              aria-label="顯示密碼"
+            >
+              <i class="ti ti-eye"></i>
+            </button>
+          </div>
+          <div class="error" role="alert">
+            <i class="ti ti-alert-circle"></i><span>請輸入密碼</span>
+          </div>
+        </div>
+
+        <button class="submit" type="submit" id="submitBtn">登入</button>
+      </form>
+    </main>
+
+    <script>
+      /* =========================================================
+       * 設定區
+       * ========================================================= */
+      const CONFIG = {
+        nextPage: "home.html", // 登入成功後前往的頁面
+        fakeDelay: 1000, // 假登入等待時間（毫秒）
+      };
+
+      const $ = (sel) => document.querySelector(sel);
+
+      const form = $("#loginForm");
+      const account = $("#account");
+      const password = $("#password");
+      const submitBtn = $("#submitBtn");
+      const fields = [
+        { input: account, box: $("#fieldAccount") },
+        { input: password, box: $("#fieldPassword") },
+      ];
+
+      /* =========================================================
+       * 鍵盤彈出時的版面：用 visualViewport 取得可見高度
+       * ========================================================= */
+      const login = $("#login");
+      const logo = $(".logo");
+
+      // 內容放不下可見高度時切成靠上排列，並捲到讓登入按鈕可見
+      function fitLayout() {
+        const cs = getComputedStyle(login);
+        const avail =
+          login.clientHeight -
+          parseFloat(cs.paddingBottom) -
+          (login.classList.contains("is-tight")
+            ? parseFloat(cs.paddingTop) - 24
+            : parseFloat(cs.paddingTop));
+        // 用 offsetTop/offsetHeight 計算（不受 .rise 進場位移影響）
+        const content = form.offsetTop + form.offsetHeight - logo.offsetTop;
+        const tight = content > avail;
+        login.classList.toggle("is-tight", tight);
+        if (tight) {
+          // submitBtn 的 offsetParent 就是 .login（position: fixed）
+          const overflow =
+            submitBtn.offsetTop +
+            submitBtn.offsetHeight -
+            (login.clientHeight - parseFloat(cs.paddingBottom)) +
+            24;
+          login.scrollTop = Math.max(0, overflow);
+        } else {
+          login.scrollTop = 0;
+        }
+      }
+
+      const vv = window.visualViewport;
+      if (vv) {
+        let raf;
+        const syncViewport = () => {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(() => {
+            const root = document.documentElement.style;
+            root.setProperty("--vh", `${vv.height}px`);
+            root.setProperty("--vv-top", `${vv.offsetTop}px`);
+            // 等高度 transition 結束後再判斷是否放得下
+            setTimeout(fitLayout, 360);
+          });
+        };
+        vv.addEventListener("resize", syncViewport);
+        vv.addEventListener("scroll", syncViewport);
+        syncViewport();
+      }
+      // 不支援 visualViewport 時，維持 100dvh 置中
+
+      // 重新輸入時錯誤立即消失
+      fields.forEach(({ input, box }) => {
+        input.addEventListener("input", () => {
+          if (!box.classList.contains("has-error")) return;
+          box.classList.remove("has-error");
+          fitLayout();
+        });
+      });
+
+      // 顯示／隱藏密碼
+      $("#eyeBtn").addEventListener("click", (e) => {
+        const show = password.type === "password";
+        password.type = show ? "text" : "password";
+        e.currentTarget.innerHTML = `<i class="ti ${show ? "ti-eye-off" : "ti-eye"}"></i>`;
+        e.currentTarget.setAttribute(
+          "aria-label",
+          show ? "隱藏密碼" : "顯示密碼",
+        );
+      });
+
+      // 帳號欄按 Enter：密碼還沒填就跳到密碼欄，否則直接送出
+      // （密碼欄按 Enter 由表單預設行為直接送出）
+      account.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !password.value) {
+          e.preventDefault();
+          password.focus();
+        }
+      });
+
+      // 送出（按登入按鈕或鍵盤 Enter）
+      let submitting = false;
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (submitting) return;
+
+        let firstEmpty = null;
+        fields.forEach(({ input, box }) => {
+          const empty = !input.value.trim();
+          box.classList.toggle("has-error", empty);
+          if (empty && !firstEmpty) firstEmpty = input;
+        });
+        if (firstEmpty) {
+          fitLayout(); // 錯誤訊息讓內容變高，重新判斷版面
+          firstEmpty.focus();
+          return;
+        }
+
+        submitting = true;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="ti ti-loader-2 spin"></i> 登入中`;
+
+        /* ---------------------------------------------------------
+         * TODO：之後在這裡接後端登入 API，例如：
+         *   const res = await fetch("/api/login", {
+         *     method: "POST",
+         *     headers: { "Content-Type": "application/json" },
+         *     body: JSON.stringify({ account: account.value.trim(), password: password.value }),
+         *   });
+         *   成功 → 儲存 token 後跳轉；失敗 → 還原按鈕並顯示錯誤訊息。
+         * 目前為假登入：任何非空白的帳密都能通過。
+         * --------------------------------------------------------- */
+        setTimeout(() => {
+          location.href = CONFIG.nextPage;
+        }, CONFIG.fakeDelay);
+      });
+
+      // 從上一頁返回（bfcache）時還原按鈕狀態
+      window.addEventListener("pageshow", (e) => {
+        if (!e.persisted) return;
+        submitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `登入 <i class="ti ti-arrow-right"></i>`;
+      });
+    </script>
+  </body>
+</html>

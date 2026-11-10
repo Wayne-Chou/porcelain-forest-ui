@@ -1,0 +1,1678 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - 鑑測首頁</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
+    />
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --card-deep: #e6dccb; /* 圖示底 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6; /* 虛線、未選中指示點 */
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字（較深，比較清楚） */
+        --ink: #1a2420; /* 主要文字 */
+        --muted: #6f6656; /* 次要文字（加深，提升清晰度） */
+        --nav-off: #6f6656; /* 導航未選中 */
+        --on-forest: #f6f1e8; /* 森林綠上的文字 */
+
+        --font-sans:
+          -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC",
+          sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", serif;
+
+        --pad: 64px;
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow-x: hidden;
+      }
+      .serif {
+        font-family: var(--font-serif);
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      /* 進場動畫 */
+      .rise {
+        animation: rise 0.9s calc(var(--d, 0) * 1s) var(--ease-out) both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ===== App 外層：開啟場域面板時整個退到後面（iOS 卡片式視窗） ===== */
+      body.sheet-open {
+        background: var(--ink);
+      }
+      .app {
+        position: fixed;
+        inset: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background: var(--bg);
+        transform-origin: 50% 50%;
+        transition:
+          transform 0.5s var(--ease-out),
+          border-radius 0.5s var(--ease-out),
+          filter 0.5s var(--ease-out);
+      }
+      body.sheet-open .app {
+        transform: scale(0.94);
+        border-radius: 40px;
+        filter: brightness(0.9);
+        overflow: hidden;
+      }
+
+      /* ===== 版面 ===== */
+      .home {
+        padding: calc(56px + env(safe-area-inset-top)) 0 180px;
+      }
+
+      /* 頂部：Logo、日期、問候語、今日數據 */
+      .hero {
+        padding: 0 var(--pad);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 24px;
+      }
+      .brand-row {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .logo {
+        width: 84px;
+        height: 84px;
+        padding: 12px;
+        border-radius: 24px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        object-fit: contain;
+      }
+      .hero-date {
+        font-size: 28px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .hero-title {
+        margin: 18px 0 0;
+        font-size: 76px;
+        font-weight: 600;
+        line-height: 1.22;
+      }
+      .stats {
+        display: flex;
+        gap: 52px;
+        text-align: right;
+        padding-bottom: 8px;
+      }
+      .stat-num {
+        font-size: 88px;
+        line-height: 1.05;
+        font-weight: 600;
+      }
+      .stat-num.brass {
+        color: var(--brass);
+      }
+      .stat-num.forest {
+        color: var(--forest);
+      }
+      .stat-label {
+        margin-top: 4px;
+        font-size: 26px;
+        color: var(--muted);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      /* 測驗卡片輪播 */
+      .tests {
+        margin-top: 48px;
+        display: flex;
+        gap: 28px;
+        padding: 0 var(--pad);
+        scroll-padding: 0 var(--pad);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+      }
+      .tests::-webkit-scrollbar {
+        display: none;
+      }
+      .test-card {
+        flex: 0 0 auto;
+        width: 560px;
+        height: 540px;
+        scroll-snap-align: start;
+        position: relative;
+        overflow: hidden;
+        border-radius: 48px;
+        border: 2px solid var(--line);
+        background: var(--card);
+        padding: 44px;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        transition:
+          background 0.6s var(--ease-out),
+          color 0.6s var(--ease-out),
+          border-color 0.6s,
+          transform 0.25s var(--ease-out);
+      }
+      .test-card:last-child {
+        scroll-snap-align: end;
+      }
+      .test-card:active {
+        transform: scale(0.97);
+      }
+      .test-card .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+      .test-card .no {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--brass-text);
+        transition: color 0.6s;
+      }
+      .test-card .no em {
+        font-style: normal;
+        font-weight: 500;
+        color: var(--muted);
+        margin-right: 14px;
+        padding-right: 14px;
+        border-right: 2px solid var(--line-soft);
+        transition:
+          color 0.6s,
+          border-color 0.6s;
+      }
+      .test-card .top i {
+        font-size: 52px;
+        color: var(--forest);
+        transition: color 0.6s;
+      }
+      .test-card .name {
+        margin-top: auto;
+        font-size: 84px;
+        line-height: 1.15;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .test-card .desc {
+        margin-top: 10px;
+        font-size: 32px;
+        font-weight: 500;
+        color: var(--muted);
+        transition: color 0.6s;
+      }
+      .test-card .time {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 30px;
+        font-weight: 600;
+        color: var(--muted);
+        transition: color 0.6s;
+      }
+      .test-card .time i {
+        font-size: 34px;
+      }
+      .test-card .start {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        border-radius: 999px;
+        background: var(--brass);
+        color: var(--forest);
+        font-size: 34px;
+        font-weight: 800;
+        padding: 0 44px;
+        max-height: 0;
+        margin-top: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.5s var(--ease-out);
+      }
+      .test-card .start i {
+        font-size: 36px;
+      }
+
+      /* 選中的卡片：森林綠 */
+      .test-card.is-active {
+        background: var(--forest);
+        border-color: var(--forest);
+        color: var(--on-forest);
+      }
+      .test-card.is-active .no {
+        color: var(--brass);
+      }
+      .test-card.is-active .no em {
+        color: rgba(246, 241, 232, 0.75);
+        border-color: rgba(246, 241, 232, 0.35);
+      }
+      .test-card.is-active .top i {
+        color: var(--brass);
+      }
+      .test-card.is-active .name {
+        font-size: 96px;
+      }
+      .test-card.is-active .name.long {
+        font-size: 88px;
+      }
+      .test-card.is-active .desc,
+      .test-card.is-active .time {
+        color: rgba(246, 241, 232, 0.88);
+      }
+      .test-card.is-active .start {
+        max-height: 140px;
+        padding-top: 24px;
+        padding-bottom: 24px;
+        margin-top: 32px;
+        opacity: 1;
+        overflow: visible;
+        animation: halo 2.4s 1.2s ease-out infinite;
+      }
+      @keyframes halo {
+        from {
+          box-shadow: 0 0 0 0 rgba(176, 141, 87, 0.55);
+        }
+        to {
+          box-shadow: 0 0 0 22px rgba(176, 141, 87, 0);
+        }
+      }
+      .test-card.is-active::after {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 45%;
+        background: linear-gradient(
+          100deg,
+          transparent,
+          rgba(255, 255, 255, 0.14),
+          transparent
+        );
+        transform: translateX(-120%) skewX(-12deg);
+        animation: sheen 7s 1.5s ease-in-out infinite;
+        pointer-events: none;
+      }
+      @keyframes sheen {
+        0% {
+          transform: translateX(-120%) skewX(-12deg);
+        }
+        28%,
+        100% {
+          transform: translateX(330%) skewX(-12deg);
+        }
+      }
+
+      /* 指示點 */
+      .dots {
+        margin-top: 28px;
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+      }
+      .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        background: var(--line-soft);
+        transition:
+          width 0.5s var(--ease-spring),
+          background 0.4s;
+      }
+      .dot.is-active {
+        width: 56px;
+        background: var(--forest);
+      }
+
+      /* 影像上傳 */
+      .sync {
+        margin-top: 36px;
+        padding: 0 var(--pad);
+      }
+      .sync-card {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        padding: 26px 30px;
+        border-radius: 36px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        text-align: left;
+        transition: transform 0.25s var(--ease-out);
+      }
+      .sync-card:active {
+        transform: scale(0.98);
+      }
+      .sync-ico {
+        position: relative;
+        flex: 0 0 auto;
+        width: 92px;
+        height: 92px;
+        border-radius: 28px;
+        background: var(--card-deep);
+        color: var(--brass-text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+      }
+      .sync-badge {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 12px;
+        border-radius: 22px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 24px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid var(--card);
+      }
+      .sync-text {
+        flex: 1;
+        min-width: 0;
+      }
+      .sync-title {
+        font-size: 38px;
+        font-weight: 700;
+      }
+      .sync-btn {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 22px 40px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 32px;
+        font-weight: 800;
+      }
+      .sync-btn i {
+        font-size: 34px;
+      }
+      .sync-done {
+        flex: 0 0 auto;
+        font-size: 30px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .sync-card.is-done .sync-ico {
+        color: var(--forest);
+      }
+      .sync-card.is-done .sync-btn {
+        display: none;
+      }
+      .sync-card:not(.is-done) .sync-done {
+        display: none;
+      }
+
+      /* ===== 底部膠囊導航 ===== */
+      .nav {
+        position: fixed;
+        left: 50%;
+        bottom: calc(36px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        box-shadow: 0 12px 40px rgba(31, 59, 51, 0.1);
+        z-index: 100;
+        animation: navIn 1s 0.5s var(--ease-spring) both;
+      }
+      @keyframes navIn {
+        from {
+          transform: translate(-50%, 200%);
+        }
+        to {
+          transform: translate(-50%, 0);
+        }
+      }
+      .nav-item {
+        height: 92px;
+        min-width: 104px;
+        padding: 0 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        color: var(--nav-off);
+        font-size: 34px;
+        font-weight: 800;
+        transition:
+          background 0.45s var(--ease-spring),
+          color 0.3s,
+          padding 0.45s var(--ease-spring);
+      }
+      .nav-item i {
+        font-size: 46px;
+        transition: transform 0.45s var(--ease-spring);
+      }
+      .nav-item span {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        transition:
+          max-width 0.45s var(--ease-spring),
+          opacity 0.3s,
+          margin 0.45s var(--ease-spring);
+      }
+      .nav-item.is-active {
+        background: var(--forest);
+        color: var(--on-forest);
+        padding: 0 44px;
+      }
+      .nav-item.is-active span {
+        max-width: 5em;
+        opacity: 1;
+        margin-left: 14px;
+      }
+      .nav-item:active i {
+        transform: scale(0.82);
+      }
+
+      /* =========================================================
+       * 選擇場域：底部面板（單一固定高度）
+       * --vh：可見高度；--kb：鍵盤高度（皆由 visualViewport 更新）
+       * ========================================================= */
+      .sheet-mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 30, 26, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s var(--ease-out);
+        z-index: 200;
+      }
+      body.sheet-open .sheet-mask {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: var(--kb, 0px);
+        height: calc(var(--vh, 100dvh) - 120px);
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-radius: 48px 48px 0 0;
+        box-shadow: 0 -12px 40px rgba(31, 59, 51, 0.12);
+        transform: translateY(calc(100% + var(--kb, 0px) + 40px));
+        visibility: hidden;
+        transition:
+          transform 0.5s var(--ease-out),
+          height 0.45s var(--ease-out),
+          visibility 0s 0.5s;
+        z-index: 210;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .sheet.is-open {
+        transform: translateY(0);
+        visibility: visible;
+        transition:
+          transform 0.5s var(--ease-out),
+          height 0.45s var(--ease-out),
+          visibility 0s;
+      }
+      .sheet.is-dragging {
+        transition: none;
+      }
+      /* 面板開啟時 toast 稍微上移，停在面板頂端（120px）上方的空間，不與面板重疊 */
+      body.sheet-open .toast {
+        top: calc(20px + env(safe-area-inset-top));
+      }
+
+      /* 頂部：拖曳把手＋標題（整塊都可往下拖曳關閉） */
+      .sheet-grab {
+        flex: 0 0 auto;
+        padding: 16px 56px 8px;
+        touch-action: none;
+        cursor: grab;
+      }
+      .grab-bar {
+        display: block;
+        width: 64px;
+        height: 8px;
+        margin: 0 auto;
+        border-radius: 4px;
+        background: var(--line-soft);
+      }
+      .sheet-head {
+        margin-top: 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .sheet-title {
+        margin: 0;
+        font-size: 56px;
+        line-height: 1.2;
+        font-weight: 600;
+      }
+      .sheet-sub {
+        margin-top: 4px;
+        font-size: 26px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .sheet-close {
+        flex: 0 0 auto;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 2px solid var(--line);
+        display: grid;
+        place-items: center;
+        font-size: 36px;
+        color: var(--ink);
+        transition: transform 0.2s var(--ease-out);
+      }
+      .sheet-close:active {
+        transform: scale(0.92);
+      }
+
+      /* 中間：搜尋框（固定）＋清單（可捲動） */
+      .sheet-body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .search-box {
+        flex: 0 0 auto;
+        margin: 16px 56px 0;
+        height: 96px;
+        display: flex;
+        align-items: center;
+        border-radius: 28px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .search-box:focus-within {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .search-box > .ti-search {
+        margin-left: 28px;
+        font-size: 36px;
+        color: var(--brass-text);
+      }
+      .search-input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0 20px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 30px;
+        user-select: text;
+        -webkit-user-select: text;
+      }
+      .search-input::placeholder {
+        color: var(--muted);
+        opacity: 0.7;
+      }
+      .search-input::-webkit-search-cancel-button {
+        display: none;
+      }
+      .search-clear {
+        width: 72px;
+        height: 72px;
+        margin-right: 10px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 32px;
+        color: var(--muted);
+      }
+      .search-clear[hidden] {
+        display: none;
+      }
+      .search-clear:active {
+        background: var(--card-deep);
+      }
+
+      .field-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 56px 32px;
+      }
+      .field-list.shake {
+        animation: shake 0.4s var(--ease-out);
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: none;
+        }
+        20% {
+          transform: translateX(-14px);
+        }
+        40% {
+          transform: translateX(12px);
+        }
+        60% {
+          transform: translateX(-8px);
+        }
+        80% {
+          transform: translateX(4px);
+        }
+      }
+      .sheet-section {
+        margin: 32px 0 16px;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--muted);
+        letter-spacing: 0.1em;
+      }
+      .list-empty {
+        padding: 96px 0;
+        text-align: center;
+      }
+      .list-empty i {
+        font-size: 64px;
+        color: var(--line-soft);
+      }
+      .list-empty-title {
+        margin-top: 16px;
+        font-size: 30px;
+        font-weight: 700;
+      }
+      .list-empty-sub {
+        margin-top: 8px;
+        font-size: 24px;
+        color: var(--muted);
+      }
+
+      /* 場域列：單行（單選鈕、名稱、已選取） */
+      .frow {
+        height: 104px;
+        padding: 0 28px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 28px;
+        cursor: pointer;
+        transition:
+          transform 0.2s var(--ease-out),
+          border-color 0.25s,
+          background 0.25s;
+      }
+      .frow + .frow {
+        margin-top: 12px;
+      }
+      .frow:active {
+        transform: scale(0.98);
+      }
+      .frow:focus-visible {
+        outline: 3px solid var(--forest);
+        outline-offset: 3px;
+      }
+      .frow-radio {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid var(--line-soft);
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 26px;
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+      .frow-radio i {
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.25s var(--ease-spring);
+      }
+      .frow-radio.pop {
+        animation: radioPop 0.35s var(--ease-spring);
+      }
+      @keyframes radioPop {
+        0% {
+          transform: scale(0.8);
+        }
+        60% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      /* 名稱可使用單選鈕右邊的全部寬度，「已選取」緊接在名稱後；太長時名稱以 … 截斷 */
+      .frow-name {
+        flex: 0 1 auto;
+        min-width: 0;
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .frow-name mark {
+        background: rgba(176, 141, 87, 0.22);
+        color: var(--brass-text);
+        border-radius: 6px;
+        padding: 0;
+      }
+      .frow-tag {
+        display: none;
+        flex: 0 0 auto;
+        padding: 4px 14px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .frow.is-selected {
+        border-color: var(--forest);
+        background: #eef1ec;
+      }
+      .frow.is-selected .frow-radio {
+        background: var(--forest);
+        border-color: var(--forest);
+      }
+      .frow.is-selected .frow-radio i {
+        opacity: 1;
+        transform: none;
+      }
+      .frow.is-selected .frow-tag {
+        display: inline-block;
+      }
+
+      /* 底部固定按鈕 */
+      .sheet-foot {
+        flex: 0 0 auto;
+        padding: 24px 56px calc(24px + env(safe-area-inset-bottom));
+        background: var(--bg);
+      }
+      .sheet-confirm {
+        width: 100%;
+        height: 112px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 36px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .sheet-confirm:active {
+        transform: scale(0.98);
+      }
+
+      /* ===== 提示訊息 ===== */
+      .toast {
+        position: fixed;
+        left: 50%;
+        top: calc(36px + env(safe-area-inset-top));
+        transform: translate(-50%, -24px);
+        padding: 22px 40px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 30px;
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.35s var(--ease-spring);
+        z-index: 300;
+        white-space: nowrap;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <main class="home">
+        <!-- 頂部：日期、問候語、今日數據 -->
+        <header class="hero">
+          <div class="rise" style="--d: 0.05">
+            <div class="brand-row">
+              <img class="logo" src="../img/logo.png" alt="建豐健康科技" />
+              <div class="hero-date" id="heroDate"></div>
+            </div>
+            <h1 class="hero-title serif" id="heroTitle"></h1>
+          </div>
+          <div class="stats rise" style="--d: 0.15">
+            <div>
+              <div class="stat-num serif brass" id="statDone">0</div>
+              <div class="stat-label">今日完成</div>
+            </div>
+            <div>
+              <div class="stat-num serif forest" id="statPending">0</div>
+              <div class="stat-label">待上傳</div>
+            </div>
+          </div>
+        </header>
+
+        <!-- 測驗卡片：左右滑動選擇 -->
+        <section class="tests rise" style="--d: 0.25" id="testList"></section>
+        <div class="dots rise" style="--d: 0.35" id="dots"></div>
+
+        <!-- 影像上傳狀態 -->
+        <section class="sync rise" style="--d: 0.42">
+          <button class="sync-card" id="syncCard">
+            <span class="sync-ico"
+              ><i class="ti ti-cloud-upload" id="syncIcon"></i
+              ><span class="sync-badge" id="syncBadge" hidden></span
+            ></span>
+            <div class="sync-text"><div class="sync-title">影像上傳</div></div>
+            <span class="sync-btn"
+              >立即上傳 <i class="ti ti-arrow-up"></i
+            ></span>
+            <span class="sync-done">已全部上傳</span>
+          </button>
+        </section>
+      </main>
+
+      <nav class="nav" id="nav"></nav>
+    </div>
+
+    <!-- 選擇場域：底部面板 -->
+    <div class="sheet-mask" id="sheetMask"></div>
+    <section
+      class="sheet"
+      id="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sheetTitle"
+      aria-hidden="true"
+    >
+      <div class="sheet-grab" id="sheetGrab">
+        <span class="grab-bar"></span>
+        <header class="sheet-head">
+          <div>
+            <h2 class="sheet-title serif" id="sheetTitle">選擇場域</h2>
+            <div class="sheet-sub" id="sheetSub"></div>
+          </div>
+          <button
+            class="sheet-close"
+            id="sheetClose"
+            type="button"
+            aria-label="關閉"
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </header>
+      </div>
+
+      <div class="sheet-body">
+        <!-- 搜尋框：固定在上方，不跟著清單捲動 -->
+        <label class="search-box">
+          <i class="ti ti-search"></i>
+          <input
+            class="search-input"
+            id="searchInput"
+            type="search"
+            placeholder="搜尋場域名稱"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            enterkeyhint="search"
+          />
+          <button
+            class="search-clear"
+            id="searchClear"
+            type="button"
+            aria-label="清除搜尋"
+            hidden
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </label>
+        <!-- 清單：最近使用＋全部場域，或搜尋結果 -->
+        <div
+          class="field-list"
+          id="fieldList"
+          role="radiogroup"
+          aria-label="場域"
+        ></div>
+      </div>
+
+      <footer class="sheet-foot">
+        <button class="sheet-confirm" id="sheetConfirm" type="button">
+          開始測驗 <i class="ti ti-arrow-right"></i>
+        </button>
+      </footer>
+    </section>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      /* =========================================================
+       * 設定區：單位名稱、測驗項目、導航都在這裡改，介面會自動更新
+       * ========================================================= */
+      const CONFIG = {
+        unitName: "建豐健康科技",
+
+        // 今日數據（之後改成從後端讀取）
+        stats: { done: 18, pending: 3 },
+
+        // 測驗項目：新增測驗只要在這裡加一筆
+        tests: [
+          {
+            id: "sppb",
+            name: "SPPB",
+            desc: "簡易身體功能評估",
+            minutes: 5,
+            output: "跌倒風險評估",
+            icon: "ti-activity",
+          },
+          {
+            id: "gait",
+            name: "行走測驗",
+            desc: "步態分析",
+            minutes: 2,
+            output: "步速與步態報告",
+            icon: "ti-walk",
+          },
+          // { id: "grip", name: "握力測驗", desc: "上肢肌力", minutes: 3, output: "握力評估", icon: "ti-hand-grab" },
+        ],
+
+        // 底部導航：ready 改成 true 之後才會真的換頁
+        nav: [
+          {
+            id: "home",
+            label: "鑑測",
+            icon: "ti-scan",
+            href: "home.html",
+            ready: true,
+          },
+          {
+            id: "report",
+            label: "報告",
+            icon: "ti-chart-line",
+            href: "report.html",
+            ready: false,
+          },
+          {
+            id: "subjects",
+            label: "受測者",
+            icon: "ti-users",
+            href: "subjects.html",
+            ready: false,
+          },
+          {
+            id: "settings",
+            label: "設定",
+            icon: "ti-settings",
+            href: "settings.html",
+            ready: false,
+          },
+        ],
+
+        // 鑑測場域（假資料）
+        // TODO：之後改成從後端 API 讀取，例如 const fields = await fetch("/api/fields").then((r) => r.json());
+        fields: [
+          { id: "tpe-01", name: "大安社區關懷據點" },
+          { id: "tpe-02", name: "信義長照中心" },
+          { id: "tpe-03", name: "中正區活動中心" },
+          { id: "tpe-04", name: "北投社區關懷據點" },
+          { id: "tpe-05", name: "內湖康寧醫院" },
+          { id: "tpe-06", name: "萬華日間照顧中心" },
+          { id: "ntp-01", name: "板橋社區關懷據點" },
+          { id: "ntp-02", name: "永和福和活動中心" },
+          { id: "ntp-03", name: "新店安康長照中心" },
+          { id: "ntp-04", name: "三重仁愛醫院" },
+          { id: "ntp-05", name: "淡水竹圍社區關懷據點" },
+          { id: "ntp-06", name: "新莊老人活動中心" },
+          { id: "tyn-01", name: "中壢社區關懷據點" },
+          { id: "tyn-02", name: "青溪長青活動中心" },
+          { id: "tyn-03", name: "八德長照服務中心" },
+          { id: "tyn-04", name: "龜山復健醫院" },
+          { id: "tyn-05", name: "平鎮社區關懷據點" },
+          { id: "txg-01", name: "西屯社區關懷據點" },
+          { id: "txg-02", name: "北屯長照中心" },
+          { id: "txg-03", name: "南屯區活動中心" },
+          { id: "txg-04", name: "豐原綜合醫院" },
+          { id: "txg-05", name: "大里日間照顧中心" },
+          { id: "tnn-01", name: "東區社區關懷據點" },
+          { id: "tnn-02", name: "永康長照中心" },
+          { id: "tnn-03", name: "安平區活動中心" },
+          { id: "tnn-04", name: "新營醫院" },
+          { id: "khh-01", name: "苓雅社區關懷據點" },
+          { id: "khh-02", name: "左營長照中心" },
+          { id: "khh-03", name: "三民區活動中心" },
+          { id: "khh-04", name: "鳳山綜合醫院" },
+        ],
+      };
+
+      /* =========================================================
+       * 共用功能
+       * ========================================================= */
+      const $ = (sel) => document.querySelector(sel);
+
+      let toastTimer;
+      function showToast(msg) {
+        const el = $("#toast");
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+      }
+
+      // 底部導航：依目前頁面標出選中項目，點其他項目時膠囊先展開再換頁
+      function renderNav() {
+        const nav = $("#nav");
+        if (!nav) return;
+        const current = location.pathname.split("/").pop() || "home.html";
+
+        nav.innerHTML = CONFIG.nav
+          .map(
+            (n) => `
+      <button class="nav-item ${n.href === current ? "is-active" : ""}" data-href="${n.href}" data-ready="${n.ready}" aria-label="${n.label}">
+        <i class="ti ${n.icon}"></i><span>${n.label}</span>
+      </button>`,
+          )
+          .join("");
+
+        nav.addEventListener("click", (e) => {
+          const btn = e.target.closest(".nav-item");
+          if (!btn || btn.classList.contains("is-active")) return;
+          if (btn.dataset.ready !== "true") {
+            showToast(`「${btn.getAttribute("aria-label")}」頁面製作中`);
+            return;
+          }
+          nav.querySelector(".is-active")?.classList.remove("is-active");
+          btn.classList.add("is-active");
+          setTimeout(() => (location.href = btn.dataset.href), 380);
+        });
+      }
+
+      /* =========================================================
+       * 首頁
+       * ========================================================= */
+      function renderHero() {
+        const now = new Date();
+        const week = "日一二三四五六"[now.getDay()];
+        const num = [
+          "",
+          "一",
+          "二",
+          "三",
+          "四",
+          "五",
+          "六",
+          "七",
+          "八",
+          "九",
+          "十",
+          "十一",
+          "十二",
+        ];
+        const dayText = (d) =>
+          d <= 10
+            ? num[d]
+            : d < 20
+              ? "十" + num[d - 10]
+              : num[Math.floor(d / 10)] + "十" + (num[d % 10] || "");
+        $("#heroDate").textContent =
+          `${num[now.getMonth() + 1]}月${dayText(now.getDate())}日 · 星期${week}`;
+
+        const h = now.getHours();
+        const greet = h < 11 ? "早安" : h < 18 ? "午安" : "晚安";
+        $("#heroTitle").innerHTML = `${greet}，<br>${CONFIG.unitName}`;
+
+        countUp($("#statDone"), CONFIG.stats.done);
+        countUp($("#statPending"), CONFIG.stats.pending);
+      }
+
+      // 數字從 0 跑到目標值
+      function countUp(el, target) {
+        const start = performance.now() + 300;
+        const dur = 1200;
+        const tick = (t) => {
+          const p = Math.min(Math.max((t - start) / dur, 0), 1);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+
+      function renderTests() {
+        const list = $("#testList");
+        list.innerHTML = CONFIG.tests
+          .map(
+            (t, i) => `
+      <button class="test-card ${i === 0 ? "is-active" : ""}" data-index="${i}">
+        <div class="top"><span class="no"><em>產出</em>${t.output}</span><i class="ti ${t.icon}"></i></div>
+        <div class="name serif ${t.name.length > 4 ? "long" : ""}">${t.name}</div>
+        <div class="desc">${t.desc}</div>
+        <div class="time"><i class="ti ti-clock"></i>約 ${t.minutes} 分鐘</div>
+        <span class="start" data-start="${t.id}">開始測驗 <i class="ti ti-arrow-right"></i></span>
+      </button>`,
+          )
+          .join("");
+
+        $("#dots").innerHTML = CONFIG.tests
+          .map(
+            (_, i) => `<span class="dot ${i === 0 ? "is-active" : ""}"></span>`,
+          )
+          .join("");
+
+        const cards = [...list.querySelectorAll(".test-card")];
+        const dots = [...$("#dots").children];
+        let active = 0;
+
+        const setActive = (i) => {
+          if (i === active) return;
+          cards[active].classList.remove("is-active");
+          dots[active].classList.remove("is-active");
+          cards[i].classList.add("is-active");
+          dots[i].classList.add("is-active");
+          active = i;
+        };
+
+        // 滑動時，最接近畫面中央的卡片成為選中卡片
+        let raf;
+        list.addEventListener("scroll", () => {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(() => {
+            const r = list.getBoundingClientRect();
+            const mid = r.left + r.width / 2;
+            let best = 0,
+              bestDist = Infinity;
+            cards.forEach((c, i) => {
+              const cr = c.getBoundingClientRect();
+              const d = Math.abs(cr.left + cr.width / 2 - mid);
+              if (d < bestDist) {
+                bestDist = d;
+                best = i;
+              }
+            });
+            setActive(best);
+          });
+        });
+
+        // 點未選中的卡片 → 滑過去；點選中卡片 → 開始測驗
+        list.addEventListener("click", (e) => {
+          const card = e.target.closest(".test-card");
+          if (!card) return;
+          const i = Number(card.dataset.index);
+          if (i !== active) {
+            card.scrollIntoView({
+              behavior: "smooth",
+              inline: "nearest",
+              block: "nearest",
+            });
+            setActive(i);
+            return;
+          }
+          onTestSelected(CONFIG.tests[i]);
+        });
+      }
+
+      // 選好測驗後：打開場域面板，選好場域後進入受測名單
+      function onTestSelected(test) {
+        openFieldSheet(test);
+      }
+
+      // 影像上傳卡：依待上傳數量顯示狀態
+      function renderSync() {
+        const card = $("#syncCard");
+        const { pending } = CONFIG.stats;
+        if (pending > 0) {
+          $("#syncBadge").textContent = pending;
+          $("#syncBadge").hidden = false;
+        } else {
+          card.classList.add("is-done");
+          $("#syncIcon").className = "ti ti-cloud-check";
+        }
+        card.addEventListener("click", () =>
+          showToast("「影像上傳」功能製作中"),
+        );
+      }
+
+      /* =========================================================
+       * 場域：本機儲存（以「當天的工作階段」為單位）
+       * kf.currentField  { id, date }：date 不是今天就當作沒有目前場域
+       * kf.recentFields  [{ id, usedAt }]：最近使用（usedAt 為時間戳），最新在前，最多 20 筆
+       *                  （相容舊格式：純 id 陣列）
+       * ========================================================= */
+      const FIELD_KEYS = {
+        current: "kf.currentField",
+        recent: "kf.recentFields",
+      };
+      const RECENT_MAX = 20;
+      const fieldById = new Map(CONFIG.fields.map((f) => [f.id, f]));
+
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+
+      function readJSON(key, fallback) {
+        try {
+          const v = JSON.parse(localStorage.getItem(key));
+          return v ?? fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+      function writeJSON(key, val) {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch (e) {}
+      }
+      function todayStr() {
+        const d = new Date();
+        const p = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+      }
+
+      const fieldStore = {
+        getCurrent() {
+          const v = readJSON(FIELD_KEYS.current, null);
+          if (!v || v.date !== todayStr()) return null;
+          return fieldById.get(v.id) || null;
+        },
+        setCurrent(id) {
+          writeJSON(FIELD_KEYS.current, { id, date: todayStr() });
+          const rest = this.getRecent().filter((r) => r.id !== id);
+          writeJSON(
+            FIELD_KEYS.recent,
+            [{ id, usedAt: Date.now() }, ...rest].slice(0, RECENT_MAX),
+          );
+        },
+        // 最近使用：最新在前；舊格式（純 id 陣列）依原順序換算成時間戳
+        getRecent() {
+          const raw = readJSON(FIELD_KEYS.recent, []);
+          if (!Array.isArray(raw)) return [];
+          const now = Date.now();
+          const seen = new Set();
+          return raw
+            .map((r, i) =>
+              typeof r === "string"
+                ? { id: r, usedAt: now - (i + 1) }
+                : { id: r?.id, usedAt: Number(r?.usedAt) || 0 },
+            )
+            .filter(
+              (r) => fieldById.has(r.id) && !seen.has(r.id) && seen.add(r.id),
+            )
+            .sort((a, b) => b.usedAt - a.usedAt)
+            .slice(0, RECENT_MAX);
+        },
+      };
+
+      /* =========================================================
+       * 選擇場域：底部面板（選好測驗後開啟，選場域後進入受測名單）
+       * ========================================================= */
+      const sheet = $("#sheet");
+      const fieldList = $("#fieldList");
+      const searchInput = $("#searchInput");
+      const searchClear = $("#searchClear");
+
+      const S = {
+        open: false,
+        test: null,
+        selectedId: null,
+        query: "",
+        lastFocus: null,
+      };
+
+      // 搜尋：只比對名稱；不分大小寫，「臺」視同「台」，空白分隔的多個關鍵字都要符合
+      const norm = (s) => s.toLowerCase().replace(/臺/g, "台");
+      const queryTerms = () => norm(S.query).split(/\s+/).filter(Boolean);
+
+      // 名稱中符合關鍵字的部分用 <mark> 標出（norm 不改變字數，位置可直接對應原文）
+      function highlight(name, terms) {
+        if (!terms.length) return esc(name);
+        const n = norm(name);
+        const hit = new Array(name.length).fill(false);
+        terms.forEach((t) => {
+          for (let i = n.indexOf(t); i !== -1; i = n.indexOf(t, i + 1)) {
+            for (let k = i; k < i + t.length; k++) hit[k] = true;
+          }
+        });
+        let html = "";
+        for (let i = 0; i < name.length; ) {
+          let j = i;
+          while (j < name.length && hit[j] === hit[i]) j++;
+          const part = esc(name.slice(i, j));
+          html += hit[i] ? `<mark>${part}</mark>` : part;
+          i = j;
+        }
+        return html;
+      }
+
+      // 排序：用過的依最近使用時間在前，沒用過的在後，沒用過的依名稱排序
+      function sortFields(list, recent) {
+        const rank = new Map(recent.map((r, i) => [r.id, i]));
+        return [...list].sort((a, b) => {
+          const ra = rank.get(a.id);
+          const rb = rank.get(b.id);
+          if (ra !== undefined && rb !== undefined) return ra - rb;
+          if (ra !== undefined) return -1;
+          if (rb !== undefined) return 1;
+          return a.name.localeCompare(b.name, "zh-Hant");
+        });
+      }
+
+      function fieldRowHTML(f, terms) {
+        const sel = f.id === S.selectedId;
+        return `
+      <div class="frow ${sel ? "is-selected" : ""}" role="radio" aria-checked="${sel}" tabindex="0" data-id="${f.id}">
+        <span class="frow-radio"><i class="ti ti-check"></i></span>
+        <span class="frow-name">${highlight(f.name, terms)}</span>
+        <span class="frow-tag">已選取</span>
+      </div>`;
+      }
+
+      function renderList() {
+        const terms = queryTerms();
+        const recent = fieldStore.getRecent();
+        let html = "";
+
+        if (!terms.length) {
+          // 最近使用：最多 3 個，目前場域排第一
+          const cur = fieldStore.getCurrent();
+          let ids = recent.map((r) => r.id);
+          if (cur && ids.includes(cur.id))
+            ids = [cur.id, ...ids.filter((id) => id !== cur.id)];
+          const recentFields = ids.slice(0, 3).map((id) => fieldById.get(id));
+          if (recentFields.length) {
+            html += `<h3 class="sheet-section">最近使用</h3>${recentFields.map((f) => fieldRowHTML(f, terms)).join("")}`;
+          }
+          const all = sortFields(CONFIG.fields, recent);
+          html += `<h3 class="sheet-section">全部場域（${all.length}）</h3>${all.map((f) => fieldRowHTML(f, terms)).join("")}`;
+        } else {
+          const matched = sortFields(
+            CONFIG.fields.filter((f) => {
+              const n = norm(f.name);
+              return terms.every((t) => n.includes(t));
+            }),
+            recent,
+          );
+          if (!matched.length) {
+            fieldList.innerHTML = `
+      <div class="list-empty">
+        <i class="ti ti-map-search"></i>
+        <div class="list-empty-title">找不到符合的場域</div>
+        <div class="list-empty-sub">試試其他關鍵字</div>
+      </div>`;
+            return;
+          }
+          html += `<h3 class="sheet-section">搜尋結果（${matched.length}）</h3>${matched.map((f) => fieldRowHTML(f, terms)).join("")}`;
+        }
+        fieldList.innerHTML = html;
+      }
+
+      function openFieldSheet(test) {
+        S.open = true;
+        S.test = test;
+        S.query = "";
+        S.lastFocus = document.activeElement;
+        searchInput.value = "";
+        searchClear.hidden = true;
+
+        // 當天已有目前場域：自動選取
+        const cur = fieldStore.getCurrent();
+        S.selectedId = cur ? cur.id : null;
+        $("#sheetSub").textContent = `${test.name} · ${test.desc}`;
+        renderList();
+        fieldList.scrollTop = 0;
+
+        sheet.style.transform = "";
+        sheet.classList.add("is-open");
+        sheet.setAttribute("aria-hidden", "false");
+        document.body.classList.add("sheet-open");
+        $("#app").inert = true;
+      }
+
+      function closeFieldSheet() {
+        if (!S.open) return;
+        S.open = false;
+        searchInput.blur();
+        sheet.style.transform = "";
+        sheet.classList.remove("is-open");
+        sheet.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("sheet-open");
+        $("#app").inert = false;
+        S.lastFocus?.focus?.({ preventScroll: true });
+      }
+
+      function selectField(id) {
+        if (S.selectedId === id) return;
+        S.selectedId = id;
+        fieldList.querySelectorAll(".frow").forEach((row) => {
+          const on = row.dataset.id === id;
+          row.classList.toggle("is-selected", on);
+          row.setAttribute("aria-checked", on);
+          // 單選鈕小彈跳
+          const radio = row.querySelector(".frow-radio");
+          radio.classList.remove("pop");
+          if (on) {
+            void radio.offsetWidth;
+            radio.classList.add("pop");
+          }
+        });
+      }
+
+      function confirmField() {
+        const field = fieldById.get(S.selectedId);
+        if (!field) {
+          fieldList.classList.remove("shake");
+          void fieldList.offsetWidth; // 重新觸發動畫
+          fieldList.classList.add("shake");
+          showToast("請先選擇場域");
+          return;
+        }
+        const { test } = S;
+        fieldStore.setCurrent(field.id);
+        closeFieldSheet();
+        // 等面板關閉動畫結束再進入受測名單
+        setTimeout(() => {
+          location.href = `roster.html?test=${test.id}&field=${field.id}`;
+        }, 350);
+      }
+
+      function initFieldSheet() {
+        $("#sheetClose").addEventListener("click", closeFieldSheet);
+        $("#sheetMask").addEventListener("click", closeFieldSheet);
+        $("#sheetConfirm").addEventListener("click", confirmField);
+        fieldList.addEventListener("animationend", (e) => {
+          if (e.target === fieldList) fieldList.classList.remove("shake");
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && S.open) closeFieldSheet();
+        });
+
+        // 點整列 = 選取
+        fieldList.addEventListener("click", (e) => {
+          const row = e.target.closest(".frow");
+          if (row) selectField(row.dataset.id);
+        });
+        fieldList.addEventListener("keydown", (e) => {
+          const row = e.target.closest?.(".frow");
+          if (row && e.target === row && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            selectField(row.dataset.id);
+          }
+        });
+
+        // 搜尋：即時篩選
+        searchInput.addEventListener("input", () => {
+          S.query = searchInput.value;
+          searchClear.hidden = !S.query;
+          renderList();
+          fieldList.scrollTop = 0;
+        });
+        searchClear.addEventListener("click", (e) => {
+          e.preventDefault();
+          searchInput.value = "";
+          searchInput.dispatchEvent(new Event("input"));
+          searchInput.focus({ preventScroll: true });
+        });
+
+        // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉，否則彈回
+        const grab = $("#sheetGrab");
+        let drag = null;
+        grab.addEventListener("pointerdown", (e) => {
+          if (!S.open || e.target.closest("button")) return;
+          drag = { y: e.clientY, dy: 0 };
+          grab.setPointerCapture(e.pointerId);
+          sheet.classList.add("is-dragging");
+        });
+        grab.addEventListener("pointermove", (e) => {
+          if (!drag) return;
+          drag.dy = Math.max(0, e.clientY - drag.y);
+          sheet.style.transform = `translateY(${drag.dy}px)`;
+        });
+        const endDrag = () => {
+          if (!drag) return;
+          const { dy } = drag;
+          drag = null;
+          sheet.classList.remove("is-dragging");
+          sheet.style.transform = "";
+          if (dy > 120) closeFieldSheet();
+        };
+        grab.addEventListener("pointerup", endDrag);
+        grab.addEventListener("pointercancel", endDrag);
+
+        // 鍵盤彈出時：--vh 為可見高度、--kb 為被鍵盤蓋住的高度，讓面板與底部按鈕保持可見
+        const vv = window.visualViewport;
+        if (vv) {
+          const sync = () => {
+            const root = document.documentElement.style;
+            root.setProperty("--vh", `${vv.height}px`);
+            const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+            root.setProperty("--kb", `${kb}px`);
+          };
+          vv.addEventListener("resize", sync);
+          vv.addEventListener("scroll", sync);
+          sync();
+        }
+      }
+
+      /* ===== 啟動 ===== */
+      renderNav();
+      if ($("#testList")) {
+        renderHero();
+        renderTests();
+        renderSync();
+        initFieldSheet();
+      }
+    </script>
+  </body>
+</html>

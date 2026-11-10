@@ -1,0 +1,140 @@
+/* =========================================================
+ * 瓷白森林 Porcelain Forest — 共用主題
+ * 配色、字型、間距、動畫都在這裡，改這裡全站一起更新
+ * ========================================================= */
+
+:root {
+  /* 配色 */
+  --bg: #ece7df;          /* 暖瓷白：頁面底色 */
+  --card: #f7f4ee;        /* 卡片底色 */
+  --card-deep: #e9e1d2;   /* 圖示底、次要區塊 */
+  --line: #ddd5c7;        /* 邊框 */
+  --line-soft: #cfc5b4;   /* 虛線、未選中的指示點 */
+  --forest: #1f3b33;      /* 森林綠：主色 */
+  --forest-soft: #2a4a40;
+  --brass: #b08d57;       /* 黃銅：重點色 */
+  --ink: #1e2a25;         /* 主要文字 */
+  --muted: #9a8f7e;       /* 次要文字 */
+  --nav-off: #8d8372;     /* 導航未選中 */
+  --on-forest: #f2ede4;   /* 森林綠上的文字 */
+
+  /* 字型 */
+  --font-sans: -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC", "Microsoft JhengHei", sans-serif;
+  --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", "PMingLiU", serif;
+
+  /* 間距與圓角（以 iPad 13 吋直式 1032px 寬為基準，會隨螢幕縮放） */
+  --pad: clamp(24px, 7vw, 72px);
+  --gap: clamp(16px, 2.7vw, 28px);
+  --r-xl: clamp(28px, 4.6vw, 48px);
+  --r-lg: clamp(20px, 3.1vw, 32px);
+
+  /* 動畫曲線 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body { margin: 0; }
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-x: hidden;
+}
+
+.serif { font-family: var(--font-serif); }
+
+button { font: inherit; color: inherit; border: none; background: none; padding: 0; cursor: pointer; }
+
+/* ===== 進場動畫：加上 .rise，用 --d 控制延遲（秒） ===== */
+.rise { animation: rise 0.9s calc(var(--d, 0) * 1s) var(--ease-out) both; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ===== 底部膠囊導航（選中的會展開） ===== */
+.nav {
+  position: fixed;
+  left: 50%;
+  bottom: calc(clamp(20px, 4.6vw, 56px) + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(8px, 1.3vw, 14px);
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 12px 40px rgba(31, 59, 51, 0.08);
+  z-index: 100;
+  animation: navIn 1s 0.5s var(--ease-spring) both;
+}
+@keyframes navIn {
+  from { transform: translate(-50%, 200%); }
+  to   { transform: translate(-50%, 0); }
+}
+.nav-item {
+  position: relative;
+  height: clamp(56px, 7.8vw, 80px);
+  min-width: clamp(56px, 8.7vw, 90px);
+  padding: 0 clamp(14px, 2vw, 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--nav-off);
+  font-size: clamp(18px, 2.9vw, 30px);
+  font-weight: 800;
+  transition: background 0.45s var(--ease-spring), color 0.3s, padding 0.45s var(--ease-spring);
+}
+.nav-item i { font-size: clamp(26px, 3.9vw, 40px); transition: transform 0.45s var(--ease-spring); }
+.nav-item span {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.45s var(--ease-spring), opacity 0.3s, margin 0.45s var(--ease-spring);
+}
+.nav-item.is-active {
+  background: var(--forest);
+  color: var(--on-forest);
+  padding: 0 clamp(24px, 3.9vw, 40px);
+}
+.nav-item.is-active span { max-width: 5em; opacity: 1; margin-left: 12px; }
+.nav-item:active i { transform: scale(0.82); }
+
+/* ===== 提示訊息 ===== */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(32px + env(safe-area-inset-top));
+  transform: translate(-50%, -24px);
+  padding: 16px 28px;
+  border-radius: 999px;
+  background: var(--forest);
+  color: var(--on-forest);
+  font-size: clamp(15px, 2.2vw, 22px);
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s var(--ease-spring);
+  z-index: 300;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ===== 減少動態效果 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

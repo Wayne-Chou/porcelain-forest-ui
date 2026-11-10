@@ -1,0 +1,2653 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - 受測名單</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
+    />
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
+       * 受測名單頁
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --card-deep: #e6dccb; /* 圖示底 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6; /* 虛線、未選中指示點 */
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420; /* 主要文字 */
+        --muted: #6f6656; /* 次要文字 */
+        --on-forest: #f6f1e8; /* 森林綠上的文字 */
+        --danger: #b5473a; /* 錯誤訊息 */
+
+        --font-sans:
+          -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC",
+          sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", serif;
+
+        --pad: 64px;
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        min-height: 100dvh;
+        background: var(--card-deep);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow: hidden;
+        transition: background 0.5s var(--ease-out);
+      }
+      .serif {
+        font-family: var(--font-serif);
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+      input {
+        user-select: text;
+        -webkit-user-select: text;
+      }
+
+      /* 進場動畫 */
+      .rise {
+        animation: rise 0.9s calc(var(--d, 0) * 1s) var(--ease-out) both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ===== App 外層：整頁滑入／滑出；開啟面板時退到後面 ===== */
+      .app {
+        position: fixed;
+        inset: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background: var(--bg);
+        transform-origin: 50% 50%;
+        animation: pageIn 0.45s var(--ease-out) backwards;
+        transition:
+          transform 0.5s var(--ease-out),
+          border-radius 0.5s var(--ease-out),
+          filter 0.5s var(--ease-out);
+      }
+      @keyframes pageIn {
+        from {
+          transform: translateX(100%);
+        }
+      }
+      .app.is-leaving {
+        animation: pageOut 0.35s var(--ease-out) forwards;
+      }
+      @keyframes pageOut {
+        to {
+          transform: translateX(100%);
+        }
+      }
+      body.sheet-open {
+        background: var(--ink);
+      }
+      body.sheet-open .app {
+        transform: scale(0.94);
+        border-radius: 40px;
+        filter: brightness(0.9);
+        overflow: hidden;
+      }
+
+      .roster {
+        padding: calc(56px + env(safe-area-inset-top)) var(--pad)
+          calc(80px + env(safe-area-inset-bottom));
+      }
+
+      /* ===== 頁首 ===== */
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .back-btn {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 2px solid var(--line);
+        display: grid;
+        place-items: center;
+        font-size: 44px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .add-btn {
+        height: 88px;
+        padding: 0 36px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 30px;
+        font-weight: 800;
+        color: var(--forest);
+        transition: transform 0.2s var(--ease-out);
+      }
+      .add-btn i {
+        font-size: 38px;
+      }
+      .back-btn:active,
+      .add-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* ===== 標題 ===== */
+      .heading {
+        margin-top: 40px;
+      }
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--brass-text);
+      }
+      .eyebrow i {
+        font-size: 32px;
+      }
+      .field-title {
+        margin: 6px 0 0;
+        font-size: 72px;
+        line-height: 1.2;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* ===== 進度卡：data-state = idle（尚未開始）／active（進行中）／complete（全部完成） ===== */
+      .progress {
+        position: relative;
+        overflow: hidden;
+        margin: 40px 0 8px; /* 與搜尋列間距 32 = 8 + 黏住區塊上方 24 */
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        padding: 34px 40px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 40px;
+        transition:
+          background 0.6s var(--ease-out),
+          border-color 0.6s var(--ease-out);
+      }
+      .prog-num {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .prog-done {
+        font-size: 96px;
+        font-weight: 600;
+        color: var(--brass);
+        transition: color 0.6s var(--ease-out);
+      }
+      .prog-total {
+        font-size: 44px;
+        font-weight: 600;
+        color: var(--muted);
+        transition: color 0.6s var(--ease-out);
+      }
+      .prog-side {
+        flex: 1;
+        min-width: 0;
+      }
+      .prog-row {
+        position: relative;
+        height: 40px;
+      }
+      .prog-normal,
+      .prog-complete {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        transition: opacity 0.6s var(--ease-out);
+      }
+      .prog-normal {
+        justify-content: space-between;
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .prog-complete {
+        gap: 10px;
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--on-forest);
+        opacity: 0;
+      }
+      .prog-complete i {
+        font-size: 36px;
+        color: var(--brass);
+      }
+      .bar {
+        margin-top: 14px;
+        height: 16px;
+        border-radius: 8px;
+        background: var(--card-deep);
+        overflow: hidden;
+        transition: background 0.6s var(--ease-out);
+      }
+      .bar-fill {
+        width: 0;
+        height: 100%;
+        border-radius: 8px;
+        background: var(--forest);
+        transition:
+          width 0.6s var(--ease-out),
+          background 0.6s var(--ease-out);
+      }
+      .bar-fill.is-first {
+        transition-duration: 1.2s; /* 進入頁面時：從 0 長到目前比例 */
+      }
+      /* 尚未開始 */
+      .progress[data-state="idle"] .prog-done {
+        color: var(--line-soft);
+      }
+      /* 全部完成 */
+      .progress[data-state="complete"] {
+        background: var(--forest);
+        border-color: var(--forest);
+      }
+      .progress[data-state="complete"] .prog-total {
+        color: rgba(246, 241, 232, 0.7);
+      }
+      .progress[data-state="complete"] .prog-normal {
+        opacity: 0;
+      }
+      .progress[data-state="complete"] .prog-complete {
+        opacity: 1;
+      }
+      .progress[data-state="complete"] .bar {
+        background: rgba(246, 241, 232, 0.15);
+      }
+      .progress[data-state="complete"] .bar-fill {
+        background: var(--brass);
+      }
+      /* 進入「全部完成」時，光澤由左向右掃過一次 */
+      .progress::after {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 45%;
+        background: linear-gradient(
+          100deg,
+          transparent,
+          rgba(255, 255, 255, 0.16),
+          transparent
+        );
+        transform: translateX(-120%) skewX(-12deg);
+        pointer-events: none;
+      }
+      .progress.sheen::after {
+        animation: sheen 1.4s 0.2s ease-in-out 1;
+      }
+      @keyframes sheen {
+        from {
+          transform: translateX(-120%) skewX(-12deg);
+        }
+        to {
+          transform: translateX(330%) skewX(-12deg);
+        }
+      }
+
+      /* ===== 搜尋列＋分段切換：捲到頂部時黏住 ===== */
+      .sticky {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        padding: 24px 0 16px;
+        background: var(--bg);
+      }
+      .search {
+        height: 96px;
+        display: flex;
+        align-items: center;
+        border-radius: 28px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .search:focus-within {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .search > .ti-search {
+        margin-left: 28px;
+        font-size: 36px;
+        color: var(--brass-text);
+      }
+      .search-input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0 20px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 30px;
+      }
+      .search-input::placeholder {
+        color: var(--muted);
+        opacity: 0.7;
+      }
+      .search-input::-webkit-search-cancel-button {
+        display: none;
+      }
+      .search-clear {
+        width: 72px;
+        height: 72px;
+        margin-right: 10px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 32px;
+        color: var(--muted);
+      }
+      .search-clear[hidden] {
+        display: none;
+      }
+      .search-clear:active {
+        background: var(--card-deep);
+      }
+
+      /* 分段切換（名單頁籤、性別共用） */
+      .seg {
+        --n: 3;
+        --i: 0;
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(var(--n), 1fr);
+        height: 88px;
+        padding: 8px;
+        border-radius: 999px;
+        background: #e3dbcd;
+        transition: box-shadow 0.2s;
+      }
+      .tabs {
+        margin-top: 24px;
+      }
+      .seg-thumb {
+        position: absolute;
+        top: 8px;
+        bottom: 8px;
+        left: 8px;
+        width: calc((100% - 16px) / var(--n));
+        border-radius: 999px;
+        background: var(--forest);
+        box-shadow: 0 6px 16px rgba(31, 59, 51, 0.18);
+        transform: translateX(calc(var(--i) * 100%));
+        transition:
+          transform 0.4s var(--ease-spring),
+          opacity 0.2s;
+      }
+      .seg.is-unset .seg-thumb {
+        opacity: 0;
+      }
+      .seg-btn {
+        position: relative;
+        z-index: 1;
+        border-radius: 999px;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--ink);
+        transition: color 0.3s;
+      }
+      .seg-btn em {
+        margin-left: 8px;
+        font-style: normal;
+        opacity: 0.55;
+        font-variant-numeric: tabular-nums;
+      }
+      .seg-btn.is-active {
+        color: var(--on-forest);
+      }
+      .seg-btn.is-active em {
+        opacity: 0.7;
+      }
+
+      /* ===== 人員名單 ===== */
+      .list-wrap {
+        margin-top: 16px; /* 與分段切換間距 32 = 黏住區塊下方 16 + 16 */
+      }
+      .list.is-updating {
+        animation: listIn 0.3s var(--ease-out);
+      }
+      @keyframes listIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+      }
+      .list-card {
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 40px;
+        overflow: hidden;
+      }
+      .srow {
+        height: 132px;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        gap: 26px;
+      }
+      .srow + .srow {
+        border-top: 2px solid #e6dfd2;
+      }
+      .srow.flash {
+        animation: flash 1.2s var(--ease-out);
+      }
+      @keyframes flash {
+        from {
+          background: rgba(176, 141, 87, 0.28);
+        }
+        to {
+          background: transparent;
+        }
+      }
+      .avatar {
+        flex: 0 0 auto;
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: var(--card-deep);
+        color: var(--brass-text);
+        display: grid;
+        place-items: center;
+        font-size: 34px;
+        font-weight: 600;
+      }
+      .srow.is-done .avatar {
+        background: var(--forest);
+        color: var(--brass);
+        font-size: 40px;
+      }
+      .s-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .s-name {
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .s-meta {
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 24px;
+        color: var(--muted);
+      }
+      .s-meta-text {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .s-tag {
+        flex: 0 0 auto;
+        padding: 2px 12px;
+        border: 1.5px solid var(--brass);
+        border-radius: 999px;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--brass-text);
+      }
+      mark {
+        background: rgba(176, 141, 87, 0.22);
+        color: var(--brass-text);
+        border-radius: 6px;
+        padding: 0;
+      }
+      .s-actions {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .btn-start {
+        height: 76px;
+        padding: 0 34px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 28px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .btn-start i {
+        font-size: 30px;
+      }
+      .done-tag {
+        height: 56px;
+        padding: 0 20px;
+        border-radius: 999px;
+        background: rgba(176, 141, 87, 0.16);
+        color: var(--brass-text);
+        font-size: 26px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .done-tag i {
+        font-size: 30px;
+      }
+      .done-time {
+        font-size: 24px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .btn-retest {
+        height: 64px;
+        padding: 0 26px;
+        border-radius: 999px;
+        border: 2px solid var(--line-soft);
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .btn-retest i {
+        font-size: 28px;
+      }
+      .btn-start:active,
+      .btn-retest:active {
+        transform: scale(0.95);
+      }
+
+      /* 空狀態 */
+      .empty {
+        padding: 96px 0;
+        text-align: center;
+      }
+      .empty i {
+        font-size: 64px;
+        color: var(--line-soft);
+      }
+      .empty-title {
+        margin-top: 16px;
+        font-size: 30px;
+        font-weight: 700;
+      }
+      .empty-sub {
+        margin-top: 8px;
+        font-size: 24px;
+        color: var(--muted);
+      }
+
+      /* 底部漸層：名單自然淡出 */
+      .fade-bottom {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 150px;
+        background: linear-gradient(rgba(236, 231, 223, 0), var(--bg));
+        pointer-events: none;
+        z-index: 4;
+      }
+
+      /* =========================================================
+       * 新增人員：底部面板（高度依內容，最高 var(--vh) - 120px）
+       * ========================================================= */
+      .mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 30, 26, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s var(--ease-out);
+        z-index: 200;
+      }
+      .mask.is-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: var(--kb, 0px);
+        max-height: calc(var(--vh, 100dvh) - 120px);
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-radius: 48px 48px 0 0;
+        box-shadow: 0 -12px 40px rgba(31, 59, 51, 0.12);
+        transform: translateY(calc(100% + var(--kb, 0px) + 40px));
+        visibility: hidden;
+        transition:
+          transform 0.5s var(--ease-out),
+          visibility 0s 0.5s;
+        z-index: 210;
+      }
+      .sheet.is-open {
+        transform: translateY(0);
+        visibility: visible;
+        transition:
+          transform 0.5s var(--ease-out),
+          visibility 0s;
+      }
+      .sheet.is-dragging {
+        transition: none;
+      }
+      .sheet-grab {
+        flex: 0 0 auto;
+        padding: 16px 56px 8px;
+        touch-action: none;
+        cursor: grab;
+      }
+      .grab-bar {
+        display: block;
+        width: 64px;
+        height: 8px;
+        margin: 0 auto;
+        border-radius: 4px;
+        background: var(--line-soft);
+      }
+      .sheet-head {
+        margin-top: 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .sheet-title {
+        margin: 0;
+        font-size: 56px;
+        line-height: 1.2;
+        font-weight: 600;
+      }
+      .sheet-sub {
+        margin-top: 4px;
+        font-size: 26px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .sheet-close {
+        flex: 0 0 auto;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 2px solid var(--line);
+        display: grid;
+        place-items: center;
+        font-size: 36px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .sheet-close:active {
+        transform: scale(0.92);
+      }
+      .sheet-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 24px 56px 32px;
+      }
+      .f-field + .f-field {
+        margin-top: 28px;
+      }
+      .f-label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 26px;
+        line-height: 1.25;
+        font-weight: 700;
+      }
+      .f-input-wrap {
+        height: 104px;
+        display: flex;
+        align-items: center;
+        border-radius: 28px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .f-input-wrap:focus-within {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .f-input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0 28px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 32px;
+      }
+      .f-input::placeholder {
+        color: var(--line-soft);
+      }
+      .seg.gender {
+        --n: 2;
+        height: 96px;
+      }
+
+      /* 出生年月日：按鈕形式的欄位，點擊打開滾輪選擇器 */
+      .birth-btn {
+        width: 100%;
+        padding: 0 28px;
+        gap: 16px;
+        font-size: 32px;
+        text-align: left;
+        cursor: pointer;
+      }
+      .birth-btn:focus-visible {
+        outline: none;
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .birth-ico {
+        flex: 0 0 auto;
+        font-size: 36px;
+        color: var(--brass-text);
+      }
+      .birth-text {
+        flex: 1;
+        min-width: 0;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .birth-btn.has-value {
+        border-color: var(--forest);
+      }
+      .birth-btn.has-value .birth-text {
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .birth-text em,
+      .picker-preview em {
+        font-style: normal;
+        color: var(--brass-text);
+        font-weight: 700;
+      }
+      .birth-chev {
+        flex: 0 0 auto;
+        font-size: 32px;
+        color: var(--muted);
+      }
+      .seg.gender .seg-btn {
+        font-size: 30px;
+      }
+      .f-error {
+        display: none;
+        margin-top: 10px;
+        font-size: 24px;
+        line-height: 30px;
+        font-weight: 600;
+        color: var(--danger);
+        align-items: center;
+        gap: 8px;
+      }
+      .has-error .f-error {
+        display: flex;
+      }
+      .has-error .f-input-wrap {
+        border-color: var(--danger);
+        box-shadow: none;
+      }
+      .has-error .seg {
+        box-shadow: inset 0 0 0 2px var(--danger);
+      }
+      .sheet-foot {
+        flex: 0 0 auto;
+        padding: 24px 56px calc(24px + env(safe-area-inset-bottom));
+        background: var(--bg);
+        border-top: 1px solid var(--line);
+      }
+      .primary-btn {
+        width: 100%;
+        height: 112px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 36px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .primary-btn:active {
+        transform: scale(0.98);
+      }
+
+      /* =========================================================
+       * 確認對話框（重測、放棄新增共用）
+       * ========================================================= */
+      .dialog-mask {
+        z-index: 400;
+      }
+      .dialog {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 640px;
+        padding: 56px;
+        background: var(--card);
+        border-radius: 44px;
+        box-shadow: 0 24px 80px rgba(20, 30, 26, 0.25);
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -50%) scale(0.92);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s 0.35s;
+        z-index: 410;
+      }
+      .dialog.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s;
+      }
+      .dlg-icon {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: var(--card-deep);
+        color: var(--brass-text);
+        display: grid;
+        place-items: center;
+        font-size: 44px;
+      }
+      .dlg-title {
+        margin: 24px 0 0;
+        font-size: 44px;
+        line-height: 1.25;
+        font-weight: 600;
+      }
+      .dlg-desc {
+        margin: 14px 0 0;
+        font-size: 26px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .dlg-actions {
+        margin-top: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .dlg-btn {
+        height: 96px;
+        border-radius: 999px;
+        font-size: 32px;
+        font-weight: 800;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .dlg-btn:active {
+        transform: scale(0.97);
+      }
+      .dlg-btn.secondary {
+        border: 2px solid var(--line-soft);
+        color: var(--ink);
+      }
+      .dlg-btn.primary {
+        background: var(--forest);
+        color: var(--on-forest);
+      }
+
+      /* =========================================================
+       * 出生日期選擇視窗（民國年滾輪）：疊在新增人員面板上面
+       * ========================================================= */
+      .picker-mask {
+        z-index: 300;
+      }
+      .picker {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 720px;
+        padding: 48px 56px;
+        background: var(--card);
+        border-radius: 44px;
+        box-shadow: 0 24px 80px rgba(20, 30, 26, 0.25);
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -50%) scale(0.92);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s 0.35s;
+        z-index: 310;
+      }
+      .picker.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s;
+      }
+      .picker-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .picker-title {
+        margin: 0;
+        font-size: 44px;
+        line-height: 1.25;
+        font-weight: 600;
+      }
+      .picker-close {
+        flex: 0 0 auto;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--bg);
+        display: grid;
+        place-items: center;
+        font-size: 32px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .picker-close:active {
+        transform: scale(0.92);
+      }
+      .picker-preview {
+        margin-top: 12px;
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* 三欄滾輪：年:月:日 = 1.3:1:1；可見 400px，每個選項 80px */
+      .wheels {
+        position: relative;
+        margin-top: 32px;
+        height: 400px;
+        display: grid;
+        grid-template-columns: 1.3fr 1fr 1fr;
+        gap: 8px;
+        -webkit-mask-image: linear-gradient(
+          transparent,
+          #000 120px,
+          #000 280px,
+          transparent
+        );
+        mask-image: linear-gradient(
+          transparent,
+          #000 120px,
+          #000 280px,
+          transparent
+        );
+      }
+      .wheel-band {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 160px;
+        height: 80px;
+        background: var(--bg);
+        border-radius: 24px;
+        border-top: 2px solid var(--line);
+        border-bottom: 2px solid var(--line);
+        pointer-events: none;
+      }
+      .wheel {
+        position: relative;
+        height: 400px;
+        overflow-y: auto;
+        scroll-snap-type: y mandatory;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .wheel::-webkit-scrollbar {
+        display: none;
+      }
+      .wheel-pad {
+        height: 160px;
+      }
+      .wheel-item {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        scroll-snap-align: center;
+        font-size: 30px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        transition:
+          font-size 0.15s,
+          color 0.15s;
+      }
+      .wheel-item.is-center {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--ink);
+      }
+      .wheel-item.is-disabled {
+        color: var(--line-soft);
+      }
+      .picker-actions {
+        margin-top: 40px;
+      }
+
+      /* =========================================================
+       * 預覽切換工具列（CONFIG.devPreview 或 ?preview=1 時由 JS 產生）
+       * ========================================================= */
+      .preview-bar {
+        position: fixed;
+        left: 50%;
+        top: 16px;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 6px;
+        border-radius: 999px;
+        background: rgba(26, 36, 32, 0.88);
+        font-size: 22px;
+        z-index: 100;
+      }
+      .preview-label {
+        padding: 0 8px 0 12px;
+        color: var(--brass);
+        font-weight: 800;
+      }
+      .preview-btn {
+        height: 44px;
+        padding: 0 11px;
+        border-radius: 999px;
+        color: rgba(246, 241, 232, 0.8);
+        font-weight: 700;
+        transition:
+          background 0.25s,
+          color 0.25s;
+      }
+      .preview-btn.is-active {
+        background: var(--on-forest);
+        color: var(--forest);
+      }
+
+      /* ===== 提示訊息（高於面板與對話框） ===== */
+      .toast {
+        position: fixed;
+        left: 50%;
+        top: calc(36px + env(safe-area-inset-top));
+        transform: translate(-50%, -24px);
+        padding: 22px 40px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: 30px;
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.35s var(--ease-spring);
+        z-index: 600;
+        white-space: nowrap;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <main class="roster" id="roster" hidden>
+        <!-- 頁首 -->
+        <header class="topbar rise" style="--d: 0.05">
+          <button class="back-btn" id="backBtn" type="button" aria-label="返回">
+            <i class="ti ti-chevron-left"></i>
+          </button>
+          <button class="add-btn" id="addBtn" type="button">
+            <i class="ti ti-user-plus"></i>新增人員
+          </button>
+        </header>
+
+        <!-- 標題：測驗＋場域 -->
+        <section class="heading rise" style="--d: 0.11">
+          <div class="eyebrow" id="testLabel"></div>
+          <h1 class="field-title serif" id="fieldTitle"></h1>
+        </section>
+
+        <!-- 進度 -->
+        <section
+          class="progress rise"
+          style="--d: 0.17"
+          id="progress"
+          data-state="active"
+          aria-label="完成進度"
+        >
+          <div class="prog-num serif">
+            <span class="prog-done" id="progDone">0</span>
+            <span class="prog-total">/ <span id="progTotal">0</span> 位</span>
+          </div>
+          <div class="prog-side">
+            <div class="prog-row">
+              <span class="prog-normal"
+                ><span>已完成</span><span id="progPct">0%</span></span
+              >
+              <span class="prog-complete"
+                ><i class="ti ti-circle-check"></i>全部完成</span
+              >
+            </div>
+            <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+          </div>
+        </section>
+
+        <!-- 搜尋列＋分段切換（捲動時黏在頂部） -->
+        <div class="sticky">
+          <label class="search rise" style="--d: 0.23">
+            <i class="ti ti-search"></i>
+            <input
+              class="search-input"
+              id="searchInput"
+              type="search"
+              placeholder="搜尋姓名或編號"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="search"
+            />
+            <button
+              class="search-clear"
+              id="searchClear"
+              type="button"
+              aria-label="清除搜尋"
+              hidden
+            >
+              <i class="ti ti-x"></i>
+            </button>
+          </label>
+          <div class="seg tabs rise" style="--d: 0.29" id="tabs" role="tablist">
+            <span class="seg-thumb"></span>
+            <button
+              class="seg-btn is-active"
+              type="button"
+              role="tab"
+              data-tab="all"
+              aria-selected="true"
+            >
+              全部<em id="cntAll">0</em>
+            </button>
+            <button
+              class="seg-btn"
+              type="button"
+              role="tab"
+              data-tab="done"
+              aria-selected="false"
+            >
+              已完成<em id="cntDone">0</em>
+            </button>
+            <button
+              class="seg-btn"
+              type="button"
+              role="tab"
+              data-tab="todo"
+              aria-selected="false"
+            >
+              未完成<em id="cntTodo">0</em>
+            </button>
+          </div>
+        </div>
+
+        <!-- 人員名單 -->
+        <section class="list-wrap rise" style="--d: 0.35">
+          <div class="list" id="list"></div>
+        </section>
+      </main>
+      <div class="fade-bottom"></div>
+    </div>
+
+    <!-- 新增人員：底部面板 -->
+    <div class="mask" id="sheetMask"></div>
+    <section
+      class="sheet"
+      id="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sheetTitle"
+      aria-hidden="true"
+    >
+      <div class="sheet-grab" id="sheetGrab">
+        <span class="grab-bar"></span>
+        <header class="sheet-head">
+          <div>
+            <h2 class="sheet-title serif" id="sheetTitle">新增人員</h2>
+            <div class="sheet-sub" id="sheetSub"></div>
+          </div>
+          <button
+            class="sheet-close"
+            id="sheetClose"
+            type="button"
+            aria-label="關閉"
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </header>
+      </div>
+
+      <form class="sheet-body" id="addForm" novalidate autocomplete="off">
+        <div class="f-field" id="fName">
+          <label class="f-label" for="inName">姓名</label>
+          <div class="f-input-wrap">
+            <input
+              class="f-input"
+              id="inName"
+              type="text"
+              placeholder="請輸入姓名"
+              enterkeyhint="next"
+            />
+          </div>
+          <div class="f-error">
+            <i class="ti ti-alert-circle"></i>請輸入姓名
+          </div>
+        </div>
+
+        <div class="f-field" id="fGender">
+          <span class="f-label" id="genderLabel">性別</span>
+          <div
+            class="seg gender is-unset"
+            id="genderSeg"
+            role="radiogroup"
+            aria-labelledby="genderLabel"
+          >
+            <span class="seg-thumb"></span>
+            <button
+              class="seg-btn"
+              type="button"
+              role="radio"
+              aria-checked="false"
+              data-gender="男"
+            >
+              男
+            </button>
+            <button
+              class="seg-btn"
+              type="button"
+              role="radio"
+              aria-checked="false"
+              data-gender="女"
+            >
+              女
+            </button>
+          </div>
+          <div class="f-error">
+            <i class="ti ti-alert-circle"></i>請選擇性別
+          </div>
+        </div>
+
+        <div class="f-field" id="fBirth">
+          <span class="f-label" id="birthLabel">出生年月日</span>
+          <button
+            class="f-input-wrap birth-btn"
+            id="birthBtn"
+            type="button"
+            aria-haspopup="dialog"
+            aria-labelledby="birthLabel birthText"
+          >
+            <i class="ti ti-calendar birth-ico"></i>
+            <span class="birth-text" id="birthText">請選擇出生日期</span>
+            <i class="ti ti-chevron-down birth-chev"></i>
+          </button>
+          <div class="f-error">
+            <i class="ti ti-alert-circle"></i>請選擇出生日期
+          </div>
+        </div>
+      </form>
+
+      <footer class="sheet-foot">
+        <button class="primary-btn" id="addSubmit" type="submit" form="addForm">
+          新增人員 <i class="ti ti-plus"></i>
+        </button>
+      </footer>
+    </section>
+
+    <!-- 出生日期選擇視窗 -->
+    <div class="mask picker-mask" id="pickerMask"></div>
+    <div
+      class="picker"
+      id="picker"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pickerTitle"
+      aria-hidden="true"
+    >
+      <div class="picker-head">
+        <h2 class="picker-title serif" id="pickerTitle">選擇出生日期</h2>
+        <button
+          class="picker-close"
+          id="pickerClose"
+          type="button"
+          aria-label="關閉"
+        >
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+      <div class="picker-preview" id="pickerPreview" aria-live="polite"></div>
+      <div class="wheels">
+        <div class="wheel-band"></div>
+        <div class="wheel" id="wheelY" aria-label="民國年"></div>
+        <div class="wheel" id="wheelM" aria-label="月"></div>
+        <div class="wheel" id="wheelD" aria-label="日"></div>
+      </div>
+      <div class="dlg-actions picker-actions">
+        <button class="dlg-btn secondary" id="pickerCancel" type="button">
+          取消
+        </button>
+        <button class="dlg-btn primary" id="pickerOk" type="button">
+          確定
+        </button>
+      </div>
+    </div>
+
+    <!-- 確認對話框 -->
+    <div class="mask dialog-mask" id="dlgMask"></div>
+    <div
+      class="dialog"
+      id="dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dlgTitle"
+      aria-describedby="dlgDesc"
+      aria-hidden="true"
+    >
+      <div class="dlg-icon"><i class="ti" id="dlgIcon"></i></div>
+      <h2 class="dlg-title serif" id="dlgTitle"></h2>
+      <p class="dlg-desc" id="dlgDesc"></p>
+      <div class="dlg-actions">
+        <button class="dlg-btn secondary" id="dlgCancel" type="button"></button>
+        <button class="dlg-btn primary" id="dlgOk" type="button"></button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      /* =========================================================
+       * 設定區
+       * 與 home.html 重複，之後改成共用設定或 API
+       * ========================================================= */
+      const CONFIG = {
+        devPreview: true, // 開發用：顯示進度預覽切換工具列，正式上線前改成 false
+
+        tests: [
+          {
+            id: "sppb",
+            name: "SPPB",
+            desc: "簡易身體功能評估",
+            icon: "ti-activity",
+          },
+          { id: "gait", name: "行走測驗", desc: "步態分析", icon: "ti-walk" },
+        ],
+
+        fields: [
+          { id: "tpe-01", name: "大安社區關懷據點" },
+          { id: "tpe-02", name: "信義長照中心" },
+          { id: "tpe-03", name: "中正區活動中心" },
+          { id: "tpe-04", name: "北投社區關懷據點" },
+          { id: "tpe-05", name: "內湖康寧醫院" },
+          { id: "tpe-06", name: "萬華日間照顧中心" },
+          { id: "ntp-01", name: "板橋社區關懷據點" },
+          { id: "ntp-02", name: "永和福和活動中心" },
+          { id: "ntp-03", name: "新店安康長照中心" },
+          { id: "ntp-04", name: "三重仁愛醫院" },
+          { id: "ntp-05", name: "淡水竹圍社區關懷據點" },
+          { id: "ntp-06", name: "新莊老人活動中心" },
+          { id: "tyn-01", name: "中壢社區關懷據點" },
+          { id: "tyn-02", name: "青溪長青活動中心" },
+          { id: "tyn-03", name: "八德長照服務中心" },
+          { id: "tyn-04", name: "龜山復健醫院" },
+          { id: "tyn-05", name: "平鎮社區關懷據點" },
+          { id: "txg-01", name: "西屯社區關懷據點" },
+          { id: "txg-02", name: "北屯長照中心" },
+          { id: "txg-03", name: "南屯區活動中心" },
+          { id: "txg-04", name: "豐原綜合醫院" },
+          { id: "txg-05", name: "大里日間照顧中心" },
+          { id: "tnn-01", name: "東區社區關懷據點" },
+          { id: "tnn-02", name: "永康長照中心" },
+          { id: "tnn-03", name: "安平區活動中心" },
+          { id: "tnn-04", name: "新營醫院" },
+          { id: "khh-01", name: "苓雅社區關懷據點" },
+          { id: "khh-02", name: "左營長照中心" },
+          { id: "khh-03", name: "三民區活動中心" },
+          { id: "khh-04", name: "鳳山綜合醫院" },
+        ],
+
+        // 受測人員（假資料）
+        // TODO：之後改成依 field 從 API 取得名單，例如 fetch(`/api/fields/${field.id}/subjects`)
+        // birth：西元 "YYYY-MM-DD"；code：現場新增的人為 null
+        // source："import" 後台匯入／"onsite" 現場新增；done：{ 測驗 id: 完成時間 }
+        subjects: [
+          {
+            id: "s001",
+            code: "A001",
+            name: "林淑芬",
+            birth: "1948-03-12",
+            gender: "女",
+            source: "import",
+            done: { sppb: "14:05" },
+          },
+          {
+            id: "s002",
+            code: "A002",
+            name: "王小明",
+            birth: "1954-07-21",
+            gender: "男",
+            source: "import",
+            done: { gait: "14:20" },
+          },
+          {
+            id: "s003",
+            code: "A003",
+            name: "陳美玉",
+            birth: "1945-01-30",
+            gender: "女",
+            source: "import",
+            done: { sppb: "13:52" },
+          },
+          {
+            id: "s004",
+            code: "A004",
+            name: "張志明",
+            birth: "1957-05-08",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s005",
+            code: "A005",
+            name: "李秀英",
+            birth: "1941-09-14",
+            gender: "女",
+            source: "import",
+            done: { sppb: "13:40", gait: "13:58" },
+          },
+          {
+            id: "s006",
+            code: "A006",
+            name: "黃文雄",
+            birth: "1950-02-27",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s007",
+            code: "A007",
+            name: "吳月娥",
+            birth: "1938-06-03",
+            gender: "女",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s008",
+            code: "A008",
+            name: "劉建國",
+            birth: "1956-10-19",
+            gender: "男",
+            source: "import",
+            done: { sppb: "13:21" },
+          },
+          {
+            id: "s009",
+            code: "A009",
+            name: "蔡玉蘭",
+            birth: "1952-04-11",
+            gender: "女",
+            source: "import",
+            done: { gait: "11:05" },
+          },
+          {
+            id: "s010",
+            code: "A010",
+            name: "楊金水",
+            birth: "1943-08-25",
+            gender: "男",
+            source: "import",
+            done: { sppb: "13:05" },
+          },
+          {
+            id: "s011",
+            code: "A011",
+            name: "許麗華",
+            birth: "1959-03-02",
+            gender: "女",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s012",
+            code: "A012",
+            name: "鄭阿土",
+            birth: "1948-11-30",
+            gender: "男",
+            source: "import",
+            done: { sppb: "11:48" },
+          },
+          {
+            id: "s013",
+            code: "A013",
+            name: "謝碧霞",
+            birth: "1946-07-07",
+            gender: "女",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s014",
+            code: "A014",
+            name: "郭清松",
+            birth: "1935-02-14",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s015",
+            code: "A015",
+            name: "洪素貞",
+            birth: "1953-06-18",
+            gender: "女",
+            source: "import",
+            done: { sppb: "11:30" },
+          },
+          {
+            id: "s016",
+            code: "A016",
+            name: "曾國華",
+            birth: "1960-01-09",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s017",
+            code: "A017",
+            name: "邱秀蘭",
+            birth: "1947-12-05",
+            gender: "女",
+            source: "import",
+            done: { sppb: "11:12" },
+          },
+          {
+            id: "s018",
+            code: "A018",
+            name: "廖永福",
+            birth: "1942-04-22",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s019",
+            code: "A019",
+            name: "賴美惠",
+            birth: "1955-09-01",
+            gender: "女",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s020",
+            code: "A020",
+            name: "周春生",
+            birth: "1939-05-16",
+            gender: "男",
+            source: "import",
+            done: { sppb: "10:55" },
+          },
+          {
+            id: "s021",
+            code: "A021",
+            name: "徐阿香",
+            birth: "1936-10-28",
+            gender: "女",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s022",
+            code: "A022",
+            name: "蘇正雄",
+            birth: "1951-08-08",
+            gender: "男",
+            source: "import",
+            done: { gait: "10:30" },
+          },
+          {
+            id: "s023",
+            code: "A023",
+            name: "葉淑貞",
+            birth: "1958-02-20",
+            gender: "女",
+            source: "import",
+            done: { sppb: "10:41" },
+          },
+          {
+            id: "s024",
+            code: "A024",
+            name: "呂明德",
+            birth: "1944-07-13",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s025",
+            code: "A025",
+            name: "江秀琴",
+            birth: "1949-03-29",
+            gender: "女",
+            source: "import",
+            done: { sppb: "10:20" },
+          },
+          {
+            id: "s026",
+            code: "A026",
+            name: "何金龍",
+            birth: "1953-11-02",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s027",
+            code: "A027",
+            name: "羅玉英",
+            birth: "1940-06-26",
+            gender: "女",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s028",
+            code: "A028",
+            name: "高文彬",
+            birth: "1957-09-17",
+            gender: "男",
+            source: "import",
+            done: { sppb: "10:02" },
+          },
+          {
+            id: "s029",
+            code: "A029",
+            name: "潘麗珠",
+            birth: "1954-01-24",
+            gender: "女",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s030",
+            code: "A030",
+            name: "簡阿福",
+            birth: "1946-04-15",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+        ],
+      };
+
+      /* =========================================================
+       * 共用功能
+       * ========================================================= */
+      const $ = (sel) => document.querySelector(sel);
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+
+      let toastTimer;
+      function showToast(msg) {
+        const el = $("#toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+      }
+
+      // 數字從目前值平滑跑到目標值
+      function animateNumber(el, to, dur = 1200) {
+        const from = Number(el.textContent) || 0;
+        const start = performance.now();
+        cancelAnimationFrame(el._raf);
+        const tick = (t) => {
+          const p = Math.min((t - start) / dur, 1);
+          el.textContent = Math.round(
+            from + (to - from) * (1 - Math.pow(1 - p, 3)),
+          );
+          if (p < 1) el._raf = requestAnimationFrame(tick);
+        };
+        el._raf = requestAnimationFrame(tick);
+      }
+
+      // 搜尋：不分大小寫，「臺」視同「台」，空白分隔的多個關鍵字都要符合
+      const norm = (s) => String(s).toLowerCase().replace(/臺/g, "台");
+      function highlight(text, terms) {
+        text = String(text);
+        if (!terms.length) return esc(text);
+        const n = norm(text);
+        const hit = new Array(text.length).fill(false);
+        terms.forEach((t) => {
+          for (let i = n.indexOf(t); i !== -1; i = n.indexOf(t, i + 1)) {
+            for (let k = i; k < i + t.length; k++) hit[k] = true;
+          }
+        });
+        let html = "";
+        for (let i = 0; i < text.length; ) {
+          let j = i;
+          while (j < text.length && hit[j] === hit[i]) j++;
+          const part = esc(text.slice(i, j));
+          html += hit[i] ? `<mark>${part}</mark>` : part;
+          i = j;
+        }
+        return html;
+      }
+
+      // 分段切換：移動滑塊到第 i 個
+      function setSeg(seg, i) {
+        seg.style.setProperty("--i", i);
+        seg.classList.remove("is-unset");
+        [...seg.querySelectorAll(".seg-btn")].forEach((b, k) => {
+          b.classList.toggle("is-active", k === i);
+          b.setAttribute(
+            b.getAttribute("role") === "tab" ? "aria-selected" : "aria-checked",
+            k === i,
+          );
+        });
+      }
+
+      // 鍵盤彈出時：--vh 為可見高度、--kb 為被鍵盤蓋住的高度
+      (() => {
+        const vv = window.visualViewport;
+        if (!vv) return;
+        const sync = () => {
+          const root = document.documentElement.style;
+          root.setProperty("--vh", `${vv.height}px`);
+          root.setProperty(
+            "--kb",
+            `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`,
+          );
+        };
+        vv.addEventListener("resize", sync);
+        vv.addEventListener("scroll", sync);
+        sync();
+      })();
+
+      /* =========================================================
+       * 網址參數
+       * ========================================================= */
+      const params = new URLSearchParams(location.search);
+      const test = CONFIG.tests.find((t) => t.id === params.get("test"));
+      const field = CONFIG.fields.find((f) => f.id === params.get("field"));
+
+      /* =========================================================
+       * 本機儲存：kf.subjects.<fieldId>
+       * { added: [現場新增的人員], done: { 人員 id: { 測驗 id: "HH:MM" } } }
+       * ========================================================= */
+      const LOCAL_KEY = field ? `kf.subjects.${field.id}` : "";
+      function loadLocal() {
+        try {
+          const v = JSON.parse(localStorage.getItem(LOCAL_KEY));
+          return {
+            added: Array.isArray(v?.added) ? v.added : [],
+            done: v?.done && typeof v.done === "object" ? v.done : {},
+          };
+        } catch (e) {
+          return { added: [], done: {} };
+        }
+      }
+      function saveLocal() {
+        try {
+          localStorage.setItem(LOCAL_KEY, JSON.stringify(local));
+        } catch (e) {}
+      }
+      let local = field ? loadLocal() : { added: [], done: {} };
+
+      // 合併：現場新增（最新的在最前面）＋後台匯入；完成狀態以本機紀錄覆蓋
+      function allSubjects() {
+        const added = [...local.added]
+          .reverse()
+          .map((s) => ({ ...s, source: "onsite" }));
+        return [...added, ...CONFIG.subjects].map((s) => ({
+          ...s,
+          done: { ...(s.done || {}), ...(local.done[s.id] || {}) },
+        }));
+      }
+
+      /* =========================================================
+       * 名單
+       * ========================================================= */
+      const R = { tab: "all", query: "" };
+      const TABS = ["all", "done", "todo"]; // 與分段切換的按鈕順序一致
+      const list = $("#list");
+      const searchInput = $("#searchInput");
+      const searchClear = $("#searchClear");
+
+      const isDone = (s) => Boolean(s.done[test.id]);
+
+      // 年齡：依今天日期計算，未滿生日減 1；birth 為西元 "YYYY-MM-DD"
+      function ageFrom(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        const now = new Date();
+        const beforeBirthday =
+          now.getMonth() + 1 < m ||
+          (now.getMonth() + 1 === m && now.getDate() < d);
+        return now.getFullYear() - y - (beforeBirthday ? 1 : 0);
+      }
+      // 相容舊資料：沒有 birth 時直接顯示原本的 age
+      const subjectAge = (s) => (s.birth ? ageFrom(s.birth) : s.age);
+      // 未完成：名單原順序；已完成：完成時間由新到舊
+      function split(subjects) {
+        const todo = subjects.filter((s) => !isDone(s));
+        const done = subjects
+          .filter(isDone)
+          .sort((a, b) => b.done[test.id].localeCompare(a.done[test.id]));
+        return { todo, done };
+      }
+
+      /* 預覽模式（CONFIG.devPreview 或 ?preview=1 時使用）：只改畫面上的資料，不寫入 localStorage
+       * null：使用原本的資料；"idle"：所有人未完成；"complete"：所有人已完成 */
+      // 顯示條件：CONFIG.devPreview 為 true，或網址有 preview=1，任一成立就顯示
+      const PREVIEW =
+        CONFIG.devPreview === true || params.get("preview") === "1";
+      let previewState = null;
+
+      // 畫面上使用的名單（套用預覽狀態）
+      function viewSubjects() {
+        const subjects = allSubjects();
+        if (previewState === "idle") {
+          return subjects.map((s) => {
+            const done = { ...s.done };
+            delete done[test.id];
+            return { ...s, done };
+          });
+        }
+        if (previewState === "complete") {
+          let n = 0; // 沒有完成時間的人，依名單順序從 09:00 起每人加 6 分鐘
+          return subjects.map((s) => {
+            if (s.done[test.id]) return s;
+            const min = 9 * 60 + 6 * n++;
+            const time = `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+            return { ...s, done: { ...s.done, [test.id]: time } };
+          });
+        }
+        return subjects;
+      }
+
+      // 進度卡：依已完成人數切換三種狀態（尚未開始／進行中／全部完成）
+      let firstProgress = true;
+      function renderProgress() {
+        const { todo, done } = split(viewSubjects());
+        const total = todo.length + done.length;
+        const pct = total ? Math.round((done.length / total) * 100) : 0;
+        const state =
+          done.length === 0
+            ? "idle"
+            : done.length === total
+              ? "complete"
+              : "active";
+        const card = $("#progress");
+        const prevState = card.dataset.state;
+        card.dataset.state = state;
+
+        animateNumber($("#progDone"), done.length);
+        animateNumber($("#progTotal"), total);
+        $("#progPct").textContent = state === "idle" ? "尚未開始" : `${pct}%`;
+
+        const bar = $("#barFill");
+        bar.classList.toggle("is-first", firstProgress);
+        requestAnimationFrame(() => (bar.style.width = `${pct}%`));
+        if (firstProgress) {
+          setTimeout(() => bar.classList.remove("is-first"), 1300);
+          firstProgress = false;
+        }
+
+        // 進入「全部完成」時光澤掃過一次
+        if (
+          state === "complete" &&
+          (prevState !== "complete" || !card.dataset.sheened)
+        ) {
+          card.dataset.sheened = "1";
+          card.classList.remove("sheen");
+          void card.offsetWidth;
+          card.classList.add("sheen");
+          card.addEventListener(
+            "animationend",
+            () => card.classList.remove("sheen"),
+            {
+              once: true,
+            },
+          );
+        }
+        if (state !== "complete") delete card.dataset.sheened;
+      }
+
+      function rowHTML(s, terms) {
+        const done = isDone(s);
+        // 有編號：「A012 · 78 歲 · 男」；沒有編號（現場新增）：「78 歲 · 男」
+        const meta = `${s.code ? `${highlight(s.code, terms)} · ` : ""}${subjectAge(s)} 歲 · ${esc(s.gender)}`;
+        const actions = done
+          ? `<span class="done-tag"><i class="ti ti-circle-check"></i>已完成</span>
+             <span class="done-time">${esc(s.done[test.id])}</span>
+             <button class="btn-retest" type="button" data-act="retest"><i class="ti ti-refresh"></i>重測</button>`
+          : `<button class="btn-start" type="button" data-act="start">開始 <i class="ti ti-arrow-right"></i></button>`;
+        return `
+      <div class="srow ${done ? "is-done" : ""}" data-id="${esc(s.id)}">
+        <div class="avatar serif">${done ? '<i class="ti ti-check"></i>' : esc(s.name.slice(0, 1))}</div>
+        <div class="s-main">
+          <div class="s-name">${highlight(s.name, terms)}</div>
+          <div class="s-meta"><span class="s-meta-text">${meta}</span>${s.source === "onsite" ? '<span class="s-tag">現場新增</span>' : ""}</div>
+        </div>
+        <div class="s-actions">${actions}</div>
+      </div>`;
+      }
+
+      function emptyHTML(icon, title, sub) {
+        return `
+      <div class="empty">
+        <i class="ti ${icon}"></i>
+        <div class="empty-title">${title}</div>
+        ${sub ? `<div class="empty-sub">${sub}</div>` : ""}
+      </div>`;
+      }
+
+      function renderList({ animate = true } = {}) {
+        const terms = norm(R.query).split(/\s+/).filter(Boolean);
+        const all = viewSubjects();
+        const matched = all.filter((s) => {
+          const text = norm(`${s.name} ${s.code || ""}`); // 沒有編號只比對姓名
+          return terms.every((t) => text.includes(t));
+        });
+        const { todo, done } = split(matched);
+        $("#cntTodo").textContent = todo.length;
+        $("#cntDone").textContent = done.length;
+        $("#cntAll").textContent = todo.length + done.length;
+
+        const rows =
+          R.tab === "todo"
+            ? todo
+            : R.tab === "done"
+              ? done
+              : [...todo, ...done];
+        if (!all.length) {
+          // 場域沒有任何人員
+          list.innerHTML = emptyHTML(
+            "ti-users",
+            "目前沒有受測人員",
+            "點右上角「新增人員」加入名單",
+          );
+        } else if (rows.length) {
+          list.innerHTML = `<div class="list-card">${rows.map((s) => rowHTML(s, terms)).join("")}</div>`;
+        } else if (terms.length) {
+          list.innerHTML = emptyHTML(
+            "ti-user-search",
+            "找不到符合的人員",
+            "試試其他姓名或編號",
+          );
+        } else if (R.tab === "todo") {
+          list.innerHTML = emptyHTML(
+            "ti-confetti",
+            "全部完成了",
+            "這個場域的人員都已完成測驗",
+          );
+        } else {
+          list.innerHTML = emptyHTML("ti-clipboard", "還沒有人完成測驗", "");
+        }
+
+        if (animate) {
+          list.classList.remove("is-updating");
+          void list.offsetWidth; // 重新觸發淡入
+          list.classList.add("is-updating");
+        }
+      }
+
+      function setTab(tab) {
+        R.tab = tab;
+        setSeg($("#tabs"), TABS.indexOf(tab));
+        renderList();
+      }
+
+      function startTest(subject) {
+        showToast(`即將開始：${subject.name} · ${test.name}`);
+        // TODO：assess.html 做好之後改成換頁
+        // location.href = `assess.html?test=${test.id}&field=${field.id}&subject=${subject.id}`;
+      }
+
+      function goBack() {
+        $("#app").classList.add("is-leaving");
+        setTimeout(() => (location.href = "home.html"), 350);
+      }
+
+      /* =========================================================
+       * 確認對話框：confirmDialog({...}) → Promise<boolean>
+       * 點遮罩或按 Esc 等同按次要按鈕
+       * ========================================================= */
+      const dialog = $("#dialog");
+      let dialogResolve = null;
+      function confirmDialog({ icon, title, desc, cancel, ok }) {
+        document.activeElement?.blur?.(); // 先收起鍵盤，避免對話框被蓋住
+        $("#dlgIcon").className = `ti ${icon}`;
+        $("#dlgTitle").textContent = title;
+        $("#dlgDesc").textContent = desc;
+        $("#dlgCancel").textContent = cancel;
+        $("#dlgOk").textContent = ok;
+        dialog.classList.add("is-open");
+        dialog.setAttribute("aria-hidden", "false");
+        $("#dlgMask").classList.add("is-open");
+        $("#dlgOk").focus({ preventScroll: true });
+        return new Promise((resolve) => (dialogResolve = resolve));
+      }
+      function closeDialog(result) {
+        if (!dialogResolve) return;
+        dialog.classList.remove("is-open");
+        dialog.setAttribute("aria-hidden", "true");
+        $("#dlgMask").classList.remove("is-open");
+        const resolve = dialogResolve;
+        dialogResolve = null;
+        resolve(result);
+      }
+      $("#dlgCancel").addEventListener("click", () => closeDialog(false));
+      $("#dlgMask").addEventListener("click", () => closeDialog(false));
+      $("#dlgOk").addEventListener("click", () => closeDialog(true));
+
+      /* =========================================================
+       * 新增人員：底部面板
+       * ========================================================= */
+      const sheet = $("#sheet");
+      const form = $("#addForm");
+      const inName = $("#inName");
+      const genderSeg = $("#genderSeg");
+      // birth：已選擇的出生日期（西元 "YYYY-MM-DD"），未選擇為 null
+      const A = { open: false, gender: null, birth: null, lastFocus: null };
+
+      const isDirty = () => Boolean(inName.value.trim() || A.birth || A.gender);
+
+      function resetForm() {
+        form.reset();
+        A.gender = null;
+        genderSeg.classList.add("is-unset");
+        genderSeg.querySelectorAll(".seg-btn").forEach((b) => {
+          b.classList.remove("is-active");
+          b.setAttribute("aria-checked", "false");
+        });
+        form
+          .querySelectorAll(".has-error")
+          .forEach((f) => f.classList.remove("has-error"));
+        A.birth = null;
+        renderBirthField();
+      }
+
+      function openSheet() {
+        resetForm();
+        A.open = true;
+        A.lastFocus = document.activeElement;
+        sheet.style.transform = "";
+        sheet.classList.add("is-open");
+        sheet.setAttribute("aria-hidden", "false");
+        $("#sheetMask").classList.add("is-open");
+        document.body.classList.add("sheet-open");
+        $("#app").inert = true;
+        form.scrollTop = 0;
+        inName.focus({ preventScroll: true }); // 打開後自動聚焦姓名
+      }
+
+      function closeSheet() {
+        if (!A.open) return;
+        A.open = false;
+        document.activeElement?.blur?.();
+        sheet.style.transform = "";
+        sheet.classList.remove("is-open");
+        sheet.setAttribute("aria-hidden", "true");
+        $("#sheetMask").classList.remove("is-open");
+        document.body.classList.remove("sheet-open");
+        $("#app").inert = false;
+      }
+
+      // ✕、遮罩、往下拖、Esc：有輸入資料時先確認
+      async function requestCloseSheet() {
+        if (!A.open) return;
+        if (!isDirty()) return closeSheet();
+        const discard = await confirmDialog({
+          icon: "ti-alert-circle",
+          title: "要放棄新增嗎？",
+          desc: "已輸入的資料不會保存",
+          cancel: "繼續填寫",
+          ok: "放棄",
+        });
+        if (discard) closeSheet();
+      }
+
+      function submitAdd(e) {
+        e.preventDefault();
+        const name = inName.value.trim();
+        const errors = {
+          fName: !name,
+          fGender: !A.gender,
+          fBirth: !A.birth,
+        };
+        let first = null;
+        Object.entries(errors).forEach(([id, bad]) => {
+          $(`#${id}`).classList.toggle("has-error", bad);
+          if (bad && !first) first = id;
+        });
+        if (first) {
+          if (first === "fName") inName.focus({ preventScroll: true });
+          $(`#${first}`).scrollIntoView({
+            block: "nearest",
+            behavior: "smooth",
+          });
+          return;
+        }
+
+        const subject = {
+          id: `onsite-${Date.now()}`,
+          code: null, // 現場新增沒有編號
+          name,
+          birth: A.birth,
+          gender: A.gender,
+          source: "onsite",
+          done: {},
+        };
+        local.added.push(subject);
+        saveLocal();
+        closeSheet();
+
+        // 名單切到「全部」並清除搜尋，新人員排在最上面，閃一下提示位置
+        R.query = "";
+        searchInput.value = "";
+        searchClear.hidden = true;
+        setTab("all");
+        renderProgress();
+        const row = list.querySelector(`[data-id="${CSS.escape(subject.id)}"]`);
+        if (row) {
+          row.classList.add("flash");
+          row.addEventListener(
+            "animationend",
+            () => row.classList.remove("flash"),
+            { once: true },
+          );
+          setTimeout(
+            () => row.scrollIntoView({ block: "center", behavior: "smooth" }),
+            300,
+          );
+        }
+        showToast(`已新增 ${name}`);
+      }
+
+      function initSheet() {
+        $("#sheetSub").textContent = `加入 ${field.name} 的受測名單`;
+        $("#addBtn").addEventListener("click", openSheet);
+        $("#sheetClose").addEventListener("click", requestCloseSheet);
+        $("#sheetMask").addEventListener("click", requestCloseSheet);
+        form.addEventListener("submit", submitAdd);
+
+        // 姓名：重新輸入時錯誤立即消失；Enter 收起鍵盤
+        inName.addEventListener("input", () =>
+          $("#fName").classList.remove("has-error"),
+        );
+        inName.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            inName.blur();
+          }
+        });
+
+        // 出生年月日：點擊打開滾輪選擇視窗
+        $("#birthBtn").addEventListener("click", openPicker);
+
+        genderSeg.addEventListener("click", (e) => {
+          const btn = e.target.closest(".seg-btn");
+          if (!btn) return;
+          A.gender = btn.dataset.gender;
+          setSeg(
+            genderSeg,
+            [...genderSeg.querySelectorAll(".seg-btn")].indexOf(btn),
+          );
+          $("#fGender").classList.remove("has-error");
+        });
+
+        // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉（有資料先確認），否則彈回
+        const grab = $("#sheetGrab");
+        let drag = null;
+        grab.addEventListener("pointerdown", (e) => {
+          if (!A.open || e.target.closest("button")) return;
+          drag = { y: e.clientY, dy: 0 };
+          grab.setPointerCapture(e.pointerId);
+          sheet.classList.add("is-dragging");
+        });
+        grab.addEventListener("pointermove", (e) => {
+          if (!drag) return;
+          drag.dy = Math.max(0, e.clientY - drag.y);
+          sheet.style.transform = `translateY(${drag.dy}px)`;
+        });
+        const endDrag = () => {
+          if (!drag) return;
+          const { dy } = drag;
+          drag = null;
+          sheet.classList.remove("is-dragging");
+          sheet.style.transform = "";
+          if (dy > 120) requestCloseSheet();
+        };
+        grab.addEventListener("pointerup", endDrag);
+        grab.addEventListener("pointercancel", endDrag);
+      }
+
+      /* =========================================================
+       * 出生日期選擇視窗（民國年滾輪）
+       * 每欄選項值 = 索引 + 1（年：民國 1 年起；月：1 月起；日：1 日起）
+       * ========================================================= */
+      const ITEM_H = 80;
+      const picker = $("#picker");
+      const wheels = { y: $("#wheelY"), m: $("#wheelM"), d: $("#wheelD") };
+      const UNITS = { y: "年", m: "月", d: "日" };
+      const P = { open: false, y: 40, m: 1, d: 1 };
+
+      const pad2 = (n) => String(n).padStart(2, "0");
+      function todayRoc() {
+        const t = new Date();
+        return {
+          y: t.getFullYear() - 1911,
+          m: t.getMonth() + 1,
+          d: t.getDate(),
+        };
+      }
+      const daysIn = (y, m) => new Date(y + 1911, m, 0).getDate(); // 閏年依西元年計算
+      // 不能選未來：今年最多到本月、本月最多到今天
+      const maxMonth = (y) => (y === todayRoc().y ? todayRoc().m : 12);
+      function maxDay(y, m) {
+        const t = todayRoc();
+        return y === t.y && m === t.m
+          ? Math.min(daysIn(y, m), t.d)
+          : daysIn(y, m);
+      }
+      const toIso = ({ y, m, d }) => `${y + 1911}-${pad2(m)}-${pad2(d)}`;
+      function isoToRoc(iso) {
+        const [Y, M, D] = iso.split("-").map(Number);
+        return { y: Y - 1911, m: M, d: D };
+      }
+      const birthHTML = (r) =>
+        `民國 ${r.y} 年 ${r.m} 月 ${r.d} 日 <em>· ${ageFrom(toIso(r))} 歲</em>`;
+
+      // 新增人員面板上的欄位
+      function renderBirthField() {
+        const btn = $("#birthBtn");
+        btn.classList.toggle("has-value", Boolean(A.birth));
+        $("#birthText").innerHTML = A.birth
+          ? birthHTML(isoToRoc(A.birth))
+          : "請選擇出生日期";
+      }
+
+      function fillWheel(key, count, maxAllowed) {
+        let html = '<div class="wheel-pad"></div>';
+        for (let v = 1; v <= count; v++) {
+          html += `<div class="wheel-item${v > maxAllowed ? " is-disabled" : ""}" data-v="${v}">${v} ${UNITS[key]}</div>`;
+        }
+        wheels[key].innerHTML = html + '<div class="wheel-pad"></div>';
+        wheels[key].dataset.count = count;
+      }
+      function centerValue(key) {
+        const w = wheels[key];
+        const i = Math.round(w.scrollTop / ITEM_H);
+        return Math.max(1, Math.min(Number(w.dataset.count), i + 1));
+      }
+      function scrollToValue(key, v, smooth) {
+        wheels[key].scrollTo({
+          top: (v - 1) * ITEM_H,
+          behavior: smooth ? "smooth" : "auto",
+        });
+      }
+      // 依捲動位置即時標出中間的選項
+      function markCenter(key) {
+        const v = centerValue(key);
+        wheels[key].querySelectorAll(".wheel-item").forEach((el) => {
+          el.classList.toggle("is-center", Number(el.dataset.v) === v);
+        });
+      }
+      function setDisabled(key, maxAllowed) {
+        wheels[key].querySelectorAll(".wheel-item").forEach((el) => {
+          el.classList.toggle("is-disabled", Number(el.dataset.v) > maxAllowed);
+        });
+      }
+
+      // 即時預覽：滾動中也依目前中間的選項更新（超出範圍的先以可選的最大值顯示）
+      function updatePreview() {
+        const y = centerValue("y");
+        const m = Math.min(centerValue("m"), maxMonth(y));
+        const d = Math.min(centerValue("d"), maxDay(y, m));
+        $("#pickerPreview").innerHTML = birthHTML({ y, m, d });
+      }
+
+      // 年、月改變後：更新月份可選範圍、重建日數，必要時把月／日拉回可選的值
+      function applyConstraints(smooth) {
+        const mm = maxMonth(P.y);
+        setDisabled("m", mm);
+        if (P.m > mm) {
+          P.m = mm;
+          scrollToValue("m", P.m, smooth);
+        }
+        const days = daysIn(P.y, P.m);
+        const md = maxDay(P.y, P.m);
+        if (P.d > md) P.d = md; // 日數變少或超過今天：改成最後一個可選的日
+        if (Number(wheels.d.dataset.count) !== days) {
+          fillWheel("d", days, md);
+          scrollToValue("d", P.d, false);
+        } else {
+          setDisabled("d", md);
+          if (centerValue("d") !== P.d) scrollToValue("d", P.d, smooth);
+        }
+        Object.keys(wheels).forEach(markCenter);
+        updatePreview();
+      }
+
+      // 捲動停止後才確定該欄的值；捲到不能選的值時自動彈回
+      function commit(key) {
+        if (!P.open) return;
+        const v = centerValue(key);
+        if (key === "y") {
+          if (v === P.y) return;
+          P.y = v;
+          applyConstraints(true);
+        } else if (key === "m") {
+          const mm = maxMonth(P.y);
+          if (v > mm) scrollToValue("m", mm, true);
+          const next = Math.min(v, mm);
+          if (next === P.m) return markCenter("m");
+          P.m = next;
+          applyConstraints(true);
+        } else {
+          const md = maxDay(P.y, P.m);
+          if (v > md) scrollToValue("d", md, true);
+          P.d = Math.min(v, md);
+          updatePreview();
+        }
+      }
+
+      function openPicker() {
+        document.activeElement?.blur?.(); // 姓名欄正在輸入時先收起鍵盤
+        Object.assign(P, A.birth ? isoToRoc(A.birth) : { y: 40, m: 1, d: 1 });
+        P.open = true;
+        fillWheel("y", todayRoc().y, Infinity);
+        fillWheel("m", 12, maxMonth(P.y));
+        fillWheel("d", daysIn(P.y, P.m), maxDay(P.y, P.m));
+        picker.classList.add("is-open");
+        picker.setAttribute("aria-hidden", "false");
+        $("#pickerMask").classList.add("is-open");
+        // 打開時直接定位，不要有捲動動畫
+        Object.keys(wheels).forEach((key) => {
+          scrollToValue(key, P[key], false);
+          markCenter(key);
+        });
+        updatePreview();
+      }
+
+      function closePicker(apply) {
+        if (!P.open) return;
+        if (apply) {
+          A.birth = toIso(P);
+          renderBirthField();
+          $("#fBirth").classList.remove("has-error");
+        }
+        P.open = false;
+        picker.classList.remove("is-open");
+        picker.setAttribute("aria-hidden", "true");
+        $("#pickerMask").classList.remove("is-open");
+        $("#birthBtn").focus({ preventScroll: true });
+      }
+
+      function initPicker() {
+        $("#pickerClose").addEventListener("click", () => closePicker(false));
+        $("#pickerCancel").addEventListener("click", () => closePicker(false));
+        $("#pickerMask").addEventListener("click", () => closePicker(false));
+        $("#pickerOk").addEventListener("click", () => closePicker(true));
+
+        const hasScrollEnd = "onscrollend" in window;
+        Object.entries(wheels).forEach(([key, wheel]) => {
+          let raf;
+          let timer;
+          wheel.addEventListener("scroll", () => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+              markCenter(key);
+              updatePreview();
+            });
+            // 不支援 scrollend 時，用 120ms 防抖判斷捲動停止
+            if (!hasScrollEnd) {
+              clearTimeout(timer);
+              timer = setTimeout(() => commit(key), 120);
+            }
+          });
+          if (hasScrollEnd)
+            wheel.addEventListener("scrollend", () => commit(key));
+          // 點擊非中間的選項：平滑捲動到該選項
+          wheel.addEventListener("click", (e) => {
+            const item = e.target.closest(".wheel-item");
+            if (item && Number(item.dataset.v) !== centerValue(key)) {
+              scrollToValue(key, Number(item.dataset.v), true);
+            }
+          });
+        });
+      }
+
+      /* =========================================================
+       * 預覽切換工具列：CONFIG.devPreview 或 ?preview=1 時產生
+       * ========================================================= */
+      function initPreviewBar() {
+        if (!PREVIEW) return;
+        const bar = document.createElement("div");
+        bar.className = "preview-bar";
+        bar.setAttribute("role", "toolbar");
+        bar.setAttribute("aria-label", "預覽進度狀態");
+        bar.innerHTML =
+          `<span class="preview-label">預覽</span>` +
+          [
+            ["idle", "尚未開始"],
+            ["active", "進行中"],
+            ["complete", "全部完成"],
+          ]
+            .map(
+              ([k, label]) =>
+                `<button class="preview-btn${k === "active" ? " is-active" : ""}" type="button" data-preview="${k}" aria-pressed="${k === "active"}">${label}</button>`,
+            )
+            .join("");
+        document.body.appendChild(bar);
+        bar.addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-preview]");
+          if (!btn) return;
+          previewState =
+            btn.dataset.preview === "active" ? null : btn.dataset.preview;
+          bar.querySelectorAll(".preview-btn").forEach((b) => {
+            b.classList.toggle("is-active", b === btn);
+            b.setAttribute("aria-pressed", b === btn);
+          });
+          // 進度卡、頁籤數字、名單一起更新，目前的頁籤保持不變
+          renderProgress();
+          renderList();
+        });
+      }
+
+      /* =========================================================
+       * 啟動
+       * ========================================================= */
+      function init() {
+        if (!test || !field) {
+          showToast("找不到場域資料");
+          setTimeout(() => (location.href = "home.html"), 1500);
+          return;
+        }
+        $("#roster").hidden = false;
+        document.title = `建豐健康科技 - ${field.name}`;
+        $("#testLabel").innerHTML =
+          `<i class="ti ${test.icon}"></i>${esc(test.name)} · ${esc(test.desc)}`;
+        $("#fieldTitle").textContent = field.name;
+
+        initPreviewBar();
+        renderList({ animate: false });
+        renderProgress();
+        initSheet();
+        initPicker();
+
+        $("#backBtn").addEventListener("click", goBack);
+        $("#tabs").addEventListener("click", (e) => {
+          const btn = e.target.closest(".seg-btn");
+          if (btn && btn.dataset.tab !== R.tab) setTab(btn.dataset.tab);
+        });
+
+        searchInput.addEventListener("input", () => {
+          R.query = searchInput.value;
+          searchClear.hidden = !R.query;
+          renderList();
+        });
+        searchClear.addEventListener("click", (e) => {
+          e.preventDefault();
+          searchInput.value = "";
+          searchInput.dispatchEvent(new Event("input"));
+          searchInput.focus({ preventScroll: true });
+        });
+
+        list.addEventListener("click", async (e) => {
+          const btn = e.target.closest("[data-act]");
+          if (!btn) return;
+          const subject = viewSubjects().find(
+            (s) => s.id === btn.closest(".srow").dataset.id,
+          );
+          if (!subject) return;
+          if (btn.dataset.act === "start") return startTest(subject);
+          const ok = await confirmDialog({
+            icon: "ti-refresh",
+            title: "重新測驗？",
+            desc: `將為 ${subject.name} 重新進行 ${test.name}。`,
+            cancel: "取消",
+            ok: "開始重測",
+          });
+          if (ok) startTest(subject);
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Escape") return;
+          if (dialogResolve) closeDialog(false);
+          else if (P.open) closePicker(false);
+          else if (A.open) requestCloseSheet();
+        });
+
+        // 從下一頁返回（bfcache）時移除滑出狀態
+        window.addEventListener("pageshow", (e) => {
+          if (e.persisted) $("#app").classList.remove("is-leaving");
+        });
+      }
+      init();
+    </script>
+  </body>
+</html>
