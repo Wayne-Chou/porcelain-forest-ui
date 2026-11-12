@@ -22,8 +22,8 @@
       /* =========================================================
        * 瓷白森林 Porcelain Forest — SPPB 鑑測結果頁（響應式）
        * 整頁 100dvh 直向排版：頁首｜卡片舞台（flex: 1）｜頁數圓點＋滑動提示，不捲動
-       * 頁首、底部的尺寸用 clamp(最小值, vmin, 最大值)，最大值 = iPad 13 吋直式（1032 × 1376）的尺寸
-       * 卡片內的尺寸都以 --u（= 卡片寬 ÷ 740）為單位，iPad 13 吋時 --u ≈ 1px
+       * 頁首、底部的尺寸以 --u 計算（iPad 13 吋直式時 1 --u = 1px），與其他頁同一套做法
+       * 卡片內的尺寸都以 --cu（= 卡片寬 ÷ 740）為單位，iPad 13 吋時 --cu ≈ 1px
        * ========================================================= */
       :root {
         --bg: #ece7df; /* 暖瓷白：頁面底色 */
@@ -44,22 +44,29 @@
 
         --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
         --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 縮放單位：iPad 13 吋直式（1032 × 1376）時 1 --u = 1px；較小的 iPad 依「寬度」與「高度 × 0.75」中較小者等比縮小 */
+        --u: calc(min(100vw, 100dvh * 0.75) / 1032);
+        /* 橫式等內容比 1032 --u 寬時，左右各留白這麼多，內容置中 */
+        --gutter: max(0px, calc((100vw - 1032 * var(--u)) / 2));
+        /* 最小字級：一般 16px、按鈕 18px（手機上卡片內不強制，見下方媒體查詢） */
+        --fmin: 16px;
+        --bmin: 18px;
         /* 字級：四頁共用，同一種用途用同一個變數（卡片內會依卡片寬度重新定義） */
-        --fs-display: 72px;
-        --fs-hero-num: 88px;
-        --fs-card-name: 84px;
-        --fs-title: 44px;
-        --fs-lead: 32px;
-        --fs-button: 30px;
-        --fs-body: 26px;
-        --fs-small: 24px;
+        --fs-display: max(var(--fmin), calc(72 * var(--u)));
+        --fs-hero-num: max(var(--fmin), calc(88 * var(--u)));
+        --fs-card-name: max(var(--fmin), calc(84 * var(--u)));
+        --fs-title: max(var(--fmin), calc(44 * var(--u)));
+        --fs-lead: max(var(--fmin), calc(32 * var(--u)));
+        --fs-button: max(var(--bmin), calc(30 * var(--u)));
+        --fs-body: max(var(--fmin), calc(26 * var(--u)));
+        --fs-small: max(var(--fmin), calc(24 * var(--u)));
 
         /* 版面間距（iPad 13 吋直式時：上 48、左右 56、頁首與舞台 28、舞台與底部 20、底部 64 → 舞台高 960） */
-        --pad-x: clamp(16px, 5.43vmin, 56px);
-        --pad-top: clamp(14px, 4.65vmin, 48px);
-        --gap-head: clamp(10px, 2.71vmin, 28px);
-        --gap-foot: clamp(8px, 1.94vmin, 20px);
-        --pad-bottom: clamp(12px, 4.26vmin, 44px); /* 提示膠囊加高 20px，底部留白相應減少，舞台維持 960 */
+        --pad-x: calc(56 * var(--u));
+        --pad-top: calc(48 * var(--u));
+        --gap-head: calc(28 * var(--u));
+        --gap-foot: calc(20 * var(--u));
+        --pad-bottom: calc(44 * var(--u)); /* 提示膠囊加高 calc(20 * var(--u))，底部留白相應減少，舞台維持 960 */
 
         --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
@@ -139,10 +146,10 @@
         position: relative;
         z-index: 2;
         flex: 0 0 auto;
-        padding: 0 var(--pad-x);
+        padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
         display: flex;
         align-items: center;
-        gap: clamp(12px, 2.33vmin, 24px);
+        gap: calc(24 * var(--u));
         animation: fadeIn 0.6s var(--ease-out) both;
       }
       @keyframes fadeIn {
@@ -152,32 +159,32 @@
       }
       .home-btn {
         flex: 0 0 auto;
-        width: clamp(56px, 8.53vmin, 88px);
-        height: clamp(56px, 8.53vmin, 88px);
+        width: max(44px, calc(88 * var(--u)));
+        height: max(44px, calc(88 * var(--u)));
         border-radius: 50%;
         background: var(--chip);
         border: 2px solid var(--line);
         display: grid;
         place-items: center;
-        font-size: clamp(26px, 4.07vmin, 42px);
+        font-size: max(var(--bmin), calc(42 * var(--u)));
       }
       /* 從測驗完成進入時：膠囊按鈕「‹ 受測名單」 */
       .back-pill {
         flex: 0 0 auto;
-        height: clamp(56px, 8.53vmin, 88px);
-        padding: 0 clamp(18px, 3.1vmin, 32px) 0 clamp(12px, 1.94vmin, 20px);
-        border-radius: 999px;
+        height: max(44px, calc(88 * var(--u)));
+        padding: 0 calc(32 * var(--u)) 0 calc(20 * var(--u));
+        border-radius: calc(999 * var(--u));
         background: var(--chip);
         border: 2px solid var(--line);
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        font-size: clamp(17px, 2.9vmin, 30px);
+        gap: calc(4 * var(--u));
+        font-size: max(var(--bmin), calc(30 * var(--u)));
         font-weight: 700;
         white-space: nowrap;
       }
       .back-pill i {
-        font-size: clamp(24px, 3.88vmin, 40px);
+        font-size: max(var(--bmin), calc(40 * var(--u)));
       }
       .who {
         min-width: 0;
@@ -185,7 +192,7 @@
       }
       .who-name {
         margin: 0;
-        font-size: clamp(26px, 5.43vmin, 56px);
+        font-size: max(var(--fmin), calc(56 * var(--u)));
         line-height: 1.2;
         white-space: nowrap;
         overflow: hidden;
@@ -193,7 +200,7 @@
       }
       .who-date {
         margin-top: 2px;
-        font-size: clamp(14px, 2.33vmin, 24px);
+        font-size: max(var(--fmin), calc(24 * var(--u)));
         line-height: 1.3;
         color: var(--muted);
         white-space: nowrap;
@@ -210,43 +217,48 @@
         margin-left: auto;
         display: flex;
         align-items: center;
-        gap: clamp(10px, 1.94vmin, 20px);
-        padding: clamp(8px, 1.36vmin, 14px) clamp(8px, 1.36vmin, 14px)
-          clamp(8px, 1.36vmin, 14px) clamp(14px, 2.91vmin, 30px);
-        border-radius: clamp(20px, 3.1vmin, 32px);
+        gap: calc(20 * var(--u));
+        padding: calc(14 * var(--u)) calc(14 * var(--u))
+          calc(14 * var(--u)) calc(30 * var(--u));
+        border-radius: calc(32 * var(--u));
         background: var(--chip);
-        border: clamp(3px, 0.39vmin, 4px) solid var(--level);
+        border: calc(4 * var(--u)) solid var(--level);
       }
       .vivi-k {
-        font-size: clamp(12px, 1.94vmin, 20px);
+        font-size: max(var(--fmin), calc(20 * var(--u)));
         font-weight: 700;
         letter-spacing: 0.08em;
         color: var(--muted);
       }
       .vivi-v {
-        font-size: clamp(16px, 2.91vmin, 30px);
+        font-size: max(var(--fmin), calc(30 * var(--u)));
         font-weight: 700;
         line-height: 1.3;
         white-space: nowrap;
       }
       .vivi-letter {
         flex: 0 0 auto;
-        width: clamp(44px, 8.14vmin, 84px);
-        height: clamp(44px, 8.14vmin, 84px);
-        border-radius: clamp(12px, 2.13vmin, 22px);
+        width: calc(84 * var(--u));
+        height: calc(84 * var(--u));
+        border-radius: calc(22 * var(--u));
         background: var(--level);
         color: var(--letter, #fff);
         display: grid;
         place-items: center;
-        font-size: clamp(26px, 4.84vmin, 50px);
+        font-size: max(var(--fmin), calc(50 * var(--u)));
         font-weight: 700;
         line-height: 1;
       }
       /* 窄螢幕：頁首改成兩列，第二列是撐滿寬度的 VIVIFRAIL 等級卡 */
       @media (max-width: 599px) {
+        /* 手機：只有卡片內（依卡片寬度縮放）不強制最小字級；頁首和底部仍維持 16px／18px */
+        .stage {
+          --fmin: 0px;
+          --bmin: 0px;
+        }
         .header {
           flex-wrap: wrap;
-          row-gap: 10px;
+          row-gap: calc(10 * var(--u));
         }
         .vivi {
           order: 3;
@@ -260,9 +272,9 @@
        * 卡片舞台：輪迴卡片輪播（--card-w、--card-h 由 JS 依舞台大小設定）
        * ========================================================= */
       .stage {
-        --card-w: 740px;
-        --card-h: 940px;
-        --u: calc(var(--card-w) / 740);
+        --card-w: calc(740 * var(--u));
+        --card-h: calc(940 * var(--u));
+        --cu: calc(var(--card-w) / 740); /* 卡片內的單位：卡片寬 ÷ 740 */
         position: relative;
         z-index: 1;
         flex: 1 1 auto;
@@ -273,23 +285,23 @@
       }
       .card {
         /* 卡片內的字級依卡片寬度縮放 */
-        --fs-small: calc(24 * var(--u));
-        --fs-body: calc(26 * var(--u));
-        --fs-button: calc(30 * var(--u));
-        --fs-lead: calc(32 * var(--u));
+        --fs-small: max(var(--fmin), calc(24 * var(--cu)));
+        --fs-body: max(var(--fmin), calc(26 * var(--cu)));
+        --fs-button: max(var(--bmin), calc(30 * var(--cu)));
+        --fs-lead: max(var(--fmin), calc(32 * var(--cu)));
         position: absolute;
         left: calc(50% - var(--card-w) / 2);
         top: 0;
         width: var(--card-w);
         height: var(--card-h);
-        padding: calc(40 * var(--u)) calc(44 * var(--u));
+        padding: calc(40 * var(--cu)) calc(44 * var(--cu));
         display: flex;
         flex-direction: column;
         background: var(--paper);
-        border-radius: calc(48 * var(--u));
+        border-radius: calc(48 * var(--cu));
         box-shadow:
-          0 0 0 calc(2 * var(--u)) rgba(176, 141, 87, 0.35),
-          0 calc(36 * var(--u)) calc(70 * var(--u)) rgba(60, 45, 25, 0.2);
+          0 0 0 calc(2 * var(--cu)) rgba(176, 141, 87, 0.35),
+          0 calc(36 * var(--cu)) calc(70 * var(--cu)) rgba(60, 45, 25, 0.2);
         transform-origin: 50% 50%;
         transition:
           transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
@@ -308,22 +320,22 @@
         flex: 0 0 auto;
         display: flex;
         align-items: baseline;
-        gap: calc(14 * var(--u));
+        gap: calc(14 * var(--cu));
         white-space: nowrap;
       }
       .card-title {
         margin: 0;
-        font-size: calc(46 * var(--u));
+        font-size: max(var(--fmin), calc(46 * var(--cu)));
         line-height: 1.2;
       }
       .card-kind {
-        font-size: calc(28 * var(--u));
+        font-size: max(var(--fmin), calc(28 * var(--cu)));
         font-weight: 700;
         color: var(--muted);
       }
       .sub {
-        margin-top: calc(18 * var(--u));
-        font-size: var(--fs-body);
+        margin-top: calc(18 * var(--cu));
+        font-size: max(var(--fmin), var(--fs-body));
         font-weight: 700;
         color: var(--muted);
       }
@@ -331,48 +343,48 @@
       /* 卡片 1：跌倒風險半圓圖 */
       .gauge {
         display: block;
-        width: calc(650 * var(--u));
-        margin: calc(6 * var(--u)) auto 0;
+        width: calc(650 * var(--cu));
+        margin: calc(6 * var(--cu)) auto 0;
       }
       .gauge-text {
         text-align: center;
-        font-size: var(--fs-lead);
+        font-size: max(var(--fmin), var(--fs-lead));
         font-weight: 700;
         line-height: 1.3;
       }
       .risk {
-        margin-top: calc(18 * var(--u));
+        margin-top: calc(18 * var(--cu));
         display: flex;
         align-items: center;
-        gap: calc(18 * var(--u));
-        padding: calc(20 * var(--u)) calc(28 * var(--u));
-        border-radius: calc(28 * var(--u));
+        gap: calc(18 * var(--cu));
+        padding: calc(20 * var(--cu)) calc(28 * var(--cu));
+        border-radius: calc(28 * var(--cu));
         background: var(--risk-bg);
-        border: calc(3 * var(--u)) solid var(--risk-border);
+        border: calc(3 * var(--cu)) solid var(--risk-border);
         color: var(--risk-text);
       }
       .risk-dot {
         flex: 0 0 auto;
-        width: calc(22 * var(--u));
-        height: calc(22 * var(--u));
+        width: calc(22 * var(--cu));
+        height: calc(22 * var(--cu));
         border-radius: 50%;
         background: var(--risk-arc);
       }
       .risk-title {
-        font-size: var(--fs-lead);
+        font-size: max(var(--fmin), var(--fs-lead));
         font-weight: 700;
         line-height: 1.3;
       }
       .risk-desc {
-        font-size: var(--fs-body);
+        font-size: max(var(--fmin), var(--fs-body));
         line-height: 1.4;
       }
       .split {
         margin-top: auto;
-        padding-top: calc(24 * var(--u));
-        border-top: calc(2 * var(--u)) solid var(--divider);
+        padding-top: calc(24 * var(--cu));
+        border-top: calc(2 * var(--cu)) solid var(--divider);
         display: grid;
-        grid-template-columns: 1fr calc(2 * var(--u)) 1fr;
+        grid-template-columns: 1fr calc(2 * var(--cu)) 1fr;
         align-items: center;
         text-align: center;
       }
@@ -385,20 +397,20 @@
         font-variant-numeric: tabular-nums;
       }
       .big-score {
-        font-size: calc(100 * var(--u));
+        font-size: max(var(--fmin), calc(100 * var(--cu)));
       }
       .big-of {
-        font-size: calc(36 * var(--u));
+        font-size: max(var(--fmin), calc(36 * var(--cu)));
         font-weight: 700;
         color: var(--faint);
       }
       .big-peer {
-        font-size: calc(90 * var(--u));
+        font-size: max(var(--fmin), calc(90 * var(--cu)));
         color: var(--brass);
       }
       .split-k {
-        margin-top: calc(8 * var(--u));
-        font-size: var(--fs-small);
+        margin-top: calc(8 * var(--cu));
+        font-size: max(var(--fmin), var(--fs-small));
         font-weight: 700;
         line-height: 1.3;
         color: var(--muted);
@@ -410,25 +422,25 @@
       /* 卡片 2：雷達圖＋三項分數 */
       .radar {
         display: block;
-        width: calc(520 * var(--u));
-        margin: calc(14 * var(--u)) auto 0;
+        width: calc(520 * var(--cu));
+        margin: calc(14 * var(--cu)) auto 0;
       }
       .total {
-        margin-top: calc(6 * var(--u));
+        margin-top: calc(6 * var(--cu));
         display: flex;
         align-items: baseline;
         justify-content: center;
-        gap: calc(18 * var(--u));
+        gap: calc(18 * var(--cu));
       }
       .total .big {
-        font-size: calc(110 * var(--u));
+        font-size: max(var(--fmin), calc(110 * var(--cu)));
       }
       .total .big small {
         font-size: 0.4em;
         color: var(--faint);
       }
       .total-k {
-        font-size: var(--fs-body);
+        font-size: max(var(--fmin), var(--fs-body));
         color: var(--muted);
       }
       .rows {
@@ -437,35 +449,35 @@
       .item-row {
         display: flex;
         align-items: center;
-        gap: calc(24 * var(--u));
-        padding: calc(20 * var(--u)) 0;
-        border-top: calc(2 * var(--u)) solid var(--divider);
+        gap: calc(24 * var(--cu));
+        padding: calc(20 * var(--cu)) 0;
+        border-top: calc(2 * var(--cu)) solid var(--divider);
       }
       .item-ico {
         flex: 0 0 auto;
-        width: calc(72 * var(--u));
-        height: calc(72 * var(--u));
-        border-radius: calc(22 * var(--u));
+        width: calc(72 * var(--cu));
+        height: calc(72 * var(--cu));
+        border-radius: calc(22 * var(--cu));
         background: var(--forest);
         color: #d9b77a;
         display: grid;
         place-items: center;
-        font-size: calc(38 * var(--u));
+        font-size: max(var(--fmin), calc(38 * var(--cu)));
       }
       .item-name {
         flex: 1;
-        font-size: var(--fs-lead);
+        font-size: max(var(--fmin), var(--fs-lead));
         font-weight: 700;
       }
       .item-score {
-        font-size: calc(64 * var(--u));
+        font-size: max(var(--fmin), calc(64 * var(--cu)));
         line-height: 1;
         color: var(--forest);
       }
       .item-score small {
-        margin-left: calc(4 * var(--u));
+        margin-left: calc(4 * var(--cu));
         font-family: var(--font-sans);
-        font-size: var(--fs-body);
+        font-size: max(var(--fmin), var(--fs-body));
         font-weight: 700;
         color: var(--faint);
       }
@@ -475,27 +487,27 @@
         display: flex;
         align-items: baseline;
         justify-content: space-between;
-        gap: calc(24 * var(--u));
-        padding: calc(30 * var(--u)) 0;
+        gap: calc(24 * var(--cu));
+        padding: calc(30 * var(--cu)) 0;
       }
       .measure + .measure {
-        border-top: calc(2 * var(--u)) solid var(--divider);
+        border-top: calc(2 * var(--cu)) solid var(--divider);
       }
       .measure-k {
-        font-size: calc(36 * var(--u));
+        font-size: max(var(--fmin), calc(36 * var(--cu)));
         font-weight: 700;
         white-space: nowrap;
       }
       .measure-v {
-        font-size: calc(80 * var(--u));
+        font-size: max(var(--fmin), calc(80 * var(--cu)));
         line-height: 1;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
       }
       .measure-v small {
-        margin-left: calc(8 * var(--u));
+        margin-left: calc(8 * var(--cu));
         font-family: var(--font-sans);
-        font-size: var(--fs-button);
+        font-size: max(var(--fmin), var(--fs-button));
         font-weight: 700;
         color: var(--brass-text);
       }
@@ -508,26 +520,26 @@
         z-index: 2;
         flex: 0 0 auto;
         margin-top: var(--gap-foot);
-        padding: 0 var(--pad-x);
+        padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: calc(12 * var(--u));
         animation: fadeIn 0.6s 0.2s var(--ease-out) both;
       }
       .dots {
-        height: 44px;
+        height: max(44px, calc(44 * var(--u)));
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 18px;
+        gap: calc(18 * var(--u));
       }
-      /* 圓點本身 16px；用透明的 ::after 把可點擊範圍擴大到 44 × 44 */
+      /* 圓點本身 calc(16 * var(--u))；用透明的 ::after 把可點擊範圍擴大到 44 × 44 */
       .dot {
         position: relative;
-        width: 16px;
-        height: 16px;
-        border-radius: 999px;
+        width: calc(16 * var(--u));
+        height: calc(16 * var(--u));
+        border-radius: calc(999 * var(--u));
         background: #cfc5b4;
         transition:
           width 0.4s var(--ease-spring),
@@ -536,31 +548,35 @@
       .dot::after {
         content: "";
         position: absolute;
-        inset: -14px;
+        /* 可點擊範圍：以圓點為中心至少 44 × 44px */
+        top: calc(50% - 22px);
+        bottom: calc(50% - 22px);
+        left: min(calc(50% - 22px), calc(-9 * var(--u)));
+        right: min(calc(50% - 22px), calc(-9 * var(--u)));
       }
       .dot.is-active {
-        width: 48px;
+        width: calc(48 * var(--u));
         background: var(--forest);
       }
       /* 滑動提示膠囊：一直顯示（iPad 13 吋：高 100、左右內距 44、文字 38、圖示 48） */
       .hint {
-        --hint-shadow: 0 12px 28px rgba(31, 59, 51, 0.28);
-        height: clamp(60px, 9.69vmin, 100px);
-        padding: 0 clamp(24px, 4.26vmin, 44px);
-        border-radius: 999px;
+        --hint-shadow: 0 calc(12 * var(--u)) calc(28 * var(--u)) rgba(31, 59, 51, 0.28);
+        height: calc(100 * var(--u));
+        padding: 0 calc(44 * var(--u));
+        border-radius: calc(999 * var(--u));
         background: var(--forest);
         box-shadow: var(--hint-shadow);
         display: flex;
         align-items: center;
-        gap: clamp(10px, 1.74vmin, 18px);
-        font-size: clamp(20px, 3.68vmin, 38px);
+        gap: calc(18 * var(--u));
+        font-size: max(var(--fmin), calc(38 * var(--u)));
         font-weight: 700;
         letter-spacing: 0.06em;
         color: var(--on-forest);
         white-space: nowrap;
       }
       .hint i {
-        font-size: clamp(28px, 4.65vmin, 48px);
+        font-size: max(var(--fmin), calc(48 * var(--u)));
         line-height: 1;
         letter-spacing: 0;
         color: #d9b77a;
@@ -574,23 +590,23 @@
       .hint .to-right {
         animation: nudgeRight 0.9s ease-in-out infinite alternate;
       }
-      /* 手指左右擺動（2.4s 一個來回，位移約 14px） */
+      /* 手指左右擺動（2.4s 一個來回，位移約 calc(14 * var(--u))） */
       @keyframes sway {
         from {
-          transform: translateX(-7px) rotate(-8deg);
+          transform: translateX(calc(-7 * var(--u))) rotate(-8deg);
         }
         to {
-          transform: translateX(7px) rotate(8deg);
+          transform: translateX(calc(7 * var(--u))) rotate(8deg);
         }
       }
-      /* 雙箭頭往外晃動（1.8s 一個循環，位移 12px） */
+      /* 雙箭頭往外晃動（1.8s 一個循環，位移 calc(12 * var(--u))） */
       @keyframes nudgeLeft {
         from {
           transform: translateX(0);
           opacity: 0.5;
         }
         to {
-          transform: translateX(-12px);
+          transform: translateX(calc(-12 * var(--u)));
           opacity: 1;
         }
       }
@@ -600,7 +616,7 @@
           opacity: 0.5;
         }
         to {
-          transform: translateX(12px);
+          transform: translateX(calc(12 * var(--u)));
           opacity: 1;
         }
       }
@@ -609,13 +625,13 @@
       .toast {
         position: fixed;
         left: 50%;
-        top: calc(36px + env(safe-area-inset-top));
-        transform: translate(-50%, -24px);
-        padding: 22px 40px;
-        border-radius: 999px;
+        top: calc(calc(36 * var(--u)) + env(safe-area-inset-top));
+        transform: translate(-50%, calc(-24 * var(--u)));
+        padding: calc(22 * var(--u)) calc(40 * var(--u));
+        border-radius: calc(999 * var(--u));
         background: var(--forest);
         color: var(--on-forest);
-        font-size: clamp(17px, 2.9vmin, 30px);
+        font-size: max(var(--bmin), calc(30 * var(--u)));
         font-weight: 700;
         opacity: 0;
         pointer-events: none;
@@ -1256,7 +1272,7 @@
         el.style.fontSize = "";
         let size = parseFloat(getComputedStyle(el).fontSize);
         const min = size * 0.8;
-        while (el.scrollWidth > el.clientWidth + 1 && size - 2 >= min) {
+        while (el.scrollWidth > el.clientWidth && size - 2 >= min) {
           size -= 2;
           el.style.fontSize = `${size}px`;
         }

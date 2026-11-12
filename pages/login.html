@@ -39,18 +39,22 @@
 
         --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
         --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 縮放單位：iPad 13 吋直式（1032 × 1376）時 1 --u = 1px；較小的 iPad 依「寬度」與「高度 × 0.75」中較小者等比縮小 */
+        --u: calc(min(100vw, 100dvh * 0.75) / 1032);
+        /* 橫式等內容比 1032 --u 寬時，左右各留白這麼多，內容置中 */
+        --gutter: max(0px, calc((100vw - 1032 * var(--u)) / 2));
         /* 字級：四頁共用，同一種用途用同一個變數（其他字級以這些變數加減或倍數表示）
          * 大小順序：small < body < button < lead < title < display；card-name、hero-num 為大字專用 */
-        --fs-display: 72px; /* 頁面大標題：問候語、登入、場域名稱、受測者管理 */
-        --fs-hero-num: 88px; /* 大數字：今日數據、進度數字 */
-        --fs-card-name: 84px; /* 測驗卡片名稱 */
-        --fs-title: 44px; /* 面板與對話框標題 */
-        --fs-lead: 32px; /* 重要內文：人員姓名、場域名稱、欄位輸入文字、影像上傳標題 */
-        --fs-button: 30px; /* 按鈕文字、導航文字、toast */
-        --fs-body: 26px; /* 一般內文、說明、欄位標籤、分段切換、搜尋框 */
-        --fs-small: 24px; /* 輔助小字：日期、編號・年齡・性別、時間、徽章、小標籤、錯誤訊息 */
+        --fs-display: max(16px, calc(72 * var(--u))); /* 頁面大標題：問候語、登入、場域名稱、受測者管理 */
+        --fs-hero-num: max(16px, calc(88 * var(--u))); /* 大數字：今日數據、進度數字 */
+        --fs-card-name: max(16px, calc(84 * var(--u))); /* 測驗卡片名稱 */
+        --fs-title: max(16px, calc(44 * var(--u))); /* 面板與對話框標題 */
+        --fs-lead: max(16px, calc(32 * var(--u))); /* 重要內文：人員姓名、場域名稱、欄位輸入文字、影像上傳標題 */
+        --fs-button: max(18px, calc(30 * var(--u))); /* 按鈕文字、導航文字、toast */
+        --fs-body: max(16px, calc(26 * var(--u))); /* 一般內文、說明、欄位標籤、分段切換、搜尋框 */
+        --fs-small: max(16px, calc(24 * var(--u))); /* 輔助小字：日期、編號・年齡・性別、時間、徽章、小標籤、錯誤訊息 */
 
-        --pad: 96px;
+        --pad: calc(96 * var(--u));
         --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
       }
@@ -104,7 +108,7 @@
       @keyframes rise {
         from {
           opacity: 0;
-          transform: translateY(40px);
+          transform: translateY(calc(40 * var(--u)));
         }
         to {
           opacity: 1;
@@ -113,7 +117,7 @@
       }
 
       /* ===== 版面：水平垂直置中 =====
-       * 內容高度：Logo 120 → 間距 32 → 標題 97 → 間距 56 → 卡片 647 = 約 952px
+       * 內容高度：Logo 120 → 間距 32 → 標題 97 → 間距 56 → 卡片 647 = 約 calc(952 * var(--u))
        * --vh：可見高度（visualViewport.height），鍵盤彈出時變小，內容在鍵盤上方重新置中
        * --vv-top：可見區域的頂部位置（iOS 鍵盤彈出時畫面可能被往上推）
        */
@@ -127,13 +131,14 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: env(safe-area-inset-top) var(--pad) env(safe-area-inset-bottom);
+        /* 左右加上 --gutter：橫式時內容置中，兩側留白 */
+        padding: env(safe-area-inset-top) calc(var(--pad) + var(--gutter)) env(safe-area-inset-bottom);
         transition: height 0.35s var(--ease-out);
       }
       /* 可見高度放不下全部內容時：改成靠上排列，並可捲動讓登入按鈕保持可見 */
       .login.is-tight {
         justify-content: flex-start;
-        padding-top: calc(24px + env(safe-area-inset-top));
+        padding-top: calc(calc(24 * var(--u)) + env(safe-area-inset-top));
         overflow-y: auto;
         scrollbar-width: none;
       }
@@ -147,10 +152,10 @@
       /* Logo：瓷白圓角方框 */
       .logo {
         display: block;
-        width: 120px;
-        height: 120px;
-        padding: 18px;
-        border-radius: 34px;
+        width: calc(120 * var(--u));
+        height: calc(120 * var(--u));
+        padding: calc(18 * var(--u));
+        border-radius: calc(34 * var(--u));
         background: var(--card);
         border: 2px solid var(--line);
         object-fit: contain;
@@ -158,8 +163,8 @@
 
       /* 標題 */
       .title {
-        margin: 32px 0 0;
-        font-size: calc(var(--fs-display) + 16px);
+        margin: calc(32 * var(--u)) 0 0;
+        font-size: max(16px, calc(var(--fs-display) + calc(16 * var(--u))));
         line-height: 1.1;
         font-weight: 600;
         text-align: center;
@@ -168,19 +173,19 @@
       /* 表單卡片 */
       .card {
         width: 100%;
-        margin-top: 56px;
-        padding: 56px;
+        margin-top: calc(56 * var(--u));
+        padding: calc(56 * var(--u));
         background: var(--card);
         border: 2px solid var(--line);
-        border-radius: 48px;
+        border-radius: calc(48 * var(--u));
       }
       .field + .field {
-        margin-top: 24px;
+        margin-top: calc(24 * var(--u));
       }
       .label {
         display: block;
-        margin-bottom: 10px;
-        font-size: var(--fs-body);
+        margin-bottom: calc(10 * var(--u));
+        font-size: max(16px, var(--fs-body));
         line-height: 1.25;
         font-weight: 700;
       }
@@ -188,8 +193,8 @@
         position: relative;
         display: flex;
         align-items: center;
-        height: 104px;
-        border-radius: 28px;
+        height: max(48px, calc(104 * var(--u))); /* 觸控目標至少 44px */
+        border-radius: calc(28 * var(--u));
         background: var(--bg);
         border: 2px solid var(--line);
         transition:
@@ -198,25 +203,25 @@
       }
       .input-wrap:focus-within {
         border-color: var(--forest);
-        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+        box-shadow: 0 0 0 calc(6 * var(--u)) rgba(31, 59, 51, 0.12);
       }
       .input-icon {
         flex: 0 0 auto;
-        margin-left: 30px;
-        font-size: calc(var(--fs-lead) * 1.125);
+        margin-left: calc(30 * var(--u));
+        font-size: max(16px, calc(var(--fs-lead) * 1.125));
         color: var(--brass-text);
       }
       .input {
         flex: 1;
         min-width: 0;
         height: 100%;
-        padding: 0 24px;
+        padding: 0 calc(24 * var(--u));
         border: none;
         outline: none;
         background: transparent;
         color: var(--ink);
         font-family: var(--font-sans);
-        font-size: var(--fs-lead);
+        font-size: max(16px, var(--fs-lead));
         user-select: text;
         -webkit-user-select: text;
       }
@@ -225,13 +230,13 @@
       }
       .eye-btn {
         flex: 0 0 auto;
-        width: 88px;
-        height: 88px;
-        margin-right: 8px;
-        border-radius: 22px;
+        width: max(44px, calc(88 * var(--u)));
+        height: max(44px, calc(88 * var(--u)));
+        margin-right: calc(8 * var(--u));
+        border-radius: calc(22 * var(--u));
         display: grid;
         place-items: center;
-        font-size: calc(var(--fs-lead) * 1.125);
+        font-size: max(18px, calc(var(--fs-lead) * 1.125));
         color: var(--muted);
       }
       .eye-btn:active {
@@ -241,9 +246,9 @@
       /* 錯誤狀態 */
       .error {
         display: none;
-        margin-top: 10px;
-        font-size: var(--fs-small);
-        line-height: 30px;
+        margin-top: calc(10 * var(--u));
+        font-size: max(16px, var(--fs-small));
+        line-height: calc(30 * var(--u));
         color: var(--danger);
         font-weight: 700;
       }
@@ -254,23 +259,23 @@
       .field.has-error .error {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: calc(8 * var(--u));
       }
 
       /* 登入按鈕 */
       .submit {
-        margin-top: 48px;
+        margin-top: calc(48 * var(--u));
         width: 100%;
-        height: 112px;
-        border-radius: 999px;
+        height: max(48px, calc(112 * var(--u)));
+        border-radius: calc(999 * var(--u));
         background: var(--forest);
         color: var(--on-forest);
-        font-size: calc(var(--fs-button) + 6px);
+        font-size: max(18px, calc(var(--fs-button) + calc(6 * var(--u))));
         font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 14px;
+        gap: calc(14 * var(--u));
         transition:
           transform 0.2s var(--ease-out),
           opacity 0.2s;
