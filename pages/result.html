@@ -1,0 +1,1315 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - SPPB 鑑測結果</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
+    />
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — SPPB 鑑測結果頁（響應式）
+       * 整頁 100dvh 直向排版：頁首｜卡片舞台（flex: 1）｜頁數圓點＋滑動提示，不捲動
+       * 頁首、底部的尺寸用 clamp(最小值, vmin, 最大值)，最大值 = iPad 13 吋直式（1032 × 1376）的尺寸
+       * 卡片內的尺寸都以 --u（= 卡片寬 ÷ 740）為單位，iPad 13 吋時 --u ≈ 1px
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --card-deep: #e6dccb; /* 圖示底 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6; /* 虛線、未選中指示點 */
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420; /* 主要文字 */
+        --muted: #6f6656; /* 次要文字 */
+        --on-forest: #f6f1e8; /* 森林綠上的文字 */
+        --faint: #8a8170; /* 單位、未選中文字 */
+        --paper: #fffdf9; /* 結果卡片底色 */
+        --chip: #fbf8f2; /* 浮在背景上的按鈕、等級卡、提示膠囊 */
+        --divider: #efe9df; /* 卡片內分隔線 */
+
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 字級：四頁共用，同一種用途用同一個變數（卡片內會依卡片寬度重新定義） */
+        --fs-display: 72px;
+        --fs-hero-num: 88px;
+        --fs-card-name: 84px;
+        --fs-title: 44px;
+        --fs-lead: 32px;
+        --fs-button: 30px;
+        --fs-body: 26px;
+        --fs-small: 24px;
+
+        /* 版面間距（iPad 13 吋直式時：上 48、左右 56、頁首與舞台 28、舞台與底部 20、底部 64 → 舞台高 960） */
+        --pad-x: clamp(16px, 5.43vmin, 56px);
+        --pad-top: clamp(14px, 4.65vmin, 48px);
+        --gap-head: clamp(10px, 2.71vmin, 28px);
+        --gap-foot: clamp(8px, 1.94vmin, 20px);
+        --pad-bottom: clamp(12px, 4.26vmin, 44px); /* 提示膠囊加高 20px，底部留白相應減少，舞台維持 960 */
+
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      /* 背景：中央稍亮的瓷白放射漸層 */
+      body {
+        background: radial-gradient(60% 60% at 50% 48%, #f6f2ea, #e6dfd2);
+        background-color: #e6dfd2;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow: hidden; /* 整頁不捲動 */
+      }
+      .serif {
+        font-family: var(--font-serif);
+        font-weight: 600;
+      }
+      /* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
+      input,
+      textarea,
+      select,
+      input::placeholder,
+      textarea::placeholder {
+        font: inherit;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      /* 所有按鈕：按下縮小到 0.96 */
+      .press {
+        transition: transform 0.2s var(--ease-out);
+      }
+      .press:active {
+        transform: scale(0.96);
+      }
+
+      /* =========================================================
+       * 整頁：直向 flex
+       * ========================================================= */
+      /* 左右邊界只加在頁首和底部；卡片舞台撐滿整個寬度（兩側露出的卡片超出畫面的部分直接裁掉，不產生捲軸） */
+      .page {
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        padding: calc(var(--pad-top) + env(safe-area-inset-top)) 0
+          calc(var(--pad-bottom) + env(safe-area-inset-bottom));
+        overflow-x: clip;
+      }
+
+      /* ===== 頁首 ===== */
+      .header {
+        position: relative;
+        z-index: 2;
+        flex: 0 0 auto;
+        padding: 0 var(--pad-x);
+        display: flex;
+        align-items: center;
+        gap: clamp(12px, 2.33vmin, 24px);
+        animation: fadeIn 0.6s var(--ease-out) both;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+      }
+      .home-btn {
+        flex: 0 0 auto;
+        width: clamp(56px, 8.53vmin, 88px);
+        height: clamp(56px, 8.53vmin, 88px);
+        border-radius: 50%;
+        background: var(--chip);
+        border: 2px solid var(--line);
+        display: grid;
+        place-items: center;
+        font-size: clamp(26px, 4.07vmin, 42px);
+      }
+      /* 從測驗完成進入時：膠囊按鈕「‹ 受測名單」 */
+      .back-pill {
+        flex: 0 0 auto;
+        height: clamp(56px, 8.53vmin, 88px);
+        padding: 0 clamp(18px, 3.1vmin, 32px) 0 clamp(12px, 1.94vmin, 20px);
+        border-radius: 999px;
+        background: var(--chip);
+        border: 2px solid var(--line);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: clamp(17px, 2.9vmin, 30px);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .back-pill i {
+        font-size: clamp(24px, 3.88vmin, 40px);
+      }
+      .who {
+        min-width: 0;
+        flex: 0 1 auto;
+      }
+      .who-name {
+        margin: 0;
+        font-size: clamp(26px, 5.43vmin, 56px);
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .who-date {
+        margin-top: 2px;
+        font-size: clamp(14px, 2.33vmin, 24px);
+        line-height: 1.3;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .who-date b {
+        margin-left: 0.5em;
+        font-weight: 700;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      /* VIVIFRAIL 等級 */
+      .vivi {
+        flex: 0 0 auto;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: clamp(10px, 1.94vmin, 20px);
+        padding: clamp(8px, 1.36vmin, 14px) clamp(8px, 1.36vmin, 14px)
+          clamp(8px, 1.36vmin, 14px) clamp(14px, 2.91vmin, 30px);
+        border-radius: clamp(20px, 3.1vmin, 32px);
+        background: var(--chip);
+        border: clamp(3px, 0.39vmin, 4px) solid var(--level);
+      }
+      .vivi-k {
+        font-size: clamp(12px, 1.94vmin, 20px);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .vivi-v {
+        font-size: clamp(16px, 2.91vmin, 30px);
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+      .vivi-letter {
+        flex: 0 0 auto;
+        width: clamp(44px, 8.14vmin, 84px);
+        height: clamp(44px, 8.14vmin, 84px);
+        border-radius: clamp(12px, 2.13vmin, 22px);
+        background: var(--level);
+        color: var(--letter, #fff);
+        display: grid;
+        place-items: center;
+        font-size: clamp(26px, 4.84vmin, 50px);
+        font-weight: 700;
+        line-height: 1;
+      }
+      /* 窄螢幕：頁首改成兩列，第二列是撐滿寬度的 VIVIFRAIL 等級卡 */
+      @media (max-width: 599px) {
+        .header {
+          flex-wrap: wrap;
+          row-gap: 10px;
+        }
+        .vivi {
+          order: 3;
+          flex: 1 0 100%;
+          margin-left: 0;
+          justify-content: space-between;
+        }
+      }
+
+      /* =========================================================
+       * 卡片舞台：輪迴卡片輪播（--card-w、--card-h 由 JS 依舞台大小設定）
+       * ========================================================= */
+      .stage {
+        --card-w: 740px;
+        --card-h: 940px;
+        --u: calc(var(--card-w) / 740);
+        position: relative;
+        z-index: 1;
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-top: var(--gap-head);
+        perspective: calc(var(--card-w) * 2.973);
+        touch-action: none;
+      }
+      .card {
+        /* 卡片內的字級依卡片寬度縮放 */
+        --fs-small: calc(24 * var(--u));
+        --fs-body: calc(26 * var(--u));
+        --fs-button: calc(30 * var(--u));
+        --fs-lead: calc(32 * var(--u));
+        position: absolute;
+        left: calc(50% - var(--card-w) / 2);
+        top: 0;
+        width: var(--card-w);
+        height: var(--card-h);
+        padding: calc(40 * var(--u)) calc(44 * var(--u));
+        display: flex;
+        flex-direction: column;
+        background: var(--paper);
+        border-radius: calc(48 * var(--u));
+        box-shadow:
+          0 0 0 calc(2 * var(--u)) rgba(176, 141, 87, 0.35),
+          0 calc(36 * var(--u)) calc(70 * var(--u)) rgba(60, 45, 25, 0.2);
+        transform-origin: 50% 50%;
+        transition:
+          transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.7s,
+          filter 0.7s;
+        will-change: transform, opacity;
+      }
+      .stage.is-dragging .card,
+      .stage.no-anim .card {
+        transition: none !important;
+      }
+      .card.is-side {
+        cursor: pointer;
+      }
+      .card-head {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: baseline;
+        gap: calc(14 * var(--u));
+        white-space: nowrap;
+      }
+      .card-title {
+        margin: 0;
+        font-size: calc(46 * var(--u));
+        line-height: 1.2;
+      }
+      .card-kind {
+        font-size: calc(28 * var(--u));
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .sub {
+        margin-top: calc(18 * var(--u));
+        font-size: var(--fs-body);
+        font-weight: 700;
+        color: var(--muted);
+      }
+
+      /* 卡片 1：跌倒風險半圓圖 */
+      .gauge {
+        display: block;
+        width: calc(650 * var(--u));
+        margin: calc(6 * var(--u)) auto 0;
+      }
+      .gauge-text {
+        text-align: center;
+        font-size: var(--fs-lead);
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .risk {
+        margin-top: calc(18 * var(--u));
+        display: flex;
+        align-items: center;
+        gap: calc(18 * var(--u));
+        padding: calc(20 * var(--u)) calc(28 * var(--u));
+        border-radius: calc(28 * var(--u));
+        background: var(--risk-bg);
+        border: calc(3 * var(--u)) solid var(--risk-border);
+        color: var(--risk-text);
+      }
+      .risk-dot {
+        flex: 0 0 auto;
+        width: calc(22 * var(--u));
+        height: calc(22 * var(--u));
+        border-radius: 50%;
+        background: var(--risk-arc);
+      }
+      .risk-title {
+        font-size: var(--fs-lead);
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .risk-desc {
+        font-size: var(--fs-body);
+        line-height: 1.4;
+      }
+      .split {
+        margin-top: auto;
+        padding-top: calc(24 * var(--u));
+        border-top: calc(2 * var(--u)) solid var(--divider);
+        display: grid;
+        grid-template-columns: 1fr calc(2 * var(--u)) 1fr;
+        align-items: center;
+        text-align: center;
+      }
+      .split-line {
+        align-self: stretch;
+        background: var(--divider);
+      }
+      .big {
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .big-score {
+        font-size: calc(100 * var(--u));
+      }
+      .big-of {
+        font-size: calc(36 * var(--u));
+        font-weight: 700;
+        color: var(--faint);
+      }
+      .big-peer {
+        font-size: calc(90 * var(--u));
+        color: var(--brass);
+      }
+      .split-k {
+        margin-top: calc(8 * var(--u));
+        font-size: var(--fs-small);
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--muted);
+      }
+      .split-k.ink {
+        color: var(--ink);
+      }
+
+      /* 卡片 2：雷達圖＋三項分數 */
+      .radar {
+        display: block;
+        width: calc(520 * var(--u));
+        margin: calc(14 * var(--u)) auto 0;
+      }
+      .total {
+        margin-top: calc(6 * var(--u));
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: calc(18 * var(--u));
+      }
+      .total .big {
+        font-size: calc(110 * var(--u));
+      }
+      .total .big small {
+        font-size: 0.4em;
+        color: var(--faint);
+      }
+      .total-k {
+        font-size: var(--fs-body);
+        color: var(--muted);
+      }
+      .rows {
+        margin-top: auto;
+      }
+      .item-row {
+        display: flex;
+        align-items: center;
+        gap: calc(24 * var(--u));
+        padding: calc(20 * var(--u)) 0;
+        border-top: calc(2 * var(--u)) solid var(--divider);
+      }
+      .item-ico {
+        flex: 0 0 auto;
+        width: calc(72 * var(--u));
+        height: calc(72 * var(--u));
+        border-radius: calc(22 * var(--u));
+        background: var(--forest);
+        color: #d9b77a;
+        display: grid;
+        place-items: center;
+        font-size: calc(38 * var(--u));
+      }
+      .item-name {
+        flex: 1;
+        font-size: var(--fs-lead);
+        font-weight: 700;
+      }
+      .item-score {
+        font-size: calc(64 * var(--u));
+        line-height: 1;
+        color: var(--forest);
+      }
+      .item-score small {
+        margin-left: calc(4 * var(--u));
+        font-family: var(--font-sans);
+        font-size: var(--fs-body);
+        font-weight: 700;
+        color: var(--faint);
+      }
+
+      /* 卡片 3：測量數據 */
+      .measure {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: calc(24 * var(--u));
+        padding: calc(30 * var(--u)) 0;
+      }
+      .measure + .measure {
+        border-top: calc(2 * var(--u)) solid var(--divider);
+      }
+      .measure-k {
+        font-size: calc(36 * var(--u));
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .measure-v {
+        font-size: calc(80 * var(--u));
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .measure-v small {
+        margin-left: calc(8 * var(--u));
+        font-family: var(--font-sans);
+        font-size: var(--fs-button);
+        font-weight: 700;
+        color: var(--brass-text);
+      }
+
+      /* =========================================================
+       * 底部：頁數圓點＋滑動提示膠囊
+       * ========================================================= */
+      .pager {
+        position: relative;
+        z-index: 2;
+        flex: 0 0 auto;
+        margin-top: var(--gap-foot);
+        padding: 0 var(--pad-x);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        animation: fadeIn 0.6s 0.2s var(--ease-out) both;
+      }
+      .dots {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+      }
+      /* 圓點本身 16px；用透明的 ::after 把可點擊範圍擴大到 44 × 44 */
+      .dot {
+        position: relative;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: #cfc5b4;
+        transition:
+          width 0.4s var(--ease-spring),
+          background 0.4s var(--ease-spring);
+      }
+      .dot::after {
+        content: "";
+        position: absolute;
+        inset: -14px;
+      }
+      .dot.is-active {
+        width: 48px;
+        background: var(--forest);
+      }
+      /* 滑動提示膠囊：一直顯示（iPad 13 吋：高 100、左右內距 44、文字 38、圖示 48） */
+      .hint {
+        --hint-shadow: 0 12px 28px rgba(31, 59, 51, 0.28);
+        height: clamp(60px, 9.69vmin, 100px);
+        padding: 0 clamp(24px, 4.26vmin, 44px);
+        border-radius: 999px;
+        background: var(--forest);
+        box-shadow: var(--hint-shadow);
+        display: flex;
+        align-items: center;
+        gap: clamp(10px, 1.74vmin, 18px);
+        font-size: clamp(20px, 3.68vmin, 38px);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--on-forest);
+        white-space: nowrap;
+      }
+      .hint i {
+        font-size: clamp(28px, 4.65vmin, 48px);
+        line-height: 1;
+        letter-spacing: 0;
+        color: #d9b77a;
+      }
+      .hint .hand {
+        animation: sway 1.2s ease-in-out infinite alternate;
+      }
+      .hint .to-left {
+        animation: nudgeLeft 0.9s ease-in-out infinite alternate;
+      }
+      .hint .to-right {
+        animation: nudgeRight 0.9s ease-in-out infinite alternate;
+      }
+      /* 手指左右擺動（2.4s 一個來回，位移約 14px） */
+      @keyframes sway {
+        from {
+          transform: translateX(-7px) rotate(-8deg);
+        }
+        to {
+          transform: translateX(7px) rotate(8deg);
+        }
+      }
+      /* 雙箭頭往外晃動（1.8s 一個循環，位移 12px） */
+      @keyframes nudgeLeft {
+        from {
+          transform: translateX(0);
+          opacity: 0.5;
+        }
+        to {
+          transform: translateX(-12px);
+          opacity: 1;
+        }
+      }
+      @keyframes nudgeRight {
+        from {
+          transform: translateX(0);
+          opacity: 0.5;
+        }
+        to {
+          transform: translateX(12px);
+          opacity: 1;
+        }
+      }
+
+      /* ===== 提示訊息 ===== */
+      .toast {
+        position: fixed;
+        left: 50%;
+        top: calc(36px + env(safe-area-inset-top));
+        transform: translate(-50%, -24px);
+        padding: 22px 40px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: clamp(17px, 2.9vmin, 30px);
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.35s var(--ease-spring);
+        z-index: 600;
+        white-space: nowrap;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      /* 減少動態：不做 3D 旋轉，只顯示目前這一張，換頁淡入淡出 0.2s；提示不晃動 */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+        .hint i {
+          animation: none !important;
+        }
+        .card {
+          transition: opacity 0.2s !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page" id="page" hidden>
+      <!-- 頁首：返回、受測者、VIVIFRAIL 等級 -->
+      <header class="header">
+        <button class="home-btn press" id="homeBtn" type="button" aria-label="回首頁">
+          <i class="ti ti-home"></i>
+        </button>
+        <button class="back-pill press" id="backBtn" type="button" hidden>
+          <i class="ti ti-chevron-left"></i>受測名單
+        </button>
+        <div class="who">
+          <h1 class="who-name serif" id="whoName"></h1>
+          <div class="who-date">檢測日期<b id="whoDate"></b></div>
+        </div>
+        <div class="vivi" id="vivi">
+          <div>
+            <div class="vivi-k">VIVIFRAIL 等級</div>
+            <div class="vivi-v" id="viviText"></div>
+          </div>
+          <div class="vivi-letter" id="viviLetter"></div>
+        </div>
+      </header>
+
+      <!-- 卡片舞台：三張排成一圈 -->
+      <main class="stage" id="stage" aria-roledescription="輪播">
+        <!-- 卡片 1：結果總覽 -->
+        <section class="card" data-i="0" aria-label="結果總覽">
+          <div class="card-head">
+            <h2 class="card-title serif">結果總覽</h2>
+          </div>
+          <div class="sub">跌倒風險評估</div>
+          <svg class="gauge" id="gauge" viewBox="0 0 760 420" role="img" aria-label="跌倒風險半圓圖"></svg>
+          <div class="gauge-text" id="gaugeText"></div>
+          <div class="risk" id="risk">
+            <span class="risk-dot"></span>
+            <div>
+              <div class="risk-title" id="riskTitle"></div>
+              <div class="risk-desc" id="riskDesc"></div>
+            </div>
+          </div>
+          <div class="split">
+            <div>
+              <div class="big"><span class="big-score serif" id="score1"></span><span class="big-of"> /12</span></div>
+              <div class="split-k">滿分 12 分</div>
+            </div>
+            <span class="split-line"></span>
+            <div>
+              <div class="big big-peer serif" id="peer"></div>
+              <div class="split-k ink">優於同齡長者</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 卡片 2：詳細數據 · 圖表 -->
+        <section class="card" data-i="1" aria-label="詳細數據 圖表">
+          <div class="card-head">
+            <h2 class="card-title serif">詳細數據</h2>
+            <span class="card-kind">· 圖表</span>
+          </div>
+          <svg class="radar" id="radar" viewBox="0 0 520 320" role="img" aria-label="三項分數雷達圖"></svg>
+          <div class="total">
+            <div class="big serif" id="score2"></div>
+            <div class="total-k">滿分 12 分</div>
+          </div>
+          <div class="rows" id="itemRows"></div>
+        </section>
+
+        <!-- 卡片 3：詳細數據 · 數據 -->
+        <section class="card" data-i="2" aria-label="詳細數據 數據">
+          <div class="card-head">
+            <h2 class="card-title serif">詳細數據</h2>
+            <span class="card-kind">· 數據</span>
+          </div>
+          <div class="sub">測量數據</div>
+          <div id="measures"></div>
+        </section>
+      </main>
+
+      <!-- 底部：頁數圓點＋滑動提示 -->
+      <nav class="pager" aria-label="頁面切換">
+        <div class="dots" id="dots" role="tablist"></div>
+        <div class="hint" id="hint" aria-hidden="true">
+          <i class="ti ti-hand-finger hand"></i>
+          <i class="ti ti-chevrons-left chev to-left"></i>左右滑動查看<i class="ti ti-chevrons-right chev to-right"></i>
+        </div>
+      </nav>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      /* =========================================================
+       * 設定區：受測人員、鑑測紀錄與其他頁重複，之後改成共用設定或 API
+       * ========================================================= */
+      const CONFIG = {
+        subjects: [
+          {
+            id: "s001",
+            code: "A001",
+            name: "林淑芬",
+            birth: "1948-03-12",
+            gender: "女",
+            source: "import",
+            done: { sppb: "14:05" },
+          },
+          {
+            id: "s002",
+            code: "A002",
+            name: "王小明",
+            birth: "1954-07-21",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s003",
+            code: "A003",
+            name: "陳美玉",
+            birth: "1945-01-30",
+            gender: "女",
+            source: "import",
+            done: { sppb: "13:52" },
+          },
+          {
+            id: "s004",
+            code: "A004",
+            name: "張志明",
+            birth: "1957-05-08",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+        ],
+
+        // 鑑測紀錄（假資料）：{ id, subjectId, test, date, time, retest }
+        // date 依今天往前推算；今天這 12 筆與 roster.html 已完成 SPPB 的人員和時間相同
+        // retest：同一個人同一天同一項測驗的第二次
+        // 假資料階段：同一份紀錄套用到每個場域
+        // TODO：之後改成依場域從 API 取得，例如 fetch(`/api/fields/${field.id}/records`)
+        records: [
+          // 今天：與名單頁已完成 SPPB 的 2 位相同（同一人、同時間）
+          { id: "r001", subjectId: "s001", test: "sppb", date: daysAgo(0), time: "14:05" },
+          { id: "r002", subjectId: "s003", test: "sppb", date: daysAgo(0), time: "13:52" },
+          // 過去 60 天
+          { id: "r101", subjectId: "s002", test: "gait", date: daysAgo(1), time: "15:20" },
+          { id: "r102", subjectId: "s004", test: "sppb", date: daysAgo(3), time: "10:40" },
+          { id: "r103", subjectId: "s004", test: "sppb", date: daysAgo(3), time: "11:05", retest: true },
+          { id: "r104", subjectId: "s001", test: "gait", date: daysAgo(9), time: "09:30" },
+          { id: "r105", subjectId: "s003", test: "gait", date: daysAgo(17), time: "14:15" },
+          { id: "r106", subjectId: "s002", test: "sppb", date: daysAgo(26), time: "10:10" },
+          { id: "r107", subjectId: "s001", test: "sppb", date: daysAgo(40), time: "13:45" },
+          { id: "r108", subjectId: "s003", test: "sppb", date: daysAgo(55), time: "11:20" },
+        ],
+      };
+
+      // 鑑測結果（假資料）
+      // TODO：之後依紀錄從 API 取得，例如 fetch(`/api/records/${record.id}/result`)
+      const RESULT = {
+        score: 9, // SPPB 總分 0～12
+        peer: 50, // 優於同齡長者 %
+        items: { balance: 3, chair: 3, walk: 3 }, // 三項分數 0～4
+        measures: [
+          { label: "步行速度", value: "4.82", unit: "秒" },
+          { label: "五次起坐測試", value: "12.5", unit: "秒" },
+          { label: "並排站立", value: "10", unit: "秒" },
+          { label: "半並排站立", value: "10", unit: "秒" },
+          { label: "直線站立", value: "10", unit: "秒" },
+        ],
+      };
+
+      /* 固定的分級規則（文字和顏色不可更改）；min～max 為各等級的分數區間 */
+      const RISK_LEVELS = [
+        { key: "danger", min: 0, max: 2, name: "危險", arc: "#ff5757", bg: "#fef2f2", border: "#fca5a5", text: "#b91c1c", desc: "目前跌倒風險偏高，請特別注意" },
+        { key: "high", min: 3, max: 5, name: "高風險", arc: "#ffa203", bg: "#fff7ed", border: "#fdba74", text: "#c2410c", desc: "跌倒風險較高，建議積極改善" },
+        { key: "mid", min: 6, max: 8, name: "中度風險", arc: "#ffd039", bg: "#fefce8", border: "#fde047", text: "#854d0e", desc: "跌倒風險中等，持續關注為佳" },
+        { key: "low", min: 9, max: 11, name: "稍低風險", arc: "#8cff00", bg: "#f7fee7", border: "#bef264", text: "#3f6212", desc: "跌倒風險稍低，狀況良好" },
+        { key: "vlow", min: 12, max: 12, name: "低風險", arc: "#4ffa00", bg: "#f0fdf4", border: "#86efac", text: "#166534", desc: "跌倒風險低，體能表現優異" },
+      ];
+      const VIVIFRAIL = [
+        { letter: "A", max: 3, text: "A級 (失能者)", color: "#DC3545" },
+        { letter: "B", max: 6, text: "B級 (衰弱者)", color: "#FFC107", letterColor: "#3a2a00" }, // 黃底用深色字母
+        { letter: "C", max: 9, text: "C級 (衰弱前期者)", color: "#0D6EFD" },
+        { letter: "D", max: 12, text: "D級 (健康者)", color: "#198754" },
+      ];
+      const riskOf = (score) => RISK_LEVELS.find((l) => score <= l.max);
+      const viviOf = (score) => VIVIFRAIL.find((l) => score <= l.max);
+
+      const PAGES = ["總覽", "圖表", "數據"]; // 頁數圓點的 aria-label
+
+      /* =========================================================
+       * 共用功能
+       * ========================================================= */
+      const $ = (sel) => document.querySelector(sel);
+      const esc = (s) =>
+        String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      let toastTimer;
+      function showToast(msg) {
+        const el = $("#toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+      }
+      const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function isoOf(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      // 依今天往前推 n 天（"YYYY-MM-DD"），CONFIG.records 使用
+      function daysAgo(n) {
+        const d = new Date();
+        d.setDate(d.getDate() - n);
+        return isoOf(d);
+      }
+
+      /* =========================================================
+       * 資料（sessionStorage，關閉分頁即清除；讀取都包 try/catch）
+       * kf.records.<fieldId>：測驗頁完成 SPPB 時新增的紀錄
+       * kf.subjects.<fieldId>：{ added, done, edits }（與其他頁共用）
+       * ========================================================= */
+      function readJSON(key) {
+        try {
+          return JSON.parse(sessionStorage.getItem(key));
+        } catch (e) {
+          return null;
+        }
+      }
+      // 場域：kf.currentField（不論日期）→ kf.recentFields 第一筆
+      function currentFieldId() {
+        const cur = readJSON("kf.currentField");
+        if (cur?.id) return cur.id;
+        const recent = readJSON("kf.recentFields");
+        return Array.isArray(recent) && recent[0] ? recent[0].id || recent[0] : null;
+      }
+      // 所有紀錄：CONFIG.records ＋ sessionStorage 中所有 kf.records.*
+      function allRecords() {
+        const list = [...CONFIG.records];
+        try {
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (!key || !key.startsWith("kf.records.")) continue;
+            const v = readJSON(key);
+            if (Array.isArray(v)) list.push(...v);
+          }
+        } catch (e) {}
+        return list;
+      }
+      // 受測者：後台匯入或現場新增，並套用 edits
+      function findSubject(record) {
+        const fid = record?.fieldId || currentFieldId();
+        const local = fid ? readJSON(`kf.subjects.${fid}`) : null;
+        const id = record?.subjectId;
+        const base =
+          (id ? CONFIG.subjects.find((s) => s.id === id) : CONFIG.subjects[0]) ||
+          (Array.isArray(local?.added) ? local.added.find((s) => s.id === id) : null);
+        if (!base) return null;
+        const e = local?.edits?.[base.id];
+        return e ? { ...base, name: e.name ?? base.name, gender: e.gender ?? base.gender, birth: e.birth ?? base.birth } : base;
+      }
+      const honorific = (s) => `${s.name} ${s.gender === "女" ? "女士" : "先生"}`;
+
+      /* =========================================================
+       * 圖表（SVG）
+       * ========================================================= */
+      const pt = (cx, cy, r, deg) => [cx + r * Math.cos((deg * Math.PI) / 180), cy - r * Math.sin((deg * Math.PI) / 180)];
+
+      /* 跌倒風險半圓圖：圓心 (380, 340)、半徑 300、線寬 76
+       * 五段等寬（每段 36°），由左到右：低風險、稍低、中度、高風險、危險，段與段之間留小縫
+       * 指針在所屬等級的那一段裡依分數換算位置：
+       *   區間只有 1 個分數 → 段的正中央；3 個分數 → 段內 1/6、3/6、5/6，分數越高越靠左 */
+      const SEG_ORDER = ["vlow", "low", "mid", "high", "danger"]; // 由左到右
+      function needleAngle(score) {
+        const level = riskOf(score);
+        const k = SEG_ORDER.indexOf(level.key);
+        const count = level.max - level.min + 1;
+        const slot = level.max - score; // 0 = 最高分（最靠左）
+        const f = (2 * slot + 1) / (2 * count); // 段內位置（由左算起）
+        return 180 - 36 * k - 36 * f;
+      }
+      function drawGauge(score) {
+        const cx = 380, cy = 340, R = 300, GAP = 0.9; // GAP：每段兩端各留的縫（度）
+        let html = "";
+        SEG_ORDER.forEach((key, k) => {
+          const l = RISK_LEVELS.find((x) => x.key === key);
+          const a1 = 180 - 36 * k - (k > 0 ? GAP : 0); // 左端
+          const a0 = 180 - 36 * (k + 1) + (k < 4 ? GAP : 0); // 右端
+          const [x1, y1] = pt(cx, cy, R, a1);
+          const [x0, y0] = pt(cx, cy, R, a0);
+          html += `<path data-level="${key}" d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${R} ${R} 0 0 1 ${x0.toFixed(1)} ${y0.toFixed(1)}" fill="none" stroke="${l.arc}" stroke-width="76" />`;
+        });
+        const ang = needleAngle(score);
+        const [nx, ny] = pt(cx, cy, 230, ang);
+        html += `<line data-angle="${ang}" x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1a2420" stroke-width="10" stroke-linecap="round" />`;
+        html += `<circle cx="${cx}" cy="${cy}" r="11" fill="#1a2420" /><circle cx="${cx}" cy="${cy}" r="5" fill="#fff" />`;
+        $("#gauge").innerHTML = html;
+      }
+
+      /* 雷達圖：平衡（上）、起坐（右下）、步行（左下），最大值 4，四層三角形格線 */
+      function drawRadar(items) {
+        const cx = 260, cy = 212, R = 196;
+        const axes = [
+          { key: "balance", deg: 90 },
+          { key: "chair", deg: -30 },
+          { key: "walk", deg: 210 },
+        ];
+        const poly = (r) => axes.map((a) => pt(cx, cy, r, a.deg).map((v) => v.toFixed(1)).join(",")).join(" ");
+        let html = "";
+        for (let k = 1; k <= 4; k++) html += `<polygon points="${poly((R * k) / 4)}" fill="none" stroke="rgba(31,59,51,0.16)" stroke-width="2" />`;
+        axes.forEach((a) => {
+          const [x, y] = pt(cx, cy, R, a.deg);
+          html += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(31,59,51,0.16)" stroke-width="2" />`;
+        });
+        const data = axes.map((a) => pt(cx, cy, (R * Math.max(0, Math.min(4, items[a.key]))) / 4, a.deg));
+        html += `<polygon points="${data.map((p) => p.map((v) => v.toFixed(1)).join(",")).join(" ")}" fill="rgba(31,59,51,0.14)" stroke="#1f3b33" stroke-width="5" stroke-linejoin="round" />`;
+        data.forEach(([x, y]) => (html += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="#b08d57" stroke="#1f3b33" stroke-width="3" />`));
+        $("#radar").innerHTML = html;
+      }
+
+      /* =========================================================
+       * 填入內容
+       * ========================================================= */
+      function renderResult(subject, date) {
+        const { score } = RESULT;
+        $("#whoName").textContent = honorific(subject);
+        $("#whoDate").textContent = date;
+
+        const v = viviOf(score);
+        const vivi = $("#vivi");
+        vivi.style.setProperty("--level", v.color);
+        vivi.style.setProperty("--letter", v.letterColor || "#fff");
+        $("#viviText").textContent = v.text;
+        $("#viviLetter").textContent = v.letter;
+
+        const r = riskOf(score);
+        drawGauge(score);
+        $("#gaugeText").textContent = `風險等級：${r.name}`;
+        const risk = $("#risk");
+        risk.style.setProperty("--risk-bg", r.bg);
+        risk.style.setProperty("--risk-border", r.border);
+        risk.style.setProperty("--risk-text", r.text);
+        risk.style.setProperty("--risk-arc", r.arc);
+        risk.dataset.level = r.key;
+        $("#riskTitle").textContent = `目前風險等級：${r.name}`;
+        $("#riskDesc").textContent = r.desc;
+        $("#score1").textContent = score;
+        $("#peer").textContent = `${RESULT.peer}%`;
+
+        drawRadar(RESULT.items);
+        $("#score2").innerHTML = `${score} <small>/12</small>`;
+        const ITEMS = [
+          { key: "balance", name: "平衡", icon: "ti-stretching" },
+          { key: "chair", name: "起坐", icon: "ti-armchair" },
+          { key: "walk", name: "步行", icon: "ti-walk" },
+        ];
+        $("#itemRows").innerHTML = ITEMS.map(
+          (it) => `
+          <div class="item-row">
+            <span class="item-ico"><i class="ti ${it.icon}"></i></span>
+            <span class="item-name">${it.name}</span>
+            <span class="item-score serif">${RESULT.items[it.key]}<small>/4</small></span>
+          </div>`,
+        ).join("");
+
+        $("#measures").innerHTML = RESULT.measures
+          .map(
+            (m) => `
+          <div class="measure">
+            <span class="measure-k">${esc(m.label)}</span>
+            <span class="measure-v serif">${esc(m.value)}<small>${esc(m.unit)}</small></span>
+          </div>`,
+          )
+          .join("");
+      }
+
+
+      /* =========================================================
+       * 輪迴卡片輪播
+       * pos：連續的位置（每轉一張 ±1，可以一直累加）；目前頁 = pos 除以 3 的餘數
+       * d：卡片與目前頁的距離，以三張為一圈換算到 −1.5～1.5（停住時是 −1、0、1）
+       * 位移跟卡片寬度 W 連動：translateX = d × W × 0.81；translateZ = −min(|d|, 1.5) × W × 0.51
+       * ========================================================= */
+      const stage = $("#stage");
+      const cards = [...document.querySelectorAll(".card")];
+      const N = cards.length;
+      const C = { pos: 0, W: 740 };
+      const lastD = cards.map(() => null); // 上一次「停住」時的位置（拖曳中不更新），用來判斷誰要「繞到另一側」
+      const mod = (n, m) => ((n % m) + m) % m;
+      const indexOf = (pos) => mod(Math.round(pos), N);
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      const distance = (i, pos) => {
+        const d = i - pos;
+        return d - N * Math.round(d / N);
+      };
+
+      // 依舞台大小計算卡片：高 = 舞台高 × 0.98；寬 = min(舞台寬 × 0.72, 卡片高 × 0.79)
+      function measure() {
+        const w = stage.clientWidth;
+        const h = stage.clientHeight;
+        const ch = h * 0.98;
+        const cw = Math.min(w * 0.72, ch * 0.79);
+        C.W = cw;
+        stage.style.setProperty("--card-w", `${cw}px`);
+        stage.style.setProperty("--card-h", `${ch}px`);
+      }
+
+      function placeCard(card, d) {
+        const ad = Math.abs(d);
+        card.style.transform = `translateX(${d * C.W * 0.81}px) translateZ(${-Math.min(ad, 1.5) * C.W * 0.51}px) rotateY(${-clamp(d, -1.4, 1.4) * 42}deg)`;
+        card.style.opacity = ad > 1.45 ? 0 : 1 - Math.min(ad, 1) * 0.3;
+        card.style.filter = `brightness(${1 - Math.min(ad, 1) * 0.06})`;
+        card.style.zIndex = String(100 - Math.round(ad * 10)); // 越靠近中間越高
+        card.style.pointerEvents = ad > 1.45 ? "none" : "auto";
+        card.classList.toggle("is-side", Math.round(ad) === 1);
+      }
+
+      // settle：換頁定位（套用過場）；拖曳中只即時跟手
+      function layout(pos, settle = false) {
+        const current = indexOf(pos);
+        cards.forEach((card, i) => {
+          card.setAttribute("aria-hidden", i !== current);
+          if (REDUCED) {
+            // 減少動態：不做 3D 旋轉，只顯示目前這一張
+            card.style.transform = "none";
+            card.style.filter = "none";
+            card.style.opacity = i === current ? 1 : 0;
+            card.style.zIndex = i === current ? 2 : 1;
+            card.style.pointerEvents = i === current ? "auto" : "none";
+            return;
+          }
+          const d = distance(i, pos);
+          // 從一側繞到另一側的卡片：不要橫越中央，先直接放到新位置並透明，再淡入
+          if (settle && lastD[i] !== null && Math.abs(d - lastD[i]) > 1.5) {
+            card.style.transition = "none";
+            placeCard(card, d);
+            card.style.opacity = 0;
+            void card.offsetWidth;
+            card.style.transition = "opacity 0.5s 0.2s";
+            card.style.opacity = 1 - Math.min(Math.abs(d), 1) * 0.3;
+            clearTimeout(card._t);
+            card._t = setTimeout(() => (card.style.transition = ""), 750);
+          } else {
+            placeCard(card, d);
+          }
+          if (settle || lastD[i] === null) lastD[i] = d;
+        });
+      }
+
+      function renderDots() {
+        const i = indexOf(C.pos);
+        document.querySelectorAll(".dot").forEach((t, k) => {
+          t.classList.toggle("is-active", k === i);
+          t.setAttribute("aria-selected", k === i);
+        });
+      }
+
+      /* =========================================================
+       * 閒置提醒：6 秒沒有操作（拖曳、點擊、按鍵）時播放一次，之後每 8 秒重複；一操作就停止並重新計時
+       * 卡片：一起往左偏移卡片寬度的 6% 再彈回（用 translate 屬性疊加，不動到目前頁和原本的 transform）
+       * 提示膠囊：放大到 1.06 倍再恢復，外圍金色光暈往外擴散一次
+       * 減少動態：只播放光暈
+       * ========================================================= */
+      const IDLE = { first: 6000, repeat: 8000, timer: null, anims: [] };
+      function playNudge() {
+        stopNudge();
+        const hint = $("#hint");
+        const base = getComputedStyle(hint).getPropertyValue("--hint-shadow").trim();
+        IDLE.anims.push(
+          hint.animate(
+            [
+              { boxShadow: `${base}, 0 0 0 0 rgba(217, 183, 122, 0.6)` },
+              { boxShadow: `${base}, 0 0 0 28px rgba(217, 183, 122, 0)` },
+            ],
+            { duration: 1100, easing: "ease-out" },
+          ),
+        );
+        if (!REDUCED) {
+          IDLE.anims.push(
+            hint.animate([{ scale: 1 }, { scale: 1.06, offset: 0.4 }, { scale: 1 }], { duration: 900, easing: "ease-in-out" }),
+          );
+          const dx = -C.W * 0.06;
+          cards.forEach((card) =>
+            IDLE.anims.push(
+              card.animate(
+                [
+                  { translate: "0 0" },
+                  { translate: `${dx}px 0`, offset: 0.35, easing: "cubic-bezier(0.34, 1.4, 0.64, 1)" },
+                  { translate: "0 0" },
+                ],
+                { duration: 900, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+              ),
+            ),
+          );
+        }
+        IDLE.timer = setTimeout(playNudge, IDLE.repeat);
+      }
+      function stopNudge() {
+        IDLE.anims.forEach((a) => a.cancel());
+        IDLE.anims = [];
+      }
+      // 有操作：立刻停止提醒動畫並重新計時
+      function resetIdle() {
+        stopNudge();
+        clearTimeout(IDLE.timer);
+        IDLE.timer = setTimeout(playNudge, IDLE.first);
+      }
+
+      // step：往右轉一張 +1（顯示右邊那張）、往左轉一張 −1、0 = 彈回
+      function turn(step) {
+        C.pos = Math.round(C.pos) + step;
+        layout(C.pos, true);
+        renderDots();
+      }
+      // 頁數圓點：走最短的方向（三張一圈，最多轉一張）
+      function goToPage(k) {
+        turn(mod(k - indexOf(C.pos) + 1, N) - 1); // −1、0、1
+      }
+
+      function initCarousel() {
+        $("#dots").innerHTML = PAGES.map(
+          (name, k) => `<button class="dot" type="button" role="tab" data-i="${k}" aria-label="${name}"></button>`,
+        ).join("");
+        $("#dots").addEventListener("click", (e) => {
+          const b = e.target.closest(".dot");
+          if (b) goToPage(Number(b.dataset.i));
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowRight") turn(1);
+          if (e.key === "ArrowLeft") turn(-1);
+        });
+
+        // 左右拖曳：跟著手指即時轉動，左右都沒有阻力；放開時超過卡片寬度 16% 就往該方向轉一張，否則彈回
+        let drag = null;
+        let suppressClick = false;
+        stage.addEventListener("pointerdown", (e) => {
+          drag = { x: e.clientX, dx: 0, moved: false, id: e.pointerId };
+        });
+        stage.addEventListener("pointermove", (e) => {
+          if (!drag || e.pointerId !== drag.id) return;
+          const dx = e.clientX - drag.x;
+          if (!drag.moved && Math.abs(dx) < 8) return;
+          if (!drag.moved) {
+            drag.moved = true;
+            stage.setPointerCapture(e.pointerId);
+            stage.classList.add("is-dragging");
+            cards.forEach((c) => (c.style.transition = "")); // 拖曳中不套用任何過場
+          }
+          drag.dx = dx;
+          if (!REDUCED) layout(C.pos - dx / (C.W * 0.81));
+        });
+        const end = () => {
+          if (!drag) return;
+          const { dx, moved } = drag;
+          drag = null;
+          stage.classList.remove("is-dragging");
+          if (!moved) return;
+          suppressClick = true; // 拖曳後的放開不算點擊
+          setTimeout(() => (suppressClick = false), 0);
+          const threshold = C.W * 0.16;
+          if (dx < -threshold) turn(1); // 往左滑：轉到右邊那張
+          else if (dx > threshold) turn(-1); // 往右滑：轉到左邊那張
+          else turn(0); // 彈回原位
+        };
+        stage.addEventListener("pointerup", end);
+        stage.addEventListener("pointercancel", end);
+
+        // 點兩側露出的卡片：轉到那一張
+        stage.addEventListener("click", (e) => {
+          if (suppressClick) return;
+          const card = e.target.closest(".card");
+          if (!card) return;
+          const d = Math.round(distance(Number(card.dataset.i), C.pos));
+          if (d) turn(d);
+        });
+
+        // 視窗大小改變（包含 iPad 旋轉）：即時重新計算卡片大小和位置（不播過場）
+        let first = true;
+        new ResizeObserver(() => {
+          if (first) return (first = false); // 第一次由 init 處理，避免打斷進場動畫
+          measure();
+          stage.classList.add("no-anim");
+          layout(C.pos);
+          fitName();
+          requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.remove("no-anim")));
+        }).observe(stage);
+      }
+
+      // 進場：卡片從遠處（translateZ −600px、透明）轉入定位（0.8s）
+      function enter() {
+        if (REDUCED) {
+          layout(C.pos);
+          return renderDots();
+        }
+        cards.forEach((c) => {
+          c.style.transition = "none";
+          c.style.transform = `translateZ(${-C.W * 0.81}px)`;
+          c.style.opacity = 0;
+        });
+        void document.body.offsetWidth;
+        requestAnimationFrame(() => {
+          cards.forEach((c) => (c.style.transition = "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.8s, filter 0.8s"));
+          layout(C.pos);
+          renderDots();
+          setTimeout(() => cards.forEach((c) => (c.style.transition = "")), 850);
+        });
+      }
+
+      // 姓名放不下時（例如左上角是較寬的「‹ 受測名單」），以 2px 為單位縮小字級，最多縮到原本的 80%
+      function fitName() {
+        const el = $("#whoName");
+        el.style.fontSize = "";
+        let size = parseFloat(getComputedStyle(el).fontSize);
+        const min = size * 0.8;
+        while (el.scrollWidth > el.clientWidth + 1 && size - 2 >= min) {
+          size -= 2;
+          el.style.fontSize = `${size}px`;
+        }
+      }
+
+      /* =========================================================
+       * 啟動
+       * ========================================================= */
+      function init() {
+        const params = new URLSearchParams(location.search);
+        const recordId = params.get("record");
+        let record = null;
+        let subject;
+        let date;
+        if (recordId) {
+          record = allRecords().find((r) => r.id === recordId && r.test === "sppb");
+          subject = record && findSubject(record);
+          if (!record || !subject) {
+            showToast("找不到鑑測紀錄");
+            setTimeout(() => (location.href = "report.html"), 1500);
+            return;
+          }
+          date = record.date;
+        } else {
+          // 從網站地圖預覽：第一位受測者、今天
+          subject = findSubject(null);
+          date = isoOf(new Date());
+        }
+
+        // 從測驗完成進入：左上角改成「‹ 受測名單」，回到這個場域的 SPPB 名單
+        const fromAssess = params.get("from") === "assess";
+        $("#homeBtn").hidden = fromAssess;
+        $("#backBtn").hidden = !fromAssess;
+        $("#homeBtn").addEventListener("click", () => (location.href = "home.html"));
+        $("#backBtn").addEventListener("click", () => {
+          const fid = record?.fieldId || currentFieldId() || "";
+          location.href = `roster.html?test=sppb&field=${fid}`;
+        });
+
+        $("#page").hidden = false;
+        renderResult(subject, date);
+        fitName();
+        document.fonts?.ready.then(fitName); // 字型載入後寬度會變，再量一次
+        measure();
+        initCarousel();
+        enter();
+
+        // 閒置提醒：任何拖曳、點擊、按鍵都算操作（capture 階段先處理，拖曳開始時提醒動畫已取消）
+        document.addEventListener("pointerdown", resetIdle, true);
+        document.addEventListener("keydown", resetIdle, true);
+        resetIdle();
+      }
+      init();
+    </script>
+  </body>
+</html>

@@ -13,10 +13,7 @@
     <title>建豐健康科技 - 登入</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
@@ -40,10 +37,18 @@
         --on-forest: #f6f1e8; /* 森林綠上的文字 */
         --danger: #b5473a; /* 錯誤訊息 */
 
-        --font-sans:
-          -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC",
-          sans-serif;
-        --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", serif;
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 字級：四頁共用，同一種用途用同一個變數（其他字級以這些變數加減或倍數表示）
+         * 大小順序：small < body < button < lead < title < display；card-name、hero-num 為大字專用 */
+        --fs-display: 72px; /* 頁面大標題：問候語、登入、場域名稱、受測者管理 */
+        --fs-hero-num: 88px; /* 大數字：今日數據、進度數字 */
+        --fs-card-name: 84px; /* 測驗卡片名稱 */
+        --fs-title: 44px; /* 面板與對話框標題 */
+        --fs-lead: 32px; /* 重要內文：人員姓名、場域名稱、欄位輸入文字、影像上傳標題 */
+        --fs-button: 30px; /* 按鈕文字、導航文字、toast */
+        --fs-body: 26px; /* 一般內文、說明、欄位標籤、分段切換、搜尋框 */
+        --fs-small: 24px; /* 輔助小字：日期、編號・年齡・性別、時間、徽章、小標籤、錯誤訊息 */
 
         --pad: 96px;
         --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -66,6 +71,7 @@
         background: var(--bg);
         color: var(--ink);
         font-family: var(--font-sans);
+        font-weight: 500;
         -webkit-font-smoothing: antialiased;
         user-select: none;
         -webkit-user-select: none;
@@ -73,6 +79,14 @@
       }
       .serif {
         font-family: var(--font-serif);
+      }
+      /* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
+      input,
+      textarea,
+      select,
+      input::placeholder,
+      textarea::placeholder {
+        font: inherit;
       }
       button {
         font: inherit;
@@ -145,7 +159,7 @@
       /* 標題 */
       .title {
         margin: 32px 0 0;
-        font-size: 88px;
+        font-size: calc(var(--fs-display) + 16px);
         line-height: 1.1;
         font-weight: 600;
         text-align: center;
@@ -166,7 +180,7 @@
       .label {
         display: block;
         margin-bottom: 10px;
-        font-size: 26px;
+        font-size: var(--fs-body);
         line-height: 1.25;
         font-weight: 700;
       }
@@ -189,7 +203,7 @@
       .input-icon {
         flex: 0 0 auto;
         margin-left: 30px;
-        font-size: 36px;
+        font-size: calc(var(--fs-lead) * 1.125);
         color: var(--brass-text);
       }
       .input {
@@ -202,7 +216,7 @@
         background: transparent;
         color: var(--ink);
         font-family: var(--font-sans);
-        font-size: 32px;
+        font-size: var(--fs-lead);
         user-select: text;
         -webkit-user-select: text;
       }
@@ -217,7 +231,7 @@
         border-radius: 22px;
         display: grid;
         place-items: center;
-        font-size: 36px;
+        font-size: calc(var(--fs-lead) * 1.125);
         color: var(--muted);
       }
       .eye-btn:active {
@@ -228,10 +242,10 @@
       .error {
         display: none;
         margin-top: 10px;
-        font-size: 24px;
+        font-size: var(--fs-small);
         line-height: 30px;
         color: var(--danger);
-        font-weight: 600;
+        font-weight: 700;
       }
       .field.has-error .input-wrap {
         border-color: var(--danger);
@@ -251,8 +265,8 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 36px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) + 6px);
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;

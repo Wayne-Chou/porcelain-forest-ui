@@ -13,10 +13,7 @@
     <title>建豐健康科技 - 鑑測首頁</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
@@ -39,10 +36,18 @@
         --nav-off: #6f6656; /* 導航未選中 */
         --on-forest: #f6f1e8; /* 森林綠上的文字 */
 
-        --font-sans:
-          -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC",
-          sans-serif;
-        --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", serif;
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 字級：四頁共用，同一種用途用同一個變數（其他字級以這些變數加減或倍數表示）
+         * 大小順序：small < body < button < lead < title < display；card-name、hero-num 為大字專用 */
+        --fs-display: 72px; /* 頁面大標題：問候語、登入、場域名稱、受測者管理 */
+        --fs-hero-num: 88px; /* 大數字：今日數據、進度數字 */
+        --fs-card-name: 84px; /* 測驗卡片名稱 */
+        --fs-title: 44px; /* 面板與對話框標題 */
+        --fs-lead: 32px; /* 重要內文：人員姓名、場域名稱、欄位輸入文字、影像上傳標題 */
+        --fs-button: 30px; /* 按鈕文字、導航文字、toast */
+        --fs-body: 26px; /* 一般內文、說明、欄位標籤、分段切換、搜尋框 */
+        --fs-small: 24px; /* 輔助小字：日期、編號・年齡・性別、時間、徽章、小標籤、錯誤訊息 */
 
         --pad: 64px;
         --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -65,6 +70,7 @@
         background: var(--bg);
         color: var(--ink);
         font-family: var(--font-sans);
+        font-weight: 500;
         -webkit-font-smoothing: antialiased;
         user-select: none;
         -webkit-user-select: none;
@@ -72,6 +78,14 @@
       }
       .serif {
         font-family: var(--font-serif);
+      }
+      /* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
+      input,
+      textarea,
+      select,
+      input::placeholder,
+      textarea::placeholder {
+        font: inherit;
       }
       button {
         font: inherit;
@@ -148,14 +162,14 @@
         object-fit: contain;
       }
       .hero-date {
-        font-size: 28px;
+        font-size: calc(var(--fs-small) + 4px);
         letter-spacing: 0.12em;
         color: var(--muted);
         font-weight: 500;
       }
       .hero-title {
         margin: 18px 0 0;
-        font-size: 76px;
+        font-size: calc(var(--fs-display) + 4px);
         font-weight: 600;
         line-height: 1.22;
       }
@@ -166,7 +180,7 @@
         padding-bottom: 8px;
       }
       .stat-num {
-        font-size: 88px;
+        font-size: var(--fs-hero-num);
         line-height: 1.05;
         font-weight: 600;
       }
@@ -178,7 +192,7 @@
       }
       .stat-label {
         margin-top: 4px;
-        font-size: 26px;
+        font-size: var(--fs-body);
         color: var(--muted);
         font-weight: 500;
         white-space: nowrap;
@@ -231,7 +245,7 @@
         gap: 16px;
       }
       .test-card .no {
-        font-size: 28px;
+        font-size: calc(var(--fs-small) + 4px);
         font-weight: 700;
         color: var(--brass-text);
         transition: color 0.6s;
@@ -248,20 +262,20 @@
           border-color 0.6s;
       }
       .test-card .top i {
-        font-size: 52px;
+        font-size: calc(var(--fs-body) * 2);
         color: var(--forest);
         transition: color 0.6s;
       }
       .test-card .name {
         margin-top: auto;
-        font-size: 84px;
+        font-size: var(--fs-card-name);
         line-height: 1.15;
         font-weight: 600;
         white-space: nowrap;
       }
       .test-card .desc {
         margin-top: 10px;
-        font-size: 32px;
+        font-size: var(--fs-lead);
         font-weight: 500;
         color: var(--muted);
         transition: color 0.6s;
@@ -271,13 +285,13 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 30px;
-        font-weight: 600;
+        font-size: calc(var(--fs-small) + 6px);
+        font-weight: 700;
         color: var(--muted);
         transition: color 0.6s;
       }
       .test-card .time i {
-        font-size: 34px;
+        font-size: 1.1333em;
       }
       .test-card .start {
         align-self: flex-start;
@@ -287,8 +301,8 @@
         border-radius: 999px;
         background: var(--brass);
         color: var(--forest);
-        font-size: 34px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) + 4px);
+        font-weight: 700;
         padding: 0 44px;
         max-height: 0;
         margin-top: 0;
@@ -297,7 +311,7 @@
         transition: all 0.5s var(--ease-out);
       }
       .test-card .start i {
-        font-size: 36px;
+        font-size: 1.0588em;
       }
 
       /* 選中的卡片：森林綠 */
@@ -317,10 +331,10 @@
         color: var(--brass);
       }
       .test-card.is-active .name {
-        font-size: 96px;
+        font-size: calc(var(--fs-card-name) + 12px);
       }
       .test-card.is-active .name.long {
-        font-size: 88px;
+        font-size: calc(var(--fs-card-name) + 4px);
       }
       .test-card.is-active .desc,
       .test-card.is-active .time {
@@ -420,7 +434,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 48px;
+        font-size: calc(var(--fs-lead) * 1.5);
       }
       .sync-badge {
         position: absolute;
@@ -432,8 +446,8 @@
         border-radius: 22px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 24px;
-        font-weight: 800;
+        font-size: var(--fs-small);
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -444,7 +458,7 @@
         min-width: 0;
       }
       .sync-title {
-        font-size: 38px;
+        font-size: calc(var(--fs-lead) + 6px);
         font-weight: 700;
       }
       .sync-btn {
@@ -456,15 +470,15 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 32px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) + 2px);
+        font-weight: 700;
       }
       .sync-btn i {
-        font-size: 34px;
+        font-size: 1.0625em;
       }
       .sync-done {
         flex: 0 0 auto;
-        font-size: 30px;
+        font-size: calc(var(--fs-body) + 4px);
         font-weight: 500;
         color: var(--muted);
       }
@@ -512,15 +526,15 @@
         justify-content: center;
         border-radius: 999px;
         color: var(--nav-off);
-        font-size: 34px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) + 4px);
+        font-weight: 700;
         transition:
           background 0.45s var(--ease-spring),
           color 0.3s,
           padding 0.45s var(--ease-spring);
       }
       .nav-item i {
-        font-size: 46px;
+        font-size: 1.3529em;
         transition: transform 0.45s var(--ease-spring);
       }
       .nav-item span {
@@ -560,7 +574,7 @@
         transition: opacity 0.35s var(--ease-out);
         z-index: 200;
       }
-      body.sheet-open .sheet-mask {
+      body.sheet-open:not(.up-open) .sheet-mask {
         opacity: 1;
         pointer-events: auto;
       }
@@ -625,13 +639,13 @@
       }
       .sheet-title {
         margin: 0;
-        font-size: 56px;
+        font-size: calc(var(--fs-title) + 12px);
         line-height: 1.2;
         font-weight: 600;
       }
       .sheet-sub {
         margin-top: 4px;
-        font-size: 26px;
+        font-size: var(--fs-body);
         color: var(--muted);
         font-weight: 500;
       }
@@ -644,7 +658,7 @@
         border: 2px solid var(--line);
         display: grid;
         place-items: center;
-        font-size: 36px;
+        font-size: calc(var(--fs-lead) * 1.125);
         color: var(--ink);
         transition: transform 0.2s var(--ease-out);
       }
@@ -678,7 +692,7 @@
       }
       .search-box > .ti-search {
         margin-left: 28px;
-        font-size: 36px;
+        font-size: calc((var(--fs-body) + 4px) * 1.2);
         color: var(--brass-text);
       }
       .search-input {
@@ -691,7 +705,7 @@
         background: transparent;
         color: var(--ink);
         font-family: var(--font-sans);
-        font-size: 30px;
+        font-size: calc(var(--fs-body) + 4px);
         user-select: text;
         -webkit-user-select: text;
       }
@@ -709,7 +723,7 @@
         border-radius: 50%;
         display: grid;
         place-items: center;
-        font-size: 32px;
+        font-size: var(--fs-lead);
         color: var(--muted);
       }
       .search-clear[hidden] {
@@ -748,7 +762,7 @@
       }
       .sheet-section {
         margin: 32px 0 16px;
-        font-size: 24px;
+        font-size: var(--fs-small);
         font-weight: 700;
         color: var(--muted);
         letter-spacing: 0.1em;
@@ -758,17 +772,17 @@
         text-align: center;
       }
       .list-empty i {
-        font-size: 64px;
+        font-size: calc(var(--fs-lead) * 2);
         color: var(--line-soft);
       }
       .list-empty-title {
         margin-top: 16px;
-        font-size: 30px;
+        font-size: calc(var(--fs-body) + 4px);
         font-weight: 700;
       }
       .list-empty-sub {
         margin-top: 8px;
-        font-size: 24px;
+        font-size: var(--fs-small);
         color: var(--muted);
       }
 
@@ -807,7 +821,7 @@
         display: grid;
         place-items: center;
         color: #fff;
-        font-size: 26px;
+        font-size: var(--fs-body);
         transition:
           background 0.2s,
           border-color 0.2s;
@@ -835,7 +849,7 @@
       .frow-name {
         flex: 0 1 auto;
         min-width: 0;
-        font-size: 32px;
+        font-size: var(--fs-lead);
         font-weight: 700;
         line-height: 1.3;
         overflow: hidden;
@@ -855,7 +869,7 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 20px;
+        font-size: calc(var(--fs-small) - 4px);
         font-weight: 700;
         line-height: 1.3;
       }
@@ -887,8 +901,8 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 36px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) + 6px);
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -897,6 +911,272 @@
       }
       .sheet-confirm:active {
         transform: scale(0.98);
+      }
+
+      /* 首頁「立即上傳」：背景上傳中 */
+      .sync-btn.is-busy {
+        background: var(--card-deep);
+        color: var(--muted);
+      }
+
+      /* =========================================================
+       * 影像上傳：底部面板（高度依內容，最高 var(--vh) - 120px；清單區可捲動）
+       * ========================================================= */
+      .up-mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 30, 26, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s var(--ease-out);
+        z-index: 200;
+      }
+      body.up-open .up-mask {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sheet.up-sheet {
+        height: auto;
+        max-height: calc(var(--vh, 100dvh) - 120px);
+      }
+      .up-total {
+        margin-top: 16px;
+        min-height: 64px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        font-size: var(--fs-body);
+        color: var(--muted);
+      }
+      .up-total[hidden] {
+        display: none;
+      }
+      .up-total.is-done {
+        align-items: center;
+        color: var(--forest);
+        font-weight: 700;
+      }
+      /* 總數：數字變化時舊的往下滑出、新的從上方滑入 */
+      .up-num {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+        font-size: calc(var(--fs-hero-num) * 0.6);
+        font-weight: 600;
+        line-height: 1.15;
+        color: var(--brass);
+        font-variant-numeric: tabular-nums;
+      }
+      .up-num .roll-in {
+        display: inline-block;
+        animation: rollIn 0.45s var(--ease-out);
+      }
+      .up-num .roll-out {
+        position: absolute;
+        left: 0;
+        top: 0;
+        animation: rollOut 0.45s var(--ease-out) forwards;
+      }
+      @keyframes rollIn {
+        from {
+          transform: translateY(-100%);
+          opacity: 0;
+        }
+      }
+      @keyframes rollOut {
+        to {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+      }
+      .up-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 32px 56px calc(40px + env(safe-area-inset-bottom));
+      }
+      .up-card {
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 40px;
+        overflow: hidden;
+      }
+      .up-row {
+        min-height: 128px;
+        padding: 18px 32px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        transition:
+          background 0.3s,
+          box-shadow 0.3s;
+      }
+      .up-row + .up-row {
+        border-top: 2px solid #e6dfd2;
+      }
+      .up-row.shake {
+        animation: shake 0.4s var(--ease-out);
+      }
+      /* 失敗：淡紅底＋左側 2px 紅色內邊線（不改變尺寸） */
+      .up-row.is-fail {
+        background: rgba(181, 71, 58, 0.06);
+        box-shadow: inset 2px 0 0 #b5473a;
+      }
+      /* 成功後收合移除 */
+      .up-row.is-leaving {
+        min-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+          height 0.4s var(--ease-out),
+          min-height 0.4s var(--ease-out),
+          padding 0.4s var(--ease-out),
+          opacity 0.4s var(--ease-out);
+      }
+      .up-ico {
+        flex: 0 0 auto;
+        width: 72px;
+        height: 72px;
+        border-radius: 22px;
+        background: var(--card-deep);
+        display: grid;
+        place-items: center;
+        font-size: calc(var(--fs-lead) * 1.125);
+        color: var(--brass-text);
+      }
+      /* 日期、第二行、進度條固定佔位，列高不跳動；
+       * 待上傳（沒有第二行）時整組往下移，讓日期在列中垂直置中 */
+      .up-main {
+        flex: 1;
+        min-width: 0;
+        transition: transform 0.3s var(--ease-out);
+      }
+      .up-row[data-state="idle"] .up-main {
+        /* 往下移 =（第二行高度 + 間距 4 + 進度條 20）÷ 2 */
+        transform: translateY(calc((var(--fs-small) * 1.3 + 24px) / 2));
+      }
+      .up-date {
+        font-size: var(--fs-lead);
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+      .up-status {
+        margin-top: 4px;
+        height: calc(var(--fs-small) * 1.3);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--fs-small);
+        line-height: 1.3;
+        color: var(--muted);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        transition: opacity 0.3s var(--ease-out);
+      }
+      .up-row[data-state="idle"] .up-status {
+        opacity: 0;
+      }
+      .up-row.is-fail .up-status {
+        color: #b5473a;
+      }
+      .up-status i {
+        font-size: 1.15em;
+      }
+      /* 進度條：固定佔位，避免出現時列高跳動 */
+      .up-bar {
+        margin-top: 10px;
+        height: 10px;
+        border-radius: 5px;
+        background: var(--card-deep);
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .up-bar.is-on {
+        opacity: 1;
+      }
+      .up-fill {
+        width: 0;
+        height: 100%;
+        border-radius: 5px;
+        background: var(--forest);
+        transition:
+          width 0.25s linear,
+          background 0.3s;
+      }
+      .up-row.is-fail .up-fill {
+        background: #b5473a;
+      }
+      .up-btn {
+        flex: 0 0 auto;
+        height: 76px;
+        padding: 0 34px;
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: var(--fs-button);
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        white-space: nowrap;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .up-btn i {
+        font-size: 1.1em;
+      }
+      .up-btn:active {
+        transform: scale(0.95);
+      }
+      .up-btn.is-busy {
+        background: var(--card-deep);
+        color: var(--muted);
+        pointer-events: none;
+      }
+      .up-btn.is-done {
+        background: rgba(176, 141, 87, 0.16);
+        color: var(--brass-text);
+        pointer-events: none;
+      }
+      .up-btn.is-done i {
+        animation: radioPop 0.35s var(--ease-spring);
+      }
+      .up-btn.is-retry {
+        background: transparent;
+        border-color: #b5473a;
+        color: #b5473a;
+      }
+      .spin {
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      /* 全部上傳完成 */
+      .up-empty {
+        padding: 72px 0 48px;
+        text-align: center;
+      }
+      .up-empty i {
+        font-size: calc(var(--fs-lead) * 2);
+        color: var(--forest);
+      }
+      .up-empty-title {
+        margin-top: 16px;
+        font-size: calc(var(--fs-body) + 4px);
+        font-weight: 700;
+      }
+      .up-empty-sub {
+        margin-top: 8px;
+        font-size: var(--fs-small);
+        color: var(--muted);
       }
 
       /* ===== 提示訊息 ===== */
@@ -909,7 +1189,7 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 30px;
+        font-size: var(--fs-button);
         font-weight: 700;
         opacity: 0;
         pointer-events: none;
@@ -1048,6 +1328,32 @@
       </footer>
     </section>
 
+    <!-- 影像上傳：底部面板 -->
+    <div class="up-mask" id="upMask"></div>
+    <section
+      class="sheet up-sheet"
+      id="upSheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="upTitle"
+      aria-hidden="true"
+    >
+      <div class="sheet-grab" id="upGrab">
+        <span class="grab-bar"></span>
+        <header class="sheet-head">
+          <h2 class="sheet-title serif" id="upTitle">影像上傳</h2>
+          <button class="sheet-close" id="upClose" type="button" aria-label="關閉">
+            <i class="ti ti-x"></i>
+          </button>
+        </header>
+        <div class="up-total" id="upTotal" aria-live="polite">
+          <span>共</span><span class="up-num serif" id="upNum"></span><span>筆待上傳</span>
+        </div>
+        <div class="up-total is-done" id="upTotalDone" hidden>全部已上傳</div>
+      </div>
+      <div class="up-body" id="upBody"></div>
+    </section>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -1057,8 +1363,18 @@
       const CONFIG = {
         unitName: "建豐健康科技",
 
-        // 今日數據（之後改成從後端讀取）
-        stats: { done: 18, pending: 3 },
+        // 今日數據（之後改成從後端讀取）；待上傳數量改由 uploads 計算
+        stats: { done: 2 }, // 與名單頁已完成 SPPB 的人數一致
+
+        // 待上傳的鑑測（假資料，日期依今天自動產生）
+        // TODO：之後改成從設備本機或 API 讀取
+        // 一個日期算 1 筆；failOnce：第一次上傳一定失敗、第二次起成功（示範失敗畫面用）
+        uploads: [
+          { date: isoDaysAgo(0), failOnce: false },
+          { date: isoDaysAgo(1), failOnce: true },
+          { date: isoDaysAgo(3), failOnce: false },
+          { date: isoDaysAgo(6), failOnce: false },
+        ],
 
         // 測驗項目：新增測驗只要在這裡加一筆
         tests: [
@@ -1092,17 +1408,17 @@
           },
           {
             id: "report",
-            label: "報告",
-            icon: "ti-chart-line",
+            label: "紀錄",
+            icon: "ti-history",
             href: "report.html",
-            ready: false,
+            ready: true,
           },
           {
             id: "subjects",
             label: "受測者",
             icon: "ti-users",
             href: "subjects.html",
-            ready: false,
+            ready: true,
           },
           {
             id: "settings",
@@ -1120,32 +1436,6 @@
           { id: "tpe-02", name: "信義長照中心" },
           { id: "tpe-03", name: "中正區活動中心" },
           { id: "tpe-04", name: "北投社區關懷據點" },
-          { id: "tpe-05", name: "內湖康寧醫院" },
-          { id: "tpe-06", name: "萬華日間照顧中心" },
-          { id: "ntp-01", name: "板橋社區關懷據點" },
-          { id: "ntp-02", name: "永和福和活動中心" },
-          { id: "ntp-03", name: "新店安康長照中心" },
-          { id: "ntp-04", name: "三重仁愛醫院" },
-          { id: "ntp-05", name: "淡水竹圍社區關懷據點" },
-          { id: "ntp-06", name: "新莊老人活動中心" },
-          { id: "tyn-01", name: "中壢社區關懷據點" },
-          { id: "tyn-02", name: "青溪長青活動中心" },
-          { id: "tyn-03", name: "八德長照服務中心" },
-          { id: "tyn-04", name: "龜山復健醫院" },
-          { id: "tyn-05", name: "平鎮社區關懷據點" },
-          { id: "txg-01", name: "西屯社區關懷據點" },
-          { id: "txg-02", name: "北屯長照中心" },
-          { id: "txg-03", name: "南屯區活動中心" },
-          { id: "txg-04", name: "豐原綜合醫院" },
-          { id: "txg-05", name: "大里日間照顧中心" },
-          { id: "tnn-01", name: "東區社區關懷據點" },
-          { id: "tnn-02", name: "永康長照中心" },
-          { id: "tnn-03", name: "安平區活動中心" },
-          { id: "tnn-04", name: "新營醫院" },
-          { id: "khh-01", name: "苓雅社區關懷據點" },
-          { id: "khh-02", name: "左營長照中心" },
-          { id: "khh-03", name: "三民區活動中心" },
-          { id: "khh-04", name: "鳳山綜合醫院" },
         ],
       };
 
@@ -1227,7 +1517,7 @@
         $("#heroTitle").innerHTML = `${greet}，<br>${CONFIG.unitName}`;
 
         countUp($("#statDone"), CONFIG.stats.done);
-        countUp($("#statPending"), CONFIG.stats.pending);
+        countUp($("#statPending"), pendingCount());
       }
 
       // 數字從 0 跑到目標值
@@ -1320,24 +1610,27 @@
         openFieldSheet(test);
       }
 
-      // 影像上傳卡：依待上傳數量顯示狀態
+      // 影像上傳卡：依待上傳數量顯示狀態；背景上傳中時「立即上傳」改成「上傳中」
       function renderSync() {
         const card = $("#syncCard");
-        const { pending } = CONFIG.stats;
-        if (pending > 0) {
-          $("#syncBadge").textContent = pending;
-          $("#syncBadge").hidden = false;
-        } else {
-          card.classList.add("is-done");
-          $("#syncIcon").className = "ti ti-cloud-check";
-        }
-        card.addEventListener("click", () =>
-          showToast("「影像上傳」功能製作中"),
-        );
+        const pending = pendingCount();
+        const done = pending === 0;
+        card.classList.toggle("is-done", done);
+        $("#syncIcon").className = `ti ${done ? "ti-cloud-check" : "ti-cloud-upload"}`;
+        $("#syncBadge").textContent = pending;
+        $("#syncBadge").hidden = done;
+        const busy = isUploading();
+        const btn = card.querySelector(".sync-btn");
+        if (btn.dataset.busy === String(busy)) return; // 狀態沒變就不重畫（載入圖示不會重轉）
+        btn.dataset.busy = busy;
+        btn.classList.toggle("is-busy", busy);
+        btn.innerHTML = busy
+          ? '<i class="ti ti-loader-2 spin"></i>上傳中'
+          : '立即上傳 <i class="ti ti-arrow-up"></i>';
       }
 
       /* =========================================================
-       * 場域：本機儲存（以「當天的工作階段」為單位）
+       * 場域：sessionStorage（關閉分頁即清除；以「當天的工作階段」為單位）
        * kf.currentField  { id, date }：date 不是今天就當作沒有目前場域
        * kf.recentFields  [{ id, usedAt }]：最近使用（usedAt 為時間戳），最新在前，最多 20 筆
        *                  （相容舊格式：純 id 陣列）
@@ -1364,7 +1657,7 @@
 
       function readJSON(key, fallback) {
         try {
-          const v = JSON.parse(localStorage.getItem(key));
+          const v = JSON.parse(sessionStorage.getItem(key));
           return v ?? fallback;
         } catch (e) {
           return fallback;
@@ -1372,7 +1665,7 @@
       }
       function writeJSON(key, val) {
         try {
-          localStorage.setItem(key, JSON.stringify(val));
+          sessionStorage.setItem(key, JSON.stringify(val));
         } catch (e) {}
       }
       function todayStr() {
@@ -1665,12 +1958,313 @@
         }
       }
 
+      /* =========================================================
+       * 影像上傳
+       * kf.uploadedDates：已上傳的日期（"YYYY-MM-DD" 陣列），重新整理後不再出現
+       * U[date]：{ status: "idle" | "uploading" | "done" | "fail", pct, attempt, timer, removed }
+       * ========================================================= */
+      const UPLOADED_KEY = "kf.uploadedDates";
+      const U = {};
+      const up = { open: false, lastFocus: null };
+
+      // 依今天往前推 n 天的日期（本地時間，"YYYY-MM-DD"）
+      function isoDaysAgo(n) {
+        const d = new Date();
+        d.setDate(d.getDate() - n);
+        const p = (x) => String(x).padStart(2, "0");
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+      }
+      function getUploaded() {
+        try {
+          const v = JSON.parse(sessionStorage.getItem(UPLOADED_KEY));
+          return Array.isArray(v) ? v : [];
+        } catch (e) {
+          return [];
+        }
+      }
+      function addUploaded(date) {
+        try {
+          const list = getUploaded();
+          if (!list.includes(date)) list.push(date);
+          sessionStorage.setItem(UPLOADED_KEY, JSON.stringify(list));
+        } catch (e) {}
+      }
+      // 尚未上傳（且還沒從列表移除）的日期，由新到舊
+      function pendingUploads() {
+        const done = getUploaded();
+        return CONFIG.uploads
+          .filter((u) => !done.includes(u.date) && !U[u.date]?.removed)
+          .sort((a, b) => b.date.localeCompare(a.date));
+      }
+      // 一個日期算 1 筆
+      const pendingCount = () => pendingUploads().length;
+      const isUploading = () =>
+        Object.values(U).some((s) => s.status === "uploading");
+
+      // 「11 月 12 日」
+      function dayLabel(iso) {
+        const [, m, d] = iso.split("-").map(Number);
+        return `${m} 月 ${d} 日`;
+      }
+
+      function upRowHTML(u) {
+        return `
+      <div class="up-row" data-date="${u.date}">
+        <span class="up-ico"><i class="ti ti-calendar"></i></span>
+        <div class="up-main">
+          <div class="up-date">${dayLabel(u.date)}</div>
+          <div class="up-status"></div>
+          <div class="up-bar"><div class="up-fill"></div></div>
+        </div>
+        <button class="up-btn" type="button"></button>
+      </div>`;
+      }
+
+      // 依狀態更新一列（文字、進度條、按鈕）
+      function renderUpRow(date) {
+        const row = $(`#upBody .up-row[data-date="${date}"]`);
+        if (!row) return;
+        const s = U[date];
+        const status = row.querySelector(".up-status");
+        const bar = row.querySelector(".up-bar");
+        const fill = row.querySelector(".up-fill");
+        const btn = row.querySelector(".up-btn");
+        // 進度每次更新只改文字和進度條；狀態改變時才重畫按鈕（避免載入圖示的旋轉重新開始）
+        const changed = row.dataset.state !== s.status;
+        row.dataset.state = s.status;
+        row.classList.toggle("is-fail", s.status === "fail");
+        const setBtn = (cls, html) => {
+          if (!changed) return;
+          btn.className = `up-btn${cls ? " " + cls : ""}`;
+          btn.innerHTML = html;
+        };
+        if (s.status === "idle") {
+          status.textContent = ""; // 待上傳不顯示第二行，日期垂直置中（見 CSS）
+          bar.classList.remove("is-on");
+          setBtn("", '<i class="ti ti-cloud-upload"></i>上傳');
+        } else if (s.status === "uploading") {
+          status.textContent = `上傳中 ${Math.floor(s.pct)}%`;
+          bar.classList.add("is-on");
+          fill.style.width = `${s.pct}%`;
+          setBtn("is-busy", '<i class="ti ti-loader-2 spin"></i>上傳中');
+        } else if (s.status === "done") {
+          status.textContent = "已上傳";
+          bar.classList.add("is-on");
+          fill.style.width = "100%";
+          setBtn("is-done", '<i class="ti ti-circle-check"></i>已上傳');
+        } else {
+          status.innerHTML = '<i class="ti ti-alert-circle"></i>上傳失敗';
+          setBtn("is-retry", '<i class="ti ti-refresh"></i>重新上傳');
+          // 進度條停在失敗的位置，0.6 秒後淡出
+          if (changed)
+            setTimeout(() => {
+              if (U[date].status === "fail") bar.classList.remove("is-on");
+            }, 600);
+        }
+      }
+
+      function shakeRow(date) {
+        const row = $(`#upBody .up-row[data-date="${date}"]`);
+        if (!row) return;
+        row.classList.remove("shake");
+        void row.offsetWidth;
+        row.classList.add("shake");
+        row.addEventListener("animationend", () => row.classList.remove("shake"), {
+          once: true,
+        });
+      }
+
+      // 總數：數字變化時往下跑
+      function setUpNum(n, animate = true) {
+        const el = $("#upNum");
+        if (el.dataset.n === String(n)) return;
+        el.dataset.n = n;
+        const old = el.querySelector(".roll-cur");
+        const nw = document.createElement("span");
+        nw.className = `roll-cur${animate && old ? " roll-in" : ""}`;
+        nw.textContent = n;
+        if (old && animate) {
+          old.className = "roll-out";
+          old.setAttribute("aria-hidden", "true"); // 滑出中的舊數字不給讀屏念
+          setTimeout(() => old.remove(), 460);
+        } else if (old) old.remove();
+        el.appendChild(nw);
+      }
+
+      // 總數列、空狀態、首頁數字一起更新
+      function renderUpTotals(animate = true) {
+        const n = pendingCount();
+        const allDone = pendingUploads().length === 0;
+        $("#upTotal").hidden = allDone;
+        $("#upTotalDone").hidden = !allDone;
+        if (!allDone) setUpNum(n, animate);
+        if (allDone && !$("#upBody .up-empty")) {
+          $("#upBody").innerHTML = `
+      <div class="up-empty">
+        <i class="ti ti-cloud-check"></i>
+        <div class="up-empty-title">所有鑑測都已上傳</div>
+        <div class="up-empty-sub">新的鑑測完成後會出現在這裡</div>
+      </div>`;
+        }
+        $("#statPending").textContent = n;
+        renderSync();
+      }
+
+      function renderUpList() {
+        const list = pendingUploads();
+        list.forEach((u) => {
+          U[u.date] ??= { status: "idle", pct: 0, attempt: 0, removed: false };
+        });
+        $("#upBody").innerHTML = list.length
+          ? `<div class="up-card">${list.map(upRowHTML).join("")}</div>`
+          : "";
+        list.forEach((u) => renderUpRow(u.date));
+        renderUpTotals(false);
+      }
+
+      /* 模擬上傳：約 3～5 秒從 0% 到 100%，速度忽快忽慢
+       * TODO：之後改成實際上傳 API，例如
+       *   uploadExams(date, {
+       *     onProgress: (pct) => { U[date].pct = pct; renderUpRow(date); },  // 進度回呼
+       *   }).then(() => uploadSucceeded(date))
+       *     .catch((err) => uploadFailed(date, err));                         // 失敗處理
+       */
+      function startUpload(date) {
+        const u = CONFIG.uploads.find((x) => x.date === date);
+        const s = U[date];
+        if (!u || s.status === "uploading" || s.status === "done") return;
+        const wasFail = s.status === "fail";
+        s.status = "uploading";
+        s.pct = 0;
+        s.attempt += 1;
+        const willFail = u.failOnce && s.attempt === 1;
+        const failAt = 56 + Math.random() * 8; // 約 60% 時失敗
+        renderUpRow(date);
+        if (wasFail) shakeRow(date);
+        renderSync();
+
+        const tick = () => {
+          // 偶爾停頓、偶爾衝快一點
+          const r = Math.random();
+          s.pct += r < 0.15 ? 0.4 : r < 0.85 ? 2 + Math.random() * 3 : 6 + Math.random() * 4;
+          if (willFail && s.pct >= failAt) {
+            s.pct = failAt;
+            renderUpRow(date);
+            return uploadFailed(date);
+          }
+          if (s.pct >= 100) {
+            s.pct = 100;
+            return uploadSucceeded(date);
+          }
+          renderUpRow(date);
+          s.timer = setTimeout(tick, 110 + Math.random() * 90);
+        };
+        s.timer = setTimeout(tick, 150);
+      }
+
+      function uploadSucceeded(date) {
+        U[date].status = "done";
+        addUploaded(date);
+        renderUpRow(date);
+        renderSync();
+        if (!up.open) showToast(`${dayLabel(date)}已上傳`);
+        // 1.2 秒後淡出並收合，從列表移除，總數往下跑
+        setTimeout(() => {
+          const row = $(`#upBody .up-row[data-date="${date}"]`);
+          const finish = () => {
+            row?.remove();
+            U[date].removed = true;
+            renderUpTotals();
+          };
+          if (!row) return finish();
+          row.style.height = `${row.offsetHeight}px`;
+          void row.offsetHeight;
+          row.classList.add("is-leaving");
+          row.style.height = "0px";
+          setTimeout(finish, 420);
+        }, 1200);
+      }
+
+      function uploadFailed(date) {
+        U[date].status = "fail";
+        renderUpRow(date);
+        shakeRow(date);
+        renderSync();
+        if (!up.open) showToast(`${dayLabel(date)}上傳失敗，請重新上傳`);
+      }
+
+      function openUpSheet() {
+        if (up.open || S.open) return;
+        up.open = true;
+        up.lastFocus = document.activeElement;
+        const sheet = $("#upSheet");
+        $("#upBody").scrollTop = 0;
+        sheet.style.transform = "";
+        sheet.classList.add("is-open");
+        sheet.setAttribute("aria-hidden", "false");
+        document.body.classList.add("sheet-open", "up-open");
+        $("#app").inert = true;
+      }
+
+      // 有日期正在上傳時也可以關閉，上傳在背景繼續
+      function closeUpSheet() {
+        if (!up.open) return;
+        up.open = false;
+        const sheet = $("#upSheet");
+        sheet.style.transform = "";
+        sheet.classList.remove("is-open");
+        sheet.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("sheet-open", "up-open");
+        $("#app").inert = false;
+        up.lastFocus?.focus?.({ preventScroll: true });
+      }
+
+      function initUpload() {
+        renderUpList();
+        $("#syncCard").addEventListener("click", openUpSheet);
+        $("#upClose").addEventListener("click", closeUpSheet);
+        $("#upMask").addEventListener("click", closeUpSheet);
+        $("#upBody").addEventListener("click", (e) => {
+          const btn = e.target.closest(".up-btn");
+          if (btn) startUpload(btn.closest(".up-row").dataset.date);
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && up.open) closeUpSheet();
+        });
+
+        // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉，否則彈回
+        const sheet = $("#upSheet");
+        const grab = $("#upGrab");
+        let drag = null;
+        grab.addEventListener("pointerdown", (e) => {
+          if (!up.open || e.target.closest("button")) return;
+          drag = { y: e.clientY, dy: 0 };
+          grab.setPointerCapture(e.pointerId);
+          sheet.classList.add("is-dragging");
+        });
+        grab.addEventListener("pointermove", (e) => {
+          if (!drag) return;
+          drag.dy = Math.max(0, e.clientY - drag.y);
+          sheet.style.transform = `translateY(${drag.dy}px)`;
+        });
+        const endDrag = () => {
+          if (!drag) return;
+          const { dy } = drag;
+          drag = null;
+          sheet.classList.remove("is-dragging");
+          sheet.style.transform = "";
+          if (dy > 120) closeUpSheet();
+        };
+        grab.addEventListener("pointerup", endDrag);
+        grab.addEventListener("pointercancel", endDrag);
+      }
+
       /* ===== 啟動 ===== */
       renderNav();
       if ($("#testList")) {
         renderHero();
         renderTests();
-        renderSync();
+        initUpload(); // 會一併更新影像上傳卡
         initFieldSheet();
       }
     </script>

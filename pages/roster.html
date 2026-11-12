@@ -13,10 +13,7 @@
     <title>建豐健康科技 - 受測名單</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
@@ -40,10 +37,18 @@
         --on-forest: #f6f1e8; /* 森林綠上的文字 */
         --danger: #b5473a; /* 錯誤訊息 */
 
-        --font-sans:
-          -apple-system, "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC",
-          sans-serif;
-        --font-serif: "Noto Serif TC", "Songti TC", "Noto Serif CJK TC", serif;
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 字級：四頁共用，同一種用途用同一個變數（其他字級以這些變數加減或倍數表示）
+         * 大小順序：small < body < button < lead < title < display；card-name、hero-num 為大字專用 */
+        --fs-display: 72px; /* 頁面大標題：問候語、登入、場域名稱、受測者管理 */
+        --fs-hero-num: 88px; /* 大數字：今日數據、進度數字 */
+        --fs-card-name: 84px; /* 測驗卡片名稱 */
+        --fs-title: 44px; /* 面板與對話框標題 */
+        --fs-lead: 32px; /* 重要內文：人員姓名、場域名稱、欄位輸入文字、影像上傳標題 */
+        --fs-button: 30px; /* 按鈕文字、導航文字、toast */
+        --fs-body: 26px; /* 一般內文、說明、欄位標籤、分段切換、搜尋框 */
+        --fs-small: 24px; /* 輔助小字：日期、編號・年齡・性別、時間、徽章、小標籤、錯誤訊息 */
 
         --pad: 64px;
         --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -66,6 +71,7 @@
         background: var(--card-deep);
         color: var(--ink);
         font-family: var(--font-sans);
+        font-weight: 500;
         -webkit-font-smoothing: antialiased;
         user-select: none;
         -webkit-user-select: none;
@@ -74,6 +80,14 @@
       }
       .serif {
         font-family: var(--font-serif);
+      }
+      /* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
+      input,
+      textarea,
+      select,
+      input::placeholder,
+      textarea::placeholder {
+        font: inherit;
       }
       button {
         font: inherit;
@@ -159,7 +173,7 @@
         border: 2px solid var(--line);
         display: grid;
         place-items: center;
-        font-size: 44px;
+        font-size: calc(var(--fs-lead) * 1.375);
         transition: transform 0.2s var(--ease-out);
       }
       .add-btn {
@@ -171,13 +185,13 @@
         display: inline-flex;
         align-items: center;
         gap: 12px;
-        font-size: 30px;
-        font-weight: 800;
+        font-size: var(--fs-button);
+        font-weight: 700;
         color: var(--forest);
         transition: transform 0.2s var(--ease-out);
       }
       .add-btn i {
-        font-size: 38px;
+        font-size: 1.2667em;
       }
       .back-btn:active,
       .add-btn:active {
@@ -192,16 +206,16 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 26px;
+        font-size: var(--fs-body);
         font-weight: 700;
         color: var(--brass-text);
       }
       .eyebrow i {
-        font-size: 32px;
+        font-size: 1.2308em;
       }
       .field-title {
         margin: 6px 0 0;
-        font-size: 72px;
+        font-size: var(--fs-display);
         line-height: 1.2;
         font-weight: 600;
         white-space: nowrap;
@@ -234,13 +248,13 @@
         font-variant-numeric: tabular-nums;
       }
       .prog-done {
-        font-size: 96px;
+        font-size: calc(var(--fs-hero-num) + 8px);
         font-weight: 600;
         color: var(--brass);
         transition: color 0.6s var(--ease-out);
       }
       .prog-total {
-        font-size: 44px;
+        font-size: calc(var(--fs-hero-num) - 44px);
         font-weight: 600;
         color: var(--muted);
         transition: color 0.6s var(--ease-out);
@@ -263,20 +277,20 @@
       }
       .prog-normal {
         justify-content: space-between;
-        font-size: 26px;
-        font-weight: 600;
+        font-size: var(--fs-body);
+        font-weight: 700;
         color: var(--muted);
         font-variant-numeric: tabular-nums;
       }
       .prog-complete {
         gap: 10px;
-        font-size: 28px;
-        font-weight: 800;
+        font-size: calc(var(--fs-body) + 2px);
+        font-weight: 700;
         color: var(--on-forest);
         opacity: 0;
       }
       .prog-complete i {
-        font-size: 36px;
+        font-size: 1.2857em;
         color: var(--brass);
       }
       .bar {
@@ -375,7 +389,7 @@
       }
       .search > .ti-search {
         margin-left: 28px;
-        font-size: 36px;
+        font-size: calc((var(--fs-body) + 4px) * 1.2);
         color: var(--brass-text);
       }
       .search-input {
@@ -388,7 +402,7 @@
         background: transparent;
         color: var(--ink);
         font-family: var(--font-sans);
-        font-size: 30px;
+        font-size: calc(var(--fs-body) + 4px);
       }
       .search-input::placeholder {
         color: var(--muted);
@@ -404,7 +418,7 @@
         border-radius: 50%;
         display: grid;
         place-items: center;
-        font-size: 32px;
+        font-size: var(--fs-lead);
         color: var(--muted);
       }
       .search-clear[hidden] {
@@ -451,7 +465,7 @@
         position: relative;
         z-index: 1;
         border-radius: 999px;
-        font-size: 28px;
+        font-size: calc(var(--fs-body) + 2px);
         font-weight: 700;
         color: var(--ink);
         transition: color 0.3s;
@@ -518,20 +532,20 @@
         color: var(--brass-text);
         display: grid;
         place-items: center;
-        font-size: 34px;
+        font-size: calc(var(--fs-lead) + 2px);
         font-weight: 600;
       }
       .srow.is-done .avatar {
         background: var(--forest);
         color: var(--brass);
-        font-size: 40px;
+        font-size: calc((var(--fs-lead) + 2px) * 1.1765);
       }
       .s-main {
         flex: 1;
         min-width: 0;
       }
       .s-name {
-        font-size: 34px;
+        font-size: calc(var(--fs-lead) + 2px);
         font-weight: 700;
         line-height: 1.3;
         white-space: nowrap;
@@ -543,7 +557,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        font-size: 24px;
+        font-size: var(--fs-small);
         color: var(--muted);
       }
       .s-meta-text {
@@ -557,7 +571,7 @@
         padding: 2px 12px;
         border: 1.5px solid var(--brass);
         border-radius: 999px;
-        font-size: 20px;
+        font-size: calc(var(--fs-small) - 4px);
         font-weight: 700;
         color: var(--brass-text);
       }
@@ -579,15 +593,15 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 28px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) - 2px);
+        font-weight: 700;
         display: inline-flex;
         align-items: center;
         gap: 10px;
         transition: transform 0.2s var(--ease-out);
       }
       .btn-start i {
-        font-size: 30px;
+        font-size: 1.0714em;
       }
       .done-tag {
         height: 56px;
@@ -595,17 +609,17 @@
         border-radius: 999px;
         background: rgba(176, 141, 87, 0.16);
         color: var(--brass-text);
-        font-size: 26px;
+        font-size: calc(var(--fs-small) + 2px);
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         gap: 8px;
       }
       .done-tag i {
-        font-size: 30px;
+        font-size: 1.1538em;
       }
       .done-time {
-        font-size: 24px;
+        font-size: var(--fs-small);
         color: var(--muted);
         font-variant-numeric: tabular-nums;
       }
@@ -614,7 +628,7 @@
         padding: 0 26px;
         border-radius: 999px;
         border: 2px solid var(--line-soft);
-        font-size: 26px;
+        font-size: calc(var(--fs-button) - 4px);
         font-weight: 700;
         color: var(--ink);
         display: inline-flex;
@@ -623,7 +637,7 @@
         transition: transform 0.2s var(--ease-out);
       }
       .btn-retest i {
-        font-size: 28px;
+        font-size: 1.0769em;
       }
       .btn-start:active,
       .btn-retest:active {
@@ -636,17 +650,17 @@
         text-align: center;
       }
       .empty i {
-        font-size: 64px;
+        font-size: calc(var(--fs-lead) * 2);
         color: var(--line-soft);
       }
       .empty-title {
         margin-top: 16px;
-        font-size: 30px;
+        font-size: calc(var(--fs-body) + 4px);
         font-weight: 700;
       }
       .empty-sub {
         margin-top: 8px;
-        font-size: 24px;
+        font-size: var(--fs-small);
         color: var(--muted);
       }
 
@@ -729,13 +743,13 @@
       }
       .sheet-title {
         margin: 0;
-        font-size: 56px;
+        font-size: calc(var(--fs-title) + 12px);
         line-height: 1.2;
         font-weight: 600;
       }
       .sheet-sub {
         margin-top: 4px;
-        font-size: 26px;
+        font-size: var(--fs-body);
         color: var(--muted);
         font-weight: 500;
       }
@@ -748,7 +762,7 @@
         border: 2px solid var(--line);
         display: grid;
         place-items: center;
-        font-size: 36px;
+        font-size: calc(var(--fs-lead) * 1.125);
         transition: transform 0.2s var(--ease-out);
       }
       .sheet-close:active {
@@ -766,7 +780,7 @@
       .f-label {
         display: block;
         margin-bottom: 10px;
-        font-size: 26px;
+        font-size: var(--fs-body);
         line-height: 1.25;
         font-weight: 700;
       }
@@ -795,7 +809,7 @@
         background: transparent;
         color: var(--ink);
         font-family: var(--font-sans);
-        font-size: 32px;
+        font-size: var(--fs-lead);
       }
       .f-input::placeholder {
         color: var(--line-soft);
@@ -810,7 +824,7 @@
         width: 100%;
         padding: 0 28px;
         gap: 16px;
-        font-size: 32px;
+        font-size: var(--fs-lead);
         text-align: left;
         cursor: pointer;
       }
@@ -821,7 +835,7 @@
       }
       .birth-ico {
         flex: 0 0 auto;
-        font-size: 36px;
+        font-size: 1.125em;
         color: var(--brass-text);
       }
       .birth-text {
@@ -847,18 +861,18 @@
       }
       .birth-chev {
         flex: 0 0 auto;
-        font-size: 32px;
+        font-size: 1em;
         color: var(--muted);
       }
       .seg.gender .seg-btn {
-        font-size: 30px;
+        font-size: calc(var(--fs-body) + 4px);
       }
       .f-error {
         display: none;
         margin-top: 10px;
-        font-size: 24px;
+        font-size: var(--fs-small);
         line-height: 30px;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--danger);
         align-items: center;
         gap: 8px;
@@ -869,9 +883,6 @@
       .has-error .f-input-wrap {
         border-color: var(--danger);
         box-shadow: none;
-      }
-      .has-error .seg {
-        box-shadow: inset 0 0 0 2px var(--danger);
       }
       .sheet-foot {
         flex: 0 0 auto;
@@ -885,8 +896,8 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 36px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) + 6px);
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -940,17 +951,17 @@
         color: var(--brass-text);
         display: grid;
         place-items: center;
-        font-size: 44px;
+        font-size: var(--fs-title);
       }
       .dlg-title {
         margin: 24px 0 0;
-        font-size: 44px;
+        font-size: var(--fs-title);
         line-height: 1.25;
         font-weight: 600;
       }
       .dlg-desc {
         margin: 14px 0 0;
-        font-size: 26px;
+        font-size: var(--fs-body);
         line-height: 1.5;
         color: var(--muted);
       }
@@ -963,8 +974,8 @@
       .dlg-btn {
         height: 96px;
         border-radius: 999px;
-        font-size: 32px;
-        font-weight: 800;
+        font-size: calc(var(--fs-button) + 2px);
+        font-weight: 700;
         transition: transform 0.2s var(--ease-out);
       }
       .dlg-btn:active {
@@ -1020,7 +1031,7 @@
       }
       .picker-title {
         margin: 0;
-        font-size: 44px;
+        font-size: var(--fs-title);
         line-height: 1.25;
         font-weight: 600;
       }
@@ -1032,7 +1043,7 @@
         background: var(--bg);
         display: grid;
         place-items: center;
-        font-size: 32px;
+        font-size: var(--fs-lead);
         transition: transform 0.2s var(--ease-out);
       }
       .picker-close:active {
@@ -1040,7 +1051,7 @@
       }
       .picker-preview {
         margin-top: 12px;
-        font-size: 30px;
+        font-size: calc(var(--fs-lead) - 2px);
         font-weight: 700;
         color: var(--ink);
         font-variant-numeric: tabular-nums;
@@ -1100,7 +1111,7 @@
         align-items: center;
         justify-content: center;
         scroll-snap-align: center;
-        font-size: 30px;
+        font-size: calc(var(--fs-lead) - 2px);
         color: var(--muted);
         font-variant-numeric: tabular-nums;
         cursor: pointer;
@@ -1109,8 +1120,8 @@
           color 0.15s;
       }
       .wheel-item.is-center {
-        font-size: 36px;
-        font-weight: 800;
+        font-size: calc(var(--fs-lead) + 4px);
+        font-weight: 700;
         color: var(--ink);
       }
       .wheel-item.is-disabled {
@@ -1134,13 +1145,13 @@
         padding: 6px;
         border-radius: 999px;
         background: rgba(26, 36, 32, 0.88);
-        font-size: 22px;
+        font-size: calc(var(--fs-small) - 2px);
         z-index: 100;
       }
       .preview-label {
         padding: 0 8px 0 12px;
         color: var(--brass);
-        font-weight: 800;
+        font-weight: 700;
       }
       .preview-btn {
         height: 44px;
@@ -1167,7 +1178,7 @@
         border-radius: 999px;
         background: var(--forest);
         color: var(--on-forest);
-        font-size: 30px;
+        font-size: var(--fs-button);
         font-weight: 700;
         opacity: 0;
         pointer-events: none;
@@ -1344,20 +1355,21 @@
           </div>
         </div>
 
-        <div class="f-field" id="fGender">
+        <div class="f-field">
           <span class="f-label" id="genderLabel">性別</span>
+          <!-- 性別預設「男」，每次打開面板由 resetForm() 重設 -->
           <div
-            class="seg gender is-unset"
+            class="seg gender"
             id="genderSeg"
             role="radiogroup"
             aria-labelledby="genderLabel"
           >
             <span class="seg-thumb"></span>
             <button
-              class="seg-btn"
+              class="seg-btn is-active"
               type="button"
               role="radio"
-              aria-checked="false"
+              aria-checked="true"
               data-gender="男"
             >
               男
@@ -1372,9 +1384,6 @@
               女
             </button>
           </div>
-          <div class="f-error">
-            <i class="ti ti-alert-circle"></i>請選擇性別
-          </div>
         </div>
 
         <div class="f-field" id="fBirth">
@@ -1386,7 +1395,7 @@
             aria-haspopup="dialog"
             aria-labelledby="birthLabel birthText"
           >
-            <i class="ti ti-calendar birth-ico"></i>
+            <i class="ti ti-calendar-event birth-ico"></i>
             <span class="birth-text" id="birthText">請選擇出生日期</span>
             <i class="ti ti-chevron-down birth-chev"></i>
           </button>
@@ -1486,32 +1495,6 @@
           { id: "tpe-02", name: "信義長照中心" },
           { id: "tpe-03", name: "中正區活動中心" },
           { id: "tpe-04", name: "北投社區關懷據點" },
-          { id: "tpe-05", name: "內湖康寧醫院" },
-          { id: "tpe-06", name: "萬華日間照顧中心" },
-          { id: "ntp-01", name: "板橋社區關懷據點" },
-          { id: "ntp-02", name: "永和福和活動中心" },
-          { id: "ntp-03", name: "新店安康長照中心" },
-          { id: "ntp-04", name: "三重仁愛醫院" },
-          { id: "ntp-05", name: "淡水竹圍社區關懷據點" },
-          { id: "ntp-06", name: "新莊老人活動中心" },
-          { id: "tyn-01", name: "中壢社區關懷據點" },
-          { id: "tyn-02", name: "青溪長青活動中心" },
-          { id: "tyn-03", name: "八德長照服務中心" },
-          { id: "tyn-04", name: "龜山復健醫院" },
-          { id: "tyn-05", name: "平鎮社區關懷據點" },
-          { id: "txg-01", name: "西屯社區關懷據點" },
-          { id: "txg-02", name: "北屯長照中心" },
-          { id: "txg-03", name: "南屯區活動中心" },
-          { id: "txg-04", name: "豐原綜合醫院" },
-          { id: "txg-05", name: "大里日間照顧中心" },
-          { id: "tnn-01", name: "東區社區關懷據點" },
-          { id: "tnn-02", name: "永康長照中心" },
-          { id: "tnn-03", name: "安平區活動中心" },
-          { id: "tnn-04", name: "新營醫院" },
-          { id: "khh-01", name: "苓雅社區關懷據點" },
-          { id: "khh-02", name: "左營長照中心" },
-          { id: "khh-03", name: "三民區活動中心" },
-          { id: "khh-04", name: "鳳山綜合醫院" },
         ],
 
         // 受測人員（假資料）
@@ -1535,7 +1518,7 @@
             birth: "1954-07-21",
             gender: "男",
             source: "import",
-            done: { gait: "14:20" },
+            done: {},
           },
           {
             id: "s003",
@@ -1551,240 +1534,6 @@
             code: "A004",
             name: "張志明",
             birth: "1957-05-08",
-            gender: "男",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s005",
-            code: "A005",
-            name: "李秀英",
-            birth: "1941-09-14",
-            gender: "女",
-            source: "import",
-            done: { sppb: "13:40", gait: "13:58" },
-          },
-          {
-            id: "s006",
-            code: "A006",
-            name: "黃文雄",
-            birth: "1950-02-27",
-            gender: "男",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s007",
-            code: "A007",
-            name: "吳月娥",
-            birth: "1938-06-03",
-            gender: "女",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s008",
-            code: "A008",
-            name: "劉建國",
-            birth: "1956-10-19",
-            gender: "男",
-            source: "import",
-            done: { sppb: "13:21" },
-          },
-          {
-            id: "s009",
-            code: "A009",
-            name: "蔡玉蘭",
-            birth: "1952-04-11",
-            gender: "女",
-            source: "import",
-            done: { gait: "11:05" },
-          },
-          {
-            id: "s010",
-            code: "A010",
-            name: "楊金水",
-            birth: "1943-08-25",
-            gender: "男",
-            source: "import",
-            done: { sppb: "13:05" },
-          },
-          {
-            id: "s011",
-            code: "A011",
-            name: "許麗華",
-            birth: "1959-03-02",
-            gender: "女",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s012",
-            code: "A012",
-            name: "鄭阿土",
-            birth: "1948-11-30",
-            gender: "男",
-            source: "import",
-            done: { sppb: "11:48" },
-          },
-          {
-            id: "s013",
-            code: "A013",
-            name: "謝碧霞",
-            birth: "1946-07-07",
-            gender: "女",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s014",
-            code: "A014",
-            name: "郭清松",
-            birth: "1935-02-14",
-            gender: "男",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s015",
-            code: "A015",
-            name: "洪素貞",
-            birth: "1953-06-18",
-            gender: "女",
-            source: "import",
-            done: { sppb: "11:30" },
-          },
-          {
-            id: "s016",
-            code: "A016",
-            name: "曾國華",
-            birth: "1960-01-09",
-            gender: "男",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s017",
-            code: "A017",
-            name: "邱秀蘭",
-            birth: "1947-12-05",
-            gender: "女",
-            source: "import",
-            done: { sppb: "11:12" },
-          },
-          {
-            id: "s018",
-            code: "A018",
-            name: "廖永福",
-            birth: "1942-04-22",
-            gender: "男",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s019",
-            code: "A019",
-            name: "賴美惠",
-            birth: "1955-09-01",
-            gender: "女",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s020",
-            code: "A020",
-            name: "周春生",
-            birth: "1939-05-16",
-            gender: "男",
-            source: "import",
-            done: { sppb: "10:55" },
-          },
-          {
-            id: "s021",
-            code: "A021",
-            name: "徐阿香",
-            birth: "1936-10-28",
-            gender: "女",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s022",
-            code: "A022",
-            name: "蘇正雄",
-            birth: "1951-08-08",
-            gender: "男",
-            source: "import",
-            done: { gait: "10:30" },
-          },
-          {
-            id: "s023",
-            code: "A023",
-            name: "葉淑貞",
-            birth: "1958-02-20",
-            gender: "女",
-            source: "import",
-            done: { sppb: "10:41" },
-          },
-          {
-            id: "s024",
-            code: "A024",
-            name: "呂明德",
-            birth: "1944-07-13",
-            gender: "男",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s025",
-            code: "A025",
-            name: "江秀琴",
-            birth: "1949-03-29",
-            gender: "女",
-            source: "import",
-            done: { sppb: "10:20" },
-          },
-          {
-            id: "s026",
-            code: "A026",
-            name: "何金龍",
-            birth: "1953-11-02",
-            gender: "男",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s027",
-            code: "A027",
-            name: "羅玉英",
-            birth: "1940-06-26",
-            gender: "女",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s028",
-            code: "A028",
-            name: "高文彬",
-            birth: "1957-09-17",
-            gender: "男",
-            source: "import",
-            done: { sppb: "10:02" },
-          },
-          {
-            id: "s029",
-            code: "A029",
-            name: "潘麗珠",
-            birth: "1954-01-24",
-            gender: "女",
-            source: "import",
-            done: {},
-          },
-          {
-            id: "s030",
-            code: "A030",
-            name: "簡阿福",
-            birth: "1946-04-15",
             gender: "男",
             source: "import",
             done: {},
@@ -1894,34 +1643,49 @@
       const field = CONFIG.fields.find((f) => f.id === params.get("field"));
 
       /* =========================================================
-       * 本機儲存：kf.subjects.<fieldId>
-       * { added: [現場新增的人員], done: { 人員 id: { 測驗 id: "HH:MM" } } }
+       * sessionStorage（關閉分頁即清除）：kf.subjects.<fieldId>
+       * { added: [現場新增的人員], done: { 人員 id: { 測驗 id: "HH:MM" } },
+       *   edits: { 人員 id: { name, gender, birth, updatedAt } } }
+       * edits：受測者管理頁（subjects.html）對後台匯入人員的修改
        * ========================================================= */
       const LOCAL_KEY = field ? `kf.subjects.${field.id}` : "";
       function loadLocal() {
         try {
-          const v = JSON.parse(localStorage.getItem(LOCAL_KEY));
+          const v = JSON.parse(sessionStorage.getItem(LOCAL_KEY));
           return {
             added: Array.isArray(v?.added) ? v.added : [],
             done: v?.done && typeof v.done === "object" ? v.done : {},
+            edits: v?.edits && typeof v.edits === "object" ? v.edits : {},
           };
         } catch (e) {
-          return { added: [], done: {} };
+          return { added: [], done: {}, edits: {} };
         }
       }
       function saveLocal() {
         try {
-          localStorage.setItem(LOCAL_KEY, JSON.stringify(local));
+          sessionStorage.setItem(LOCAL_KEY, JSON.stringify(local));
         } catch (e) {}
       }
-      let local = field ? loadLocal() : { added: [], done: {} };
+      let local = field ? loadLocal() : { added: [], done: {}, edits: {} };
 
-      // 合併：現場新增（最新的在最前面）＋後台匯入；完成狀態以本機紀錄覆蓋
+      // 後台匯入的人：套用 edits 的修改（姓名、性別、出生日期），與受測者管理頁顯示一致
+      function applyEdits(s) {
+        const e = local.edits[s.id];
+        if (!e) return s;
+        return {
+          ...s,
+          name: e.name ?? s.name,
+          gender: e.gender ?? s.gender,
+          birth: e.birth ?? s.birth,
+        };
+      }
+
+      // 合併：現場新增（最新的在最前面）＋後台匯入；完成狀態以 sessionStorage（關閉分頁即清除）的紀錄覆蓋
       function allSubjects() {
         const added = [...local.added]
           .reverse()
           .map((s) => ({ ...s, source: "onsite" }));
-        return [...added, ...CONFIG.subjects].map((s) => ({
+        return [...added, ...CONFIG.subjects.map(applyEdits)].map((s) => ({
           ...s,
           done: { ...(s.done || {}), ...(local.done[s.id] || {}) },
         }));
@@ -1958,7 +1722,7 @@
         return { todo, done };
       }
 
-      /* 預覽模式（CONFIG.devPreview 或 ?preview=1 時使用）：只改畫面上的資料，不寫入 localStorage
+      /* 預覽模式（CONFIG.devPreview 或 ?preview=1 時使用）：只改畫面上的資料，不寫入 sessionStorage（關閉分頁即清除）
        * null：使用原本的資料；"idle"：所有人未完成；"complete"：所有人已完成 */
       // 顯示條件：CONFIG.devPreview 為 true，或網址有 preview=1，任一成立就顯示
       const PREVIEW =
@@ -2120,10 +1884,10 @@
         renderList();
       }
 
-      function startTest(subject) {
-        showToast(`即將開始：${subject.name} · ${test.name}`);
-        // TODO：assess.html 做好之後改成換頁
-        // location.href = `assess.html?test=${test.id}&field=${field.id}&subject=${subject.id}`;
+      // 開始、確認後的重測：進入測驗頁
+      // 開始、確認後的重測：進入測驗頁；重測時網址加上 retest=1
+      function startTest(subject, retest = false) {
+        location.href = `assess.html?test=${test.id}&field=${field.id}&subject=${subject.id}${retest ? "&retest=1" : ""}`;
       }
 
       function goBack() {
@@ -2171,18 +1935,30 @@
       const inName = $("#inName");
       const genderSeg = $("#genderSeg");
       // birth：已選擇的出生日期（西元 "YYYY-MM-DD"），未選擇為 null
-      const A = { open: false, gender: null, birth: null, lastFocus: null };
+      // gender：預設「男」，每次打開面板重設
+      const DEFAULT_GENDER = "男";
+      const A = { open: false, gender: DEFAULT_GENDER, birth: null, lastFocus: null };
 
-      const isDirty = () => Boolean(inName.value.trim() || A.birth || A.gender);
+      // 是否已輸入資料：只看姓名和出生年月日（性別有預設值，不算）
+      const isDirty = () => Boolean(inName.value.trim() || A.birth);
+
+      // 性別直接定位到預設值：暫時關掉滑塊與文字顏色的過場，避免看到滑動動畫
+      function resetGender() {
+        A.gender = DEFAULT_GENDER;
+        const btns = [...genderSeg.querySelectorAll(".seg-btn")];
+        const animated = [genderSeg.querySelector(".seg-thumb"), ...btns];
+        animated.forEach((el) => (el.style.transition = "none"));
+        setSeg(
+          genderSeg,
+          btns.findIndex((b) => b.dataset.gender === DEFAULT_GENDER),
+        );
+        void genderSeg.offsetWidth; // 強制套用位置後再恢復過場
+        animated.forEach((el) => (el.style.transition = ""));
+      }
 
       function resetForm() {
         form.reset();
-        A.gender = null;
-        genderSeg.classList.add("is-unset");
-        genderSeg.querySelectorAll(".seg-btn").forEach((b) => {
-          b.classList.remove("is-active");
-          b.setAttribute("aria-checked", "false");
-        });
+        resetGender();
         form
           .querySelectorAll(".has-error")
           .forEach((f) => f.classList.remove("has-error"));
@@ -2235,7 +2011,6 @@
         const name = inName.value.trim();
         const errors = {
           fName: !name,
-          fGender: !A.gender,
           fBirth: !A.birth,
         };
         let first = null;
@@ -2316,7 +2091,6 @@
             genderSeg,
             [...genderSeg.querySelectorAll(".seg-btn")].indexOf(btn),
           );
-          $("#fGender").classList.remove("has-error");
         });
 
         // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉（有資料先確認），否則彈回
@@ -2632,7 +2406,7 @@
             cancel: "取消",
             ok: "開始重測",
           });
-          if (ok) startTest(subject);
+          if (ok) startTest(subject, true);
         });
 
         document.addEventListener("keydown", (e) => {

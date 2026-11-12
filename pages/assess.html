@@ -1,0 +1,1153 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - SPPB 測驗</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
+    />
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
+       * 測驗頁：左側欄 220px｜中間鏡頭區｜右側欄 220px，整頁不捲動
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --card-deep: #e6dccb; /* 圖示底 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6; /* 虛線、未選中指示點 */
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420; /* 主要文字 */
+        --muted: #6f6656; /* 次要文字 */
+        --on-forest: #f6f1e8; /* 森林綠上的文字 */
+        --danger: #b5473a; /* 重新開始、錯誤 */
+
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 字級：四頁共用，同一種用途用同一個變數（其他字級以這些變數加減或倍數表示）
+         * 大小順序：small < body < button < lead < title < display；card-name、hero-num 為大字專用 */
+        --fs-display: 72px; /* 頁面大標題：問候語、登入、場域名稱、受測者管理 */
+        --fs-hero-num: 88px; /* 大數字：今日數據、進度數字 */
+        --fs-card-name: 84px; /* 測驗卡片名稱 */
+        --fs-title: 44px; /* 面板與對話框標題 */
+        --fs-lead: 32px; /* 重要內文：人員姓名、場域名稱、欄位輸入文字、影像上傳標題 */
+        --fs-button: 30px; /* 按鈕文字、導航文字、toast */
+        --fs-body: 26px; /* 一般內文、說明、欄位標籤、分段切換、搜尋框 */
+        --fs-small: 24px; /* 輔助小字：日期、編號・年齡・性別、時間、徽章、小標籤、錯誤訊息 */
+
+        --side: 220px; /* 左右側欄寬 */
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow: hidden; /* 整頁不捲動 */
+      }
+      .serif {
+        font-family: var(--font-serif);
+      }
+      /* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
+      input,
+      textarea,
+      select,
+      input::placeholder,
+      textarea::placeholder {
+        font: inherit;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .stage[hidden] {
+        display: none;
+      }
+
+      /* 所有圓形按鈕：按下縮小到 0.94，放開彈回 */
+      .round {
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        transition: transform 0.35s var(--ease-spring);
+      }
+      .round:active {
+        transform: scale(0.94);
+        transition-duration: 0.15s;
+        transition-timing-function: var(--ease-out);
+      }
+
+      /* =========================================================
+       * 中間鏡頭區
+       * ========================================================= */
+      .camera {
+        position: fixed;
+        left: var(--side);
+        right: var(--side);
+        top: 0;
+        bottom: 0;
+        overflow: hidden;
+        background: linear-gradient(180deg, #1c2e28, #122019);
+        animation: camIn 0.5s var(--ease-out) both;
+      }
+      @keyframes camIn {
+        from {
+          opacity: 0;
+        }
+      }
+      /* 四個角的黃銅取景角 */
+      .corner {
+        position: absolute;
+        width: 56px;
+        height: 56px;
+        border: 0 solid var(--brass);
+      }
+      .corner.tl {
+        top: 28px;
+        left: 28px;
+        border-top-width: 6px;
+        border-left-width: 6px;
+        border-top-left-radius: 22px;
+      }
+      .corner.tr {
+        top: 28px;
+        right: 28px;
+        border-top-width: 6px;
+        border-right-width: 6px;
+        border-top-right-radius: 22px;
+      }
+      .corner.bl {
+        bottom: 28px;
+        left: 28px;
+        border-bottom-width: 6px;
+        border-left-width: 6px;
+        border-bottom-left-radius: 22px;
+      }
+      .corner.br {
+        bottom: 28px;
+        right: 28px;
+        border-bottom-width: 6px;
+        border-right-width: 6px;
+        border-bottom-right-radius: 22px;
+      }
+      .cam-label {
+        position: absolute;
+        top: 80px;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: var(--fs-small);
+        letter-spacing: 0.2em;
+        color: rgba(246, 241, 232, 0.35);
+      }
+      .cam-label i {
+        font-size: 1.2em;
+        letter-spacing: 0;
+      }
+      /* 中央淡色大圖示（位於鏡頭區垂直 44% 處） */
+      .cam-icon {
+        position: absolute;
+        left: 50%;
+        top: 44%;
+        /* --icon-dx：個別圖示的水平微調（ITEMS 的 iconOffsetX），讓圖形看起來置中 */
+        transform: translate(calc(-50% + var(--icon-dx, 0px)), -50%);
+        font-size: 260px;
+        line-height: 1;
+        color: rgba(246, 241, 232, 0.08);
+      }
+      /* 定位框：待機時光暈緩慢呼吸 */
+      .target {
+        position: absolute;
+        left: 50%;
+        bottom: 140px;
+        width: 440px;
+        height: 100px;
+        margin-left: -220px;
+        border-radius: 24px;
+        border: 4px dashed var(--brass);
+        background: rgba(176, 141, 87, 0.12);
+        box-shadow:
+          0 0 0 10px rgba(176, 141, 87, 0.08),
+          0 0 50px rgba(176, 141, 87, 0.25);
+        animation: breathe 3s ease-in-out infinite alternate;
+      }
+      @keyframes breathe {
+        to {
+          box-shadow:
+            0 0 0 10px rgba(176, 141, 87, 0.08),
+            0 0 80px rgba(176, 141, 87, 0.45);
+        }
+      }
+      .target-label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(140px + 100px + 20px);
+        text-align: center;
+        font-size: var(--fs-body);
+        font-weight: 700;
+        line-height: 1.3;
+        color: #d9c39b;
+      }
+
+      /* =========================================================
+       * 左右側欄（內距：左右 24px、上 40px、下 48px）
+       * ========================================================= */
+      .side {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: var(--side);
+        padding: 40px 24px 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .side.left {
+        left: 0;
+        animation: inLeft 0.5s var(--ease-out) both;
+      }
+      .side.right {
+        right: 0;
+        animation: inRight 0.5s var(--ease-out) both;
+      }
+      @keyframes inLeft {
+        from {
+          transform: translateX(-100%);
+        }
+      }
+      @keyframes inRight {
+        from {
+          transform: translateX(100%);
+        }
+      }
+
+      /* 返回首頁 */
+      .home-btn {
+        flex: 0 0 auto;
+        align-self: flex-start;
+        width: 96px;
+        height: 96px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        font-size: 44px;
+        color: var(--ink);
+      }
+
+      /* 受測者卡片 */
+      .who {
+        flex: 0 0 auto;
+        width: 100%;
+        margin-top: 24px;
+        padding: 22px 16px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .who-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--card-deep);
+        display: grid;
+        place-items: center;
+        font-size: calc(var(--fs-lead) + 2px);
+        font-weight: 600;
+        color: var(--brass-text);
+      }
+      .who-name {
+        max-width: 100%;
+        margin-top: 10px;
+        font-size: calc(var(--fs-lead) - 4px);
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .who-meta {
+        max-width: 100%;
+        margin-top: 2px;
+        font-size: calc(var(--fs-small) - 2px);
+        line-height: 1.3;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* 測驗進度：直式步驟 */
+      .steps {
+        flex: 0 0 auto;
+        width: 100%;
+        margin-top: 24px;
+        padding-left: 8px;
+      }
+      .steps[hidden] {
+        display: none;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .step-dot {
+        flex: 0 0 auto;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 2px solid var(--line-soft);
+        display: grid;
+        place-items: center;
+        font-size: calc(var(--fs-body) - 2px);
+        font-weight: 700;
+        color: #8a8170;
+        transition:
+          background 0.4s var(--ease-out),
+          border-color 0.4s var(--ease-out),
+          color 0.4s var(--ease-out);
+      }
+      .step-name {
+        font-size: calc(var(--fs-body) - 2px);
+        font-weight: 700;
+        line-height: 1.3;
+        color: #8a8170;
+        transition: color 0.4s var(--ease-out);
+      }
+      /* 步驟之間的連接線：2px 寬、28px 高，對齊圓點中心 */
+      .step-line {
+        width: 2px;
+        height: 28px;
+        margin-left: 20px;
+        background: var(--line-soft);
+      }
+      .step.is-current .step-dot {
+        background: var(--brass);
+        border-color: var(--brass);
+        color: var(--forest);
+      }
+      .step.is-current .step-name {
+        color: var(--ink);
+      }
+      .step.is-done .step-dot {
+        background: var(--forest);
+        border-color: var(--forest);
+        color: var(--brass);
+      }
+      .step.is-done .step-name {
+        color: var(--muted);
+      }
+
+      /* 底部按鈕群 */
+      /* 底部按鈕群：重新開始 →（36px）→ 開始測試 →（40px）→ 上一項
+       * 上一項與右側下一項的內容高度相同、都貼齊底部 48px，所以圓形按鈕和文字左右同高 */
+      .actions {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .actions > .act + .act {
+        margin-top: 36px;
+      }
+      /* 只有一項的測驗（行走測驗）：不顯示上一項，也不保留空間；左側底部只剩重新開始、開始測試 */
+      .stage.is-single .prev-act {
+        display: none;
+      }
+      .actions > .act.prev-act {
+        margin-top: 40px;
+      }
+      .act {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      .act-label {
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+      .restart-btn {
+        width: 118px;
+        height: 118px;
+        background: var(--danger);
+        color: #fff;
+        font-size: 52px;
+        box-shadow: 0 10px 24px rgba(181, 71, 58, 0.3);
+      }
+      .restart-label {
+        font-size: calc(var(--fs-button) - 4px);
+        color: #a8442f;
+      }
+      /* 開始測試：外環＋內圓；待機時外環的淡光暈向外擴散（同首頁「開始測驗」的 halo） */
+      .start-btn {
+        width: 168px;
+        height: 168px;
+        padding: 8px;
+        border: 6px solid var(--brass);
+        box-shadow: 0 0 0 12px rgba(176, 141, 87, 0.15);
+        animation: halo 2.4s 1.2s ease-out infinite;
+      }
+      @keyframes halo {
+        from {
+          box-shadow:
+            0 0 0 12px rgba(176, 141, 87, 0.15),
+            0 0 0 12px rgba(176, 141, 87, 0.5);
+        }
+        to {
+          box-shadow:
+            0 0 0 12px rgba(176, 141, 87, 0.15),
+            0 0 0 34px rgba(176, 141, 87, 0);
+        }
+      }
+      .start-core {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: var(--forest);
+        color: var(--on-forest);
+        display: grid;
+        place-items: center;
+        font-size: 64px;
+        box-shadow: 0 12px 28px rgba(31, 59, 51, 0.35);
+      }
+      .start-label {
+        font-size: calc(var(--fs-button) - 2px);
+        color: var(--forest);
+      }
+
+      /* 右側欄：項目標題 */
+      .item-head {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .item-icon {
+        font-size: 44px;
+        line-height: 1;
+        color: var(--brass-text);
+      }
+      .item-name {
+        margin: 10px 0 0;
+        font-size: calc(var(--fs-display) + 8px);
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .item-rule {
+        width: 48px;
+        height: 3px;
+        margin-top: 16px;
+        border-radius: 2px;
+        background: var(--brass);
+      }
+      /* 上一項：第 1 項（以及只有一項的測驗）時隱藏但保留空間，切換時只淡入淡出，位置不變 */
+      .prev-act {
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s var(--ease-out),
+          visibility 0s 0.3s;
+      }
+      .prev-act.is-shown {
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 0.3s var(--ease-out),
+          visibility 0s;
+      }
+      /* 下一項：貼齊底部 */
+      .next {
+        margin-top: auto;
+      }
+      .prev-btn {
+        width: 140px;
+        height: 140px;
+        background: var(--card);
+        border: 3px solid var(--brass);
+        color: var(--brass-text);
+        font-size: 58px;
+        box-shadow: 0 10px 24px rgba(176, 141, 87, 0.18);
+      }
+      /* 下一項／完成測驗 */
+      .next-btn {
+        width: 140px;
+        height: 140px;
+        background: var(--brass);
+        color: var(--forest);
+        font-size: 58px;
+        box-shadow: 0 10px 24px rgba(176, 141, 87, 0.4);
+      }
+      .next-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .next-label {
+        font-size: calc(var(--fs-button) - 4px);
+        color: var(--brass-text);
+      }
+      .next-name {
+        font-size: calc(var(--fs-lead) + 2px);
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+      /* 第二行沒有文字時（完成測驗、第 1 項的上一項）仍保留一行的高度，按鈕位置不變 */
+      .next-name.is-empty {
+        visibility: hidden;
+      }
+
+      /* =========================================================
+       * 確認對話框（與 roster.html 相同）
+       * ========================================================= */
+      .mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 30, 26, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s var(--ease-out);
+        z-index: 200;
+      }
+      .mask.is-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .dialog-mask {
+        z-index: 400;
+      }
+      .dialog {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 640px;
+        padding: 56px;
+        background: var(--card);
+        border-radius: 44px;
+        box-shadow: 0 24px 80px rgba(20, 30, 26, 0.25);
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -50%) scale(0.92);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s 0.35s;
+        z-index: 410;
+      }
+      .dialog.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s;
+      }
+      .dlg-icon {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: var(--card-deep);
+        color: var(--brass-text);
+        display: grid;
+        place-items: center;
+        font-size: var(--fs-title);
+      }
+      .dlg-title {
+        margin: 24px 0 0;
+        font-size: var(--fs-title);
+        line-height: 1.25;
+        font-weight: 600;
+      }
+      .dlg-desc {
+        margin: 14px 0 0;
+        font-size: var(--fs-body);
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .dlg-actions {
+        margin-top: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .dlg-btn {
+        height: 96px;
+        border-radius: 999px;
+        font-size: calc(var(--fs-button) + 2px);
+        font-weight: 700;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .dlg-btn:active {
+        transform: scale(0.97);
+      }
+      .dlg-btn.secondary {
+        border: 2px solid var(--line-soft);
+        color: var(--ink);
+      }
+      .dlg-btn.primary {
+        background: var(--forest);
+        color: var(--on-forest);
+      }
+
+      /* ===== 提示訊息 ===== */
+      .toast {
+        position: fixed;
+        left: 50%;
+        top: calc(36px + env(safe-area-inset-top));
+        transform: translate(-50%, -24px);
+        padding: 22px 40px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: var(--fs-button);
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.35s var(--ease-spring);
+        z-index: 600;
+        white-space: nowrap;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage" hidden>
+      <!-- 中間鏡頭區（暫時用漸層代表鏡頭畫面） -->
+      <section class="camera" aria-label="鏡頭畫面">
+        <span class="corner tl"></span><span class="corner tr"></span>
+        <span class="corner bl"></span><span class="corner br"></span>
+        <div class="cam-label"><i class="ti ti-video"></i>鏡頭畫面</div>
+        <i class="ti cam-icon" id="camIcon" aria-hidden="true"></i>
+        <div class="target-label" id="targetLabel"></div>
+        <div class="target" aria-hidden="true"></div>
+      </section>
+
+      <!-- 左側欄：返回、受測者、進度、重新開始／開始測試 -->
+      <aside class="side left">
+        <button class="round home-btn" id="homeBtn" type="button" aria-label="返回首頁">
+          <i class="ti ti-home"></i>
+        </button>
+
+        <div class="who">
+          <div class="who-avatar serif" id="whoAvatar"></div>
+          <div class="who-name" id="whoName"></div>
+          <div class="who-meta" id="whoMeta"></div>
+        </div>
+
+        <div class="steps" id="steps" aria-label="測驗進度"></div>
+
+        <div class="actions">
+          <div class="act">
+            <button class="round restart-btn" id="restartBtn" type="button" aria-labelledby="restartLabel">
+              <i class="ti ti-rotate"></i>
+            </button>
+            <span class="act-label restart-label" id="restartLabel">重新開始</span>
+          </div>
+          <div class="act">
+            <button class="round start-btn" id="startBtn" type="button" aria-labelledby="startLabel">
+              <span class="start-core"><i class="ti ti-player-play"></i></span>
+            </button>
+            <span class="act-label start-label" id="startLabel">開始測試</span>
+          </div>
+          <!-- 上一項：與右側「下一項」左右對稱；第 1 項時隱藏但保留空間 -->
+          <div class="act prev-act" id="prevAct" aria-hidden="true">
+            <button class="round prev-btn" id="prevBtn" type="button" tabindex="-1" aria-labelledby="prevLabel prevName">
+              <i class="ti ti-arrow-left"></i>
+            </button>
+            <div class="next-text">
+              <span class="act-label next-label" id="prevLabel">上一項</span>
+              <span class="next-name serif is-empty" id="prevName">　</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 右側欄：目前項目、下一項／完成測驗 -->
+      <aside class="side right">
+        <div class="item-head" id="itemHead">
+          <i class="ti item-icon" id="itemIcon" aria-hidden="true"></i>
+          <h1 class="item-name serif" id="itemName"></h1>
+          <span class="item-rule"></span>
+        </div>
+
+        <div class="act next">
+          <button class="round next-btn" id="nextBtn" type="button" aria-labelledby="nextLabel nextName">
+            <i class="ti ti-arrow-right" id="nextIcon"></i>
+          </button>
+          <div class="next-text">
+            <span class="act-label next-label" id="nextLabel">下一項</span>
+            <span class="next-name serif" id="nextName"></span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 確認對話框 -->
+    <div class="mask dialog-mask" id="dlgMask"></div>
+    <div
+      class="dialog"
+      id="dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dlgTitle"
+      aria-describedby="dlgDesc"
+      aria-hidden="true"
+    >
+      <div class="dlg-icon"><i class="ti" id="dlgIcon"></i></div>
+      <h2 class="dlg-title serif" id="dlgTitle"></h2>
+      <p class="dlg-desc" id="dlgDesc"></p>
+      <div class="dlg-actions">
+        <button class="dlg-btn secondary" id="dlgCancel" type="button"></button>
+        <button class="dlg-btn primary" id="dlgOk" type="button"></button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      /* =========================================================
+       * 設定區：測驗、場域、受測人員與其他頁重複，之後改成共用設定或 API
+       * ========================================================= */
+      const CONFIG = {
+        tests: [
+          {
+            id: "sppb",
+            name: "SPPB",
+            desc: "簡易身體功能評估",
+            icon: "ti-activity",
+          },
+          { id: "gait", name: "行走測驗", desc: "步態分析", icon: "ti-walk" },
+        ],
+
+        fields: [
+          { id: "tpe-01", name: "大安社區關懷據點" },
+          { id: "tpe-02", name: "信義長照中心" },
+          { id: "tpe-03", name: "中正區活動中心" },
+          { id: "tpe-04", name: "北投社區關懷據點" },
+        ],
+
+        // 受測人員（假資料）
+        // TODO：之後改成依 field 從 API 取得名單，例如 fetch(`/api/fields/${field.id}/subjects`)
+        // birth：西元 "YYYY-MM-DD"；code：現場新增的人為 null
+        // source："import" 後台匯入／"onsite" 現場新增；done：{ 測驗 id: 完成時間 }
+        subjects: [
+          {
+            id: "s001",
+            code: "A001",
+            name: "林淑芬",
+            birth: "1948-03-12",
+            gender: "女",
+            source: "import",
+            done: { sppb: "14:05" },
+          },
+          {
+            id: "s002",
+            code: "A002",
+            name: "王小明",
+            birth: "1954-07-21",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s003",
+            code: "A003",
+            name: "陳美玉",
+            birth: "1945-01-30",
+            gender: "女",
+            source: "import",
+            done: { sppb: "13:52" },
+          },
+          {
+            id: "s004",
+            code: "A004",
+            name: "張志明",
+            birth: "1957-05-08",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+        ],
+      };
+
+      /* 測驗項目（新增測驗項目只要改這裡）：依陣列順序進行
+       * iconOffsetX（可選，px）：只套用在鏡頭中央的大圖示，修正圖形本身不對稱造成的偏移（正數往右） */
+      const ITEMS = {
+        sppb: [
+          { id: "chair", name: "起坐", icon: "ti-armchair", guide: "椅子擺放位置" },
+          { id: "balance", name: "平衡", icon: "ti-stretching", guide: "站立位置", iconOffsetX: -4 },
+          { id: "walk", name: "步行", icon: "ti-walk", guide: "起點位置", iconOffsetX: 2 },
+        ],
+        gait: [{ id: "walk", name: "行走", icon: "ti-walk", guide: "起點位置", iconOffsetX: 2 }],
+      };
+
+      /* =========================================================
+       * 共用功能
+       * ========================================================= */
+      const $ = (sel) => document.querySelector(sel);
+      let toastTimer;
+      function showToast(msg) {
+        const el = $("#toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+      }
+      const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // 年齡：依今天日期計算，未滿生日減 1；birth 為西元 "YYYY-MM-DD"
+      function ageFrom(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        const now = new Date();
+        const beforeBirthday =
+          now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d);
+        return now.getFullYear() - y - (beforeBirthday ? 1 : 0);
+      }
+      const subjectAge = (s) => (s.birth ? ageFrom(s.birth) : s.age);
+
+      /* =========================================================
+       * 網址參數＋sessionStorage（關閉分頁即清除；讀寫都包 try/catch）
+       * kf.subjects.<fieldId>：{ added, done: { 人員 id: { 測驗 id: "HH:MM" } }, edits }（與 roster.html 共用）
+       * ========================================================= */
+      const params = new URLSearchParams(location.search);
+      const test = CONFIG.tests.find((t) => t.id === params.get("test"));
+      const field = CONFIG.fields.find((f) => f.id === params.get("field"));
+      const LOCAL_KEY = field ? `kf.subjects.${field.id}` : "";
+
+      function loadLocal() {
+        try {
+          const v = JSON.parse(sessionStorage.getItem(LOCAL_KEY));
+          const obj = (x) => (x && typeof x === "object" ? x : {});
+          return {
+            ...obj(v),
+            added: Array.isArray(v?.added) ? v.added : [],
+            done: obj(v?.done),
+            edits: obj(v?.edits),
+          };
+        } catch (e) {
+          return { added: [], done: {}, edits: {} };
+        }
+      }
+      function saveLocal(data) {
+        try {
+          sessionStorage.setItem(LOCAL_KEY, JSON.stringify(data));
+        } catch (e) {}
+      }
+
+      // 受測者：後台匯入的人套用 edits；也找得到名單頁現場新增的人。缺少 subject 時用第一筆
+      function findSubject() {
+        const local = loadLocal();
+        const id = params.get("subject");
+        const imported = CONFIG.subjects.find((s) => s.id === id) || (!id ? CONFIG.subjects[0] : null);
+        if (imported) {
+          const e = local.edits[imported.id];
+          return e
+            ? { ...imported, name: e.name ?? imported.name, gender: e.gender ?? imported.gender, birth: e.birth ?? imported.birth }
+            : imported;
+        }
+        return local.added.find((s) => s.id === id) || CONFIG.subjects[0];
+      }
+
+      /* =========================================================
+       * 測驗流程
+       * ========================================================= */
+      const T = { items: [], index: 0, subject: null };
+
+      function renderSubject() {
+        const s = T.subject;
+        $("#whoAvatar").textContent = s.name.slice(0, 1);
+        $("#whoName").textContent = s.name;
+        // 有編號顯示編號；沒有編號顯示「78 歲 · 男」
+        $("#whoMeta").textContent = s.code ? s.code : `${subjectAge(s)} 歲 · ${s.gender}`;
+      }
+
+      // 左側進度：目前／已完成／未開始；只有一項的測驗不顯示
+      function renderSteps() {
+        const box = $("#steps");
+        box.hidden = T.items.length < 2;
+        if (box.hidden) return;
+        if (!box.children.length) {
+          box.innerHTML = T.items
+            .map(
+              (it, i) =>
+                `${i ? '<div class="step-line"></div>' : ""}<div class="step" data-i="${i}"><span class="step-dot"></span><span class="step-name">${it.name}</span></div>`,
+            )
+            .join("");
+        }
+        box.querySelectorAll(".step").forEach((el) => {
+          const i = Number(el.dataset.i);
+          const done = i < T.index;
+          el.classList.toggle("is-done", done);
+          el.classList.toggle("is-current", i === T.index);
+          el.setAttribute("aria-current", i === T.index ? "step" : "false");
+          el.querySelector(".step-dot").innerHTML = done ? '<i class="ti ti-check"></i>' : i + 1;
+        });
+      }
+
+      // 目前項目：右側標題、鏡頭中央圖示、定位框文字、上一項／下一項的名稱
+      function renderItem() {
+        const it = T.items[T.index];
+        $("#itemIcon").className = `ti item-icon ${it.icon}`;
+        $("#itemName").textContent = it.name;
+        $("#camIcon").className = `ti cam-icon ${it.icon}`;
+        $("#camIcon").style.setProperty("--icon-dx", `${it.iconOffsetX || 0}px`); // 只調整鏡頭中央的大圖示
+        $("#targetLabel").textContent = it.guide;
+        const last = T.index === T.items.length - 1;
+        $("#nextIcon").className = `ti ${last ? "ti-check" : "ti-arrow-right"}`;
+        $("#nextLabel").textContent = last ? "完成測驗" : "下一項";
+        // 沒有名稱時放全形空白並隱藏，保留一行高度，按鈕和文字位置不變
+        setName($("#nextName"), last ? "" : T.items[T.index + 1].name);
+        setName($("#prevName"), T.index > 0 ? T.items[T.index - 1].name : "");
+      }
+      function setName(el, name) {
+        el.textContent = name || "　";
+        el.classList.toggle("is-empty", !name);
+        el.setAttribute("aria-hidden", !name);
+      }
+
+      // 「上一項」：第 1 項時隱藏且不佔空間；出現／消失時淡入淡出 0.3s
+      // 「上一項」：第 1 項時隱藏但保留空間（visibility＋opacity），出現／消失只淡入淡出 0.3s
+      function updatePrev() {
+        const act = $("#prevAct");
+        const show = T.index > 0;
+        act.classList.toggle("is-shown", show);
+        act.setAttribute("aria-hidden", !show);
+        $("#prevBtn").tabIndex = show ? 0 : -1;
+      }
+
+      /* 切換動畫：淡出 → 更新內容 → 淡入
+       * dir = 1（下一項）：往上淡出、從下方淡入；dir = -1（上一項）：往下淡出、從上方淡入
+       * 用 translate 屬性（不是 transform），才不會蓋掉鏡頭圖示原本置中用的 transform */
+      function swap(els, update, dir = 1) {
+        els.forEach((el) => el.getAnimations().forEach((a) => a.cancel())); // 清掉上一次切換留下的動畫
+        const out = els.map((el) =>
+          el.animate([{ opacity: 1, translate: "0 0" }, { opacity: 0, translate: `0 ${-16 * dir}px` }], {
+            duration: REDUCED ? 1 : 200,
+            easing: "ease-in",
+            fill: "forwards",
+          }),
+        );
+        Promise.all(out.map((a) => a.finished)).then(() => {
+          update();
+          els.forEach((el) => {
+            el.animate([{ opacity: 0, translate: `0 ${16 * dir}px` }, { opacity: 1, translate: "0 0" }], {
+              duration: REDUCED ? 1 : 320,
+              easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+              fill: "forwards",
+            });
+          });
+        });
+      }
+      const swapTargets = () => [$("#itemHead"), $("#camIcon"), $("#targetLabel")];
+
+      // 上一項：上一個項目改回「目前」，原本的目前項目改回「未開始」
+      function prev() {
+        if (finishing || T.index === 0) return;
+        T.index -= 1;
+        renderSteps(); // 圓點狀態以 0.4s 過場切換
+        updatePrev();
+        swap(swapTargets(), renderItem, -1);
+      }
+
+      function startItem() {
+        showToast(`測試開始：${T.items[T.index].name}`);
+        // TODO：之後接鏡頭偵測與計時流程
+      }
+      function restartItem() {
+        showToast(`已重新開始：${T.items[T.index].name}`);
+        // TODO：之後清除目前項目的偵測結果並重新計時
+      }
+
+      function pad2(n) {
+        return String(n).padStart(2, "0");
+      }
+
+      // 下一項／完成測驗
+      let finishing = false;
+      function next() {
+        if (finishing) return;
+        if (T.index < T.items.length - 1) {
+          T.index += 1;
+          renderSteps(); // 圓點狀態以 0.4s 過場切換
+          updatePrev();
+          // 右側標題、鏡頭中央圖示、定位框文字一起淡出淡入
+          swap(swapTargets(), renderItem, 1);
+          return;
+        }
+        // 完成：寫入 kf.subjects.<fieldId>.done[人員 id][測驗 id] = "HH:MM"
+        finishing = true;
+        const now = new Date();
+        const local = loadLocal();
+        local.done[T.subject.id] = {
+          ...(local.done[T.subject.id] || {}),
+          [test.id]: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
+        };
+        saveLocal(local);
+        showToast(`已完成 ${T.subject.name} 的 ${test.name}`);
+
+        // 行走測驗：回到名單頁
+        if (test.id !== "sppb") {
+          setTimeout(() => (location.href = `roster.html?test=${test.id}&field=${field.id}`), 1200);
+          return;
+        }
+        // SPPB：新增一筆鑑測紀錄到 kf.records.<fieldId>，再進入結果頁
+        const record = {
+          id: `s${now.getTime()}`,
+          fieldId: field.id,
+          subjectId: T.subject.id,
+          test: "sppb",
+          date: `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`,
+          time: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
+          retest: params.get("retest") === "1",
+        };
+        addRecord(record);
+        setTimeout(() => (location.href = `result.html?record=${record.id}&from=assess`), 1200);
+      }
+
+      // kf.records.<fieldId>：測驗完成時新增的鑑測紀錄（陣列；紀錄頁、結果頁會一起讀取）
+      function addRecord(record) {
+        const key = `kf.records.${field.id}`;
+        try {
+          const list = JSON.parse(sessionStorage.getItem(key));
+          sessionStorage.setItem(key, JSON.stringify([...(Array.isArray(list) ? list : []), record]));
+        } catch (e) {}
+      }
+
+      /* =========================================================
+       * 確認對話框：confirmDialog({...}) → Promise<boolean>（與 roster.html 相同）
+       * 點遮罩或按 Esc 等同按次要按鈕
+       * ========================================================= */
+      const dialog = $("#dialog");
+      let dialogResolve = null;
+      function confirmDialog({ icon, title, desc, cancel, ok }) {
+        document.activeElement?.blur?.();
+        $("#dlgIcon").className = `ti ${icon}`;
+        $("#dlgTitle").textContent = title;
+        $("#dlgDesc").textContent = desc;
+        $("#dlgCancel").textContent = cancel;
+        $("#dlgOk").textContent = ok;
+        dialog.classList.add("is-open");
+        dialog.setAttribute("aria-hidden", "false");
+        $("#dlgMask").classList.add("is-open");
+        $("#dlgOk").focus({ preventScroll: true });
+        return new Promise((resolve) => (dialogResolve = resolve));
+      }
+      function closeDialog(result) {
+        if (!dialogResolve) return;
+        dialog.classList.remove("is-open");
+        dialog.setAttribute("aria-hidden", "true");
+        $("#dlgMask").classList.remove("is-open");
+        const resolve = dialogResolve;
+        dialogResolve = null;
+        resolve(result);
+      }
+      $("#dlgCancel").addEventListener("click", () => closeDialog(false));
+      $("#dlgMask").addEventListener("click", () => closeDialog(false));
+      $("#dlgOk").addEventListener("click", () => closeDialog(true));
+
+      async function goHome() {
+        const leave = await confirmDialog({
+          icon: "ti-alert-circle",
+          title: "要離開測驗嗎？",
+          desc: "目前的測驗進度不會保存",
+          cancel: "繼續測驗",
+          ok: "離開",
+        });
+        if (leave) location.href = "home.html";
+      }
+
+      /* =========================================================
+       * 啟動
+       * ========================================================= */
+      function init() {
+        if (!test || !field || !ITEMS[test.id]) {
+          showToast("找不到測驗資料");
+          setTimeout(() => (location.href = "home.html"), 1500);
+          return;
+        }
+        T.items = ITEMS[test.id];
+        T.subject = findSubject();
+        // 「SPPB 測驗」；名稱已含「測驗」的不再重複（行走測驗）
+        document.title = `建豐健康科技 - ${test.name.endsWith("測驗") ? test.name : test.name + " 測驗"}`;
+        $("#stage").classList.toggle("is-single", T.items.length < 2);
+        $("#stage").hidden = false;
+        renderSubject();
+        renderSteps();
+        renderItem();
+
+        $("#homeBtn").addEventListener("click", goHome);
+        $("#startBtn").addEventListener("click", startItem);
+        $("#restartBtn").addEventListener("click", restartItem);
+        $("#nextBtn").addEventListener("click", next);
+        $("#prevBtn").addEventListener("click", prev);
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && dialogResolve) closeDialog(false);
+        });
+      }
+      init();
+    </script>
+  </body>
+</html>

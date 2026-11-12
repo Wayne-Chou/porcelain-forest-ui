@@ -1,0 +1,2879 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - 受測者管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
+    />
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
+       * 受測者管理頁
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --card-deep: #e6dccb; /* 圖示底 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6; /* 虛線、未選中指示點 */
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420; /* 主要文字 */
+        --muted: #6f6656; /* 次要文字 */
+        --nav-off: #6f6656; /* 導航未選中 */
+        --on-forest: #f6f1e8; /* 森林綠上的文字 */
+        --danger: #b5473a; /* 錯誤訊息 */
+
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 字級：四頁共用，同一種用途用同一個變數（其他字級以這些變數加減或倍數表示）
+         * 大小順序：small < body < button < lead < title < display；card-name、hero-num 為大字專用 */
+        --fs-display: 72px; /* 頁面大標題：問候語、登入、場域名稱、受測者管理 */
+        --fs-hero-num: 88px; /* 大數字：今日數據、進度數字 */
+        --fs-card-name: 84px; /* 測驗卡片名稱 */
+        --fs-title: 44px; /* 面板與對話框標題 */
+        --fs-lead: 32px; /* 重要內文：人員姓名、場域名稱、欄位輸入文字、影像上傳標題 */
+        --fs-button: 30px; /* 按鈕文字、導航文字、toast */
+        --fs-body: 26px; /* 一般內文、說明、欄位標籤、分段切換、搜尋框 */
+        --fs-small: 24px; /* 輔助小字：日期、編號・年齡・性別、時間、徽章、小標籤、錯誤訊息 */
+
+        --pad: 64px;
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow: hidden;
+      }
+      .serif {
+        font-family: var(--font-serif);
+      }
+      /* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
+      input,
+      textarea,
+      select,
+      input::placeholder,
+      textarea::placeholder {
+        font: inherit;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+      input {
+        user-select: text;
+        -webkit-user-select: text;
+      }
+
+      /* 進場動畫 */
+      .rise {
+        animation: rise 0.9s calc(var(--d, 0) * 1s) var(--ease-out) both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ===== App 外層：開啟面板時整個退到後面（iOS 卡片式視窗） ===== */
+      body.sheet-open {
+        background: var(--ink);
+      }
+      .app {
+        position: fixed;
+        inset: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background: var(--bg);
+        transform-origin: 50% 50%;
+        transition:
+          transform 0.5s var(--ease-out),
+          border-radius 0.5s var(--ease-out),
+          filter 0.5s var(--ease-out);
+      }
+      body.sheet-open .app {
+        transform: scale(0.94);
+        border-radius: 40px;
+        filter: brightness(0.9);
+        overflow: hidden;
+      }
+
+      /* 底部留 220px，名單最後一列不會被底部導航蓋住 */
+      .page {
+        padding: calc(56px + env(safe-area-inset-top)) var(--pad)
+          calc(220px + env(safe-area-inset-bottom));
+      }
+
+      /* ===== 標題列 ===== */
+      .titlebar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+      }
+      .page-title {
+        margin: 0;
+        font-size: var(--fs-display);
+        line-height: 1.2;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .add-btn {
+        flex: 0 0 auto;
+        height: 88px;
+        padding: 0 36px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: var(--fs-button);
+        font-weight: 700;
+        color: var(--forest);
+        transition: transform 0.2s var(--ease-out);
+      }
+      .add-btn i {
+        font-size: 1.2667em;
+      }
+      .add-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* ===== 場域卡：點整張卡打開場域面板 ===== */
+      .field-card {
+        margin-top: 36px;
+        width: 100%;
+        height: 120px;
+        padding: 0 36px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 36px;
+        text-align: left;
+        transition:
+          transform 0.2s var(--ease-out),
+          border-color 0.3s;
+      }
+      .field-card:active {
+        transform: scale(0.99);
+      }
+      .field-card:focus-visible {
+        outline: 3px solid var(--forest);
+        outline-offset: 4px;
+      }
+      .fc-icon {
+        flex: 0 0 auto;
+        width: 72px;
+        height: 72px;
+        border-radius: 22px;
+        background: var(--card-deep);
+        display: grid;
+        place-items: center;
+        font-size: calc(var(--fs-lead) * 1.125);
+        color: var(--brass-text);
+      }
+      .fc-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .fc-label,
+      .fc-name {
+        display: block;
+      }
+      .fc-label {
+        font-size: var(--fs-small);
+        line-height: 1.3;
+        color: var(--muted);
+      }
+      .fc-name {
+        font-size: calc(var(--fs-lead) + 2px);
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .fc-switch {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: calc(var(--fs-button) - 2px);
+        font-weight: 700;
+        color: var(--forest);
+      }
+      .fc-switch i {
+        font-size: 1.0714em;
+      }
+      /* ===== 沒有場域：大卡片 ===== */
+      .nofield {
+        margin-top: 36px;
+        padding: 96px 64px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 48px;
+      }
+      .nofield[hidden] {
+        display: none;
+      }
+      /* 選好場域後：淡出並縮小，之後移除 */
+      .nofield.is-leaving {
+        opacity: 0;
+        transform: scale(0.96);
+        transition:
+          opacity 0.3s var(--ease-out),
+          transform 0.3s var(--ease-out);
+      }
+      .nf-icon {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: var(--card-deep);
+        display: grid;
+        place-items: center;
+        font-size: calc(var(--fs-lead) * 2.25);
+        color: var(--brass-text);
+      }
+      .nf-title {
+        margin: 36px 0 0;
+        font-size: calc(var(--fs-title) + 8px);
+        line-height: 1.25;
+        font-weight: 600;
+      }
+      .nf-sub {
+        margin-top: 12px;
+        font-size: calc(var(--fs-body) + 2px);
+        line-height: 1.4;
+        color: var(--muted);
+      }
+      .nf-btn {
+        margin-top: 48px;
+        height: 104px;
+        padding: 0 72px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: calc(var(--fs-button) + 2px);
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .nf-btn i {
+        font-size: 1.125em;
+      }
+      .nf-btn:active {
+        transform: scale(0.97);
+      }
+
+      /* ===== 搜尋列：捲到頂部時黏住 ===== */
+      .sticky {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        padding: 28px 0 16px;
+        background: var(--bg);
+      }
+      .search {
+        height: 96px;
+        display: flex;
+        align-items: center;
+        border-radius: 28px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .search:focus-within,
+      .search-box:focus-within {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .search > .ti-search,
+      .search-box > .ti-search {
+        margin-left: 28px;
+        font-size: calc((var(--fs-body) + 4px) * 1.2);
+        color: var(--brass-text);
+      }
+      .search-input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0 20px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: calc(var(--fs-body) + 4px);
+      }
+      .search-input::placeholder {
+        color: var(--muted);
+        opacity: 0.7;
+      }
+      .search-input::-webkit-search-cancel-button {
+        display: none;
+      }
+      .search-clear {
+        width: 72px;
+        height: 72px;
+        margin-right: 10px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: var(--fs-lead);
+        color: var(--muted);
+      }
+      .search-clear[hidden] {
+        display: none;
+      }
+      .search-clear:active {
+        background: var(--card-deep);
+      }
+      .count {
+        margin-top: 12px;
+        text-align: right;
+        font-size: var(--fs-small);
+        line-height: 1.3;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ===== 人員名單 ===== */
+      .list-wrap {
+        margin-top: 16px;
+      }
+      .list.is-updating {
+        animation: listIn 0.3s var(--ease-out);
+      }
+      @keyframes listIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+      }
+      .list-card {
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 40px;
+        overflow: hidden;
+      }
+      .srow {
+        height: 132px;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .srow + .srow {
+        border-top: 2px solid #e6dfd2;
+      }
+      .srow:active {
+        background: rgba(176, 141, 87, 0.08);
+      }
+      .srow:focus-visible {
+        outline: 3px solid var(--forest);
+        outline-offset: -3px;
+      }
+      /* 新增或編輯後：淡黃銅色底閃一次 */
+      .srow.flash {
+        animation: flash 1.2s var(--ease-out);
+      }
+      @keyframes flash {
+        from {
+          background: rgba(176, 141, 87, 0.28);
+        }
+        to {
+          background: transparent;
+        }
+      }
+      .avatar {
+        flex: 0 0 auto;
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: var(--card-deep);
+        color: var(--brass-text);
+        display: grid;
+        place-items: center;
+        font-size: calc(var(--fs-lead) + 2px);
+        font-weight: 600;
+      }
+      .s-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .s-name {
+        font-size: calc(var(--fs-lead) + 2px);
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .s-meta {
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: var(--fs-small);
+        color: var(--muted);
+      }
+      .s-meta-text {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .s-tag {
+        flex: 0 0 auto;
+        padding: 2px 12px;
+        border: 1.5px solid var(--brass);
+        border-radius: 999px;
+        font-size: calc(var(--fs-small) - 4px);
+        font-weight: 700;
+        color: var(--brass-text);
+      }
+      mark {
+        background: rgba(176, 141, 87, 0.22);
+        color: var(--brass-text);
+        border-radius: 6px;
+        padding: 0;
+      }
+      .btn-edit {
+        flex: 0 0 auto;
+        height: 64px;
+        padding: 0 26px;
+        border-radius: 999px;
+        background: transparent;
+        border: 2px solid var(--line-soft);
+        font-size: calc(var(--fs-button) - 4px);
+        font-weight: 700;
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .btn-edit i {
+        font-size: 1.0769em;
+      }
+      .btn-edit:active {
+        transform: scale(0.95);
+      }
+
+      /* 空狀態 */
+      .empty {
+        padding: 96px 0;
+        text-align: center;
+      }
+      .empty > i {
+        font-size: calc(var(--fs-lead) * 2);
+        color: var(--line-soft);
+      }
+      .empty-title {
+        margin-top: 16px;
+        font-size: calc(var(--fs-body) + 4px);
+        font-weight: 700;
+      }
+      .empty-sub {
+        margin-top: 8px;
+        font-size: var(--fs-small);
+        color: var(--muted);
+      }
+
+      /* ===== 底部膠囊導航（與 home.html 相同） ===== */
+      .nav {
+        position: fixed;
+        left: 50%;
+        bottom: calc(36px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        box-shadow: 0 12px 40px rgba(31, 59, 51, 0.1);
+        z-index: 100;
+        animation: navIn 1s 0.5s var(--ease-spring) both;
+      }
+      @keyframes navIn {
+        from {
+          transform: translate(-50%, 200%);
+        }
+        to {
+          transform: translate(-50%, 0);
+        }
+      }
+      .nav-item {
+        height: 92px;
+        min-width: 104px;
+        padding: 0 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        color: var(--nav-off);
+        font-size: calc(var(--fs-button) + 4px);
+        font-weight: 700;
+        transition:
+          background 0.45s var(--ease-spring),
+          color 0.3s,
+          padding 0.45s var(--ease-spring);
+      }
+      .nav-item i {
+        font-size: 1.3529em;
+        transition: transform 0.45s var(--ease-spring);
+      }
+      .nav-item span {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        transition:
+          max-width 0.45s var(--ease-spring),
+          opacity 0.3s,
+          margin 0.45s var(--ease-spring);
+      }
+      .nav-item.is-active {
+        background: var(--forest);
+        color: var(--on-forest);
+        padding: 0 44px;
+      }
+      .nav-item.is-active span {
+        max-width: 5em;
+        opacity: 1;
+        margin-left: 14px;
+      }
+      .nav-item:active i {
+        transform: scale(0.82);
+      }
+
+      /* =========================================================
+       * 底部面板共用（切換場域、新增／編輯人員）
+       * --vh：可見高度；--kb：鍵盤高度（皆由 visualViewport 更新）
+       * ========================================================= */
+      .mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 30, 26, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s var(--ease-out);
+        z-index: 200;
+      }
+      .mask.is-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: var(--kb, 0px);
+        max-height: calc(var(--vh, 100dvh) - 120px);
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-radius: 48px 48px 0 0;
+        box-shadow: 0 -12px 40px rgba(31, 59, 51, 0.12);
+        transform: translateY(calc(100% + var(--kb, 0px) + 40px));
+        visibility: hidden;
+        transition:
+          transform 0.5s var(--ease-out),
+          visibility 0s 0.5s;
+        z-index: 210;
+      }
+      .sheet.is-open {
+        transform: translateY(0);
+        visibility: visible;
+        transition:
+          transform 0.5s var(--ease-out),
+          visibility 0s;
+      }
+      .sheet.is-dragging {
+        transition: none;
+      }
+      .sheet-grab {
+        flex: 0 0 auto;
+        padding: 16px 56px 8px;
+        touch-action: none;
+        cursor: grab;
+      }
+      .grab-bar {
+        display: block;
+        width: 64px;
+        height: 8px;
+        margin: 0 auto;
+        border-radius: 4px;
+        background: var(--line-soft);
+      }
+      .sheet-head {
+        margin-top: 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .sheet-title {
+        margin: 0;
+        font-size: calc(var(--fs-title) + 12px);
+        line-height: 1.2;
+        font-weight: 600;
+      }
+      .sheet-sub {
+        margin-top: 4px;
+        font-size: var(--fs-body);
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .sheet-close {
+        flex: 0 0 auto;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 2px solid var(--line);
+        display: grid;
+        place-items: center;
+        font-size: calc(var(--fs-lead) * 1.125);
+        transition: transform 0.2s var(--ease-out);
+      }
+      .sheet-close:active {
+        transform: scale(0.92);
+      }
+      .sheet-foot {
+        flex: 0 0 auto;
+        padding: 24px 56px calc(24px + env(safe-area-inset-bottom));
+        background: var(--bg);
+        border-top: 1px solid var(--line);
+      }
+      .primary-btn {
+        width: 100%;
+        height: 112px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: calc(var(--fs-button) + 6px);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .primary-btn:active {
+        transform: scale(0.98);
+      }
+
+      /* =========================================================
+       * 切換場域面板（與 home.html 的選擇場域面板相同：單一固定高度）
+       * ========================================================= */
+      .field-sheet {
+        height: calc(var(--vh, 100dvh) - 120px);
+        max-height: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .field-sheet .sheet-foot {
+        border-top: none;
+      }
+      /* 場域面板開啟時 toast 稍微上移，停在面板頂端（120px）上方，不與面板重疊 */
+      body.field-open .toast {
+        top: calc(20px + env(safe-area-inset-top));
+      }
+      .fs-body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .search-box {
+        flex: 0 0 auto;
+        margin: 16px 56px 0;
+        height: 96px;
+        display: flex;
+        align-items: center;
+        border-radius: 28px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .field-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 56px 32px;
+      }
+      .field-list.shake {
+        animation: shake 0.4s var(--ease-out);
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: none;
+        }
+        20% {
+          transform: translateX(-14px);
+        }
+        40% {
+          transform: translateX(12px);
+        }
+        60% {
+          transform: translateX(-8px);
+        }
+        80% {
+          transform: translateX(4px);
+        }
+      }
+      .sheet-section {
+        margin: 32px 0 16px;
+        font-size: var(--fs-small);
+        font-weight: 700;
+        color: var(--muted);
+        letter-spacing: 0.1em;
+      }
+      .list-empty {
+        padding: 96px 0;
+        text-align: center;
+      }
+      .list-empty i {
+        font-size: calc(var(--fs-lead) * 2);
+        color: var(--line-soft);
+      }
+      .list-empty-title {
+        margin-top: 16px;
+        font-size: calc(var(--fs-body) + 4px);
+        font-weight: 700;
+      }
+      .list-empty-sub {
+        margin-top: 8px;
+        font-size: var(--fs-small);
+        color: var(--muted);
+      }
+      .frow {
+        height: 104px;
+        padding: 0 28px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 28px;
+        cursor: pointer;
+        transition:
+          transform 0.2s var(--ease-out),
+          border-color 0.25s,
+          background 0.25s;
+      }
+      .frow + .frow {
+        margin-top: 12px;
+      }
+      .frow:active {
+        transform: scale(0.98);
+      }
+      .frow:focus-visible {
+        outline: 3px solid var(--forest);
+        outline-offset: 3px;
+      }
+      .frow-radio {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid var(--line-soft);
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: var(--fs-body);
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+      .frow-radio i {
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.25s var(--ease-spring);
+      }
+      .frow-radio.pop {
+        animation: radioPop 0.35s var(--ease-spring);
+      }
+      @keyframes radioPop {
+        0% {
+          transform: scale(0.8);
+        }
+        60% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .frow-name {
+        flex: 0 1 auto;
+        min-width: 0;
+        font-size: var(--fs-lead);
+        font-weight: 700;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .frow-tag {
+        display: none;
+        flex: 0 0 auto;
+        padding: 4px 14px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: calc(var(--fs-small) - 4px);
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .frow.is-selected {
+        border-color: var(--forest);
+        background: #eef1ec;
+      }
+      .frow.is-selected .frow-radio {
+        background: var(--forest);
+        border-color: var(--forest);
+      }
+      .frow.is-selected .frow-radio i {
+        opacity: 1;
+        transform: none;
+      }
+      .frow.is-selected .frow-tag {
+        display: inline-block;
+      }
+
+      /* =========================================================
+       * 新增／編輯人員面板（與 roster.html 的新增人員面板相同）
+       * ========================================================= */
+      .sheet-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 24px 56px 32px;
+      }
+      /* 編輯有編號的人：唯讀的編號資訊 */
+      .f-code {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+        font-size: var(--fs-body);
+        line-height: 1.3;
+        color: var(--muted);
+      }
+      .f-code[hidden] {
+        display: none;
+      }
+      .f-field + .f-field {
+        margin-top: 28px;
+      }
+      .f-label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: var(--fs-body);
+        line-height: 1.25;
+        font-weight: 700;
+      }
+      .f-input-wrap {
+        height: 104px;
+        display: flex;
+        align-items: center;
+        border-radius: 28px;
+        background: var(--card);
+        border: 2px solid var(--line);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .f-input-wrap:focus-within {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .f-input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0 28px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: var(--fs-lead);
+      }
+      .f-input::placeholder {
+        color: var(--line-soft);
+      }
+
+      /* 分段切換（性別） */
+      .seg {
+        --n: 2;
+        --i: 0;
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(var(--n), 1fr);
+        height: 96px;
+        padding: 8px;
+        border-radius: 999px;
+        background: #e3dbcd;
+        transition: box-shadow 0.2s;
+      }
+      .seg-thumb {
+        position: absolute;
+        top: 8px;
+        bottom: 8px;
+        left: 8px;
+        width: calc((100% - 16px) / var(--n));
+        border-radius: 999px;
+        background: var(--forest);
+        box-shadow: 0 6px 16px rgba(31, 59, 51, 0.18);
+        transform: translateX(calc(var(--i) * 100%));
+        transition:
+          transform 0.4s var(--ease-spring),
+          opacity 0.2s;
+      }
+      .seg-btn {
+        position: relative;
+        z-index: 1;
+        border-radius: 999px;
+        font-size: calc(var(--fs-body) + 4px);
+        font-weight: 700;
+        color: var(--ink);
+        transition: color 0.3s;
+      }
+      .seg-btn.is-active {
+        color: var(--on-forest);
+      }
+
+      /* 出生年月日：按鈕形式的欄位，點擊打開滾輪選擇器 */
+      .birth-btn {
+        width: 100%;
+        padding: 0 28px;
+        gap: 16px;
+        font-size: var(--fs-lead);
+        text-align: left;
+        cursor: pointer;
+      }
+      .birth-btn:focus-visible {
+        outline: none;
+        border-color: var(--forest);
+        box-shadow: 0 0 0 6px rgba(31, 59, 51, 0.12);
+      }
+      .birth-ico {
+        flex: 0 0 auto;
+        font-size: 1.125em;
+        color: var(--brass-text);
+      }
+      .birth-text {
+        flex: 1;
+        min-width: 0;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .birth-btn.has-value {
+        border-color: var(--forest);
+      }
+      .birth-btn.has-value .birth-text {
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .birth-text em,
+      .picker-preview em {
+        font-style: normal;
+        color: var(--brass-text);
+        font-weight: 700;
+      }
+      .birth-chev {
+        flex: 0 0 auto;
+        font-size: 1em;
+        color: var(--muted);
+      }
+      .f-error {
+        display: none;
+        margin-top: 10px;
+        font-size: var(--fs-small);
+        line-height: 30px;
+        font-weight: 700;
+        color: var(--danger);
+        align-items: center;
+        gap: 8px;
+      }
+      .has-error .f-error {
+        display: flex;
+      }
+      .has-error .f-input-wrap {
+        border-color: var(--danger);
+        box-shadow: none;
+      }
+
+      /* =========================================================
+       * 確認對話框
+       * ========================================================= */
+      .dialog-mask {
+        z-index: 400;
+      }
+      .dialog {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 640px;
+        padding: 56px;
+        background: var(--card);
+        border-radius: 44px;
+        box-shadow: 0 24px 80px rgba(20, 30, 26, 0.25);
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -50%) scale(0.92);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s 0.35s;
+        z-index: 410;
+      }
+      .dialog.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s;
+      }
+      .dlg-icon {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: var(--card-deep);
+        color: var(--brass-text);
+        display: grid;
+        place-items: center;
+        font-size: var(--fs-title);
+      }
+      .dlg-title {
+        margin: 24px 0 0;
+        font-size: var(--fs-title);
+        line-height: 1.25;
+        font-weight: 600;
+      }
+      .dlg-desc {
+        margin: 14px 0 0;
+        font-size: var(--fs-body);
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .dlg-actions {
+        margin-top: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .dlg-btn {
+        height: 96px;
+        border-radius: 999px;
+        font-size: calc(var(--fs-button) + 2px);
+        font-weight: 700;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .dlg-btn:active {
+        transform: scale(0.97);
+      }
+      .dlg-btn.secondary {
+        border: 2px solid var(--line-soft);
+        color: var(--ink);
+      }
+      .dlg-btn.primary {
+        background: var(--forest);
+        color: var(--on-forest);
+      }
+
+      /* =========================================================
+       * 出生日期選擇視窗（民國年滾輪）：疊在人員面板上面
+       * ========================================================= */
+      .picker-mask {
+        z-index: 300;
+      }
+      .picker {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 720px;
+        padding: 48px 56px;
+        background: var(--card);
+        border-radius: 44px;
+        box-shadow: 0 24px 80px rgba(20, 30, 26, 0.25);
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -50%) scale(0.92);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s 0.35s;
+        z-index: 310;
+      }
+      .picker.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+        transition:
+          opacity 0.35s var(--ease-spring),
+          transform 0.35s var(--ease-spring),
+          visibility 0s;
+      }
+      .picker-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .picker-title {
+        margin: 0;
+        font-size: var(--fs-title);
+        line-height: 1.25;
+        font-weight: 600;
+      }
+      .picker-close {
+        flex: 0 0 auto;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--bg);
+        display: grid;
+        place-items: center;
+        font-size: var(--fs-lead);
+        transition: transform 0.2s var(--ease-out);
+      }
+      .picker-close:active {
+        transform: scale(0.92);
+      }
+      .picker-preview {
+        margin-top: 12px;
+        font-size: calc(var(--fs-lead) - 2px);
+        font-weight: 700;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      /* 三欄滾輪：年:月:日 = 1.3:1:1；可見 400px，每個選項 80px */
+      .wheels {
+        position: relative;
+        margin-top: 32px;
+        height: 400px;
+        display: grid;
+        grid-template-columns: 1.3fr 1fr 1fr;
+        gap: 8px;
+        -webkit-mask-image: linear-gradient(
+          transparent,
+          #000 120px,
+          #000 280px,
+          transparent
+        );
+        mask-image: linear-gradient(
+          transparent,
+          #000 120px,
+          #000 280px,
+          transparent
+        );
+      }
+      .wheel-band {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 160px;
+        height: 80px;
+        background: var(--bg);
+        border-radius: 24px;
+        border-top: 2px solid var(--line);
+        border-bottom: 2px solid var(--line);
+        pointer-events: none;
+      }
+      .wheel {
+        position: relative;
+        height: 400px;
+        overflow-y: auto;
+        scroll-snap-type: y mandatory;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .wheel::-webkit-scrollbar {
+        display: none;
+      }
+      .wheel-pad {
+        height: 160px;
+      }
+      .wheel-item {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        scroll-snap-align: center;
+        font-size: calc(var(--fs-lead) - 2px);
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        transition:
+          font-size 0.15s,
+          color 0.15s;
+      }
+      .wheel-item.is-center {
+        font-size: calc(var(--fs-lead) + 4px);
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .wheel-item.is-disabled {
+        color: var(--line-soft);
+      }
+      .picker-actions {
+        margin-top: 40px;
+      }
+
+      /* ===== 提示訊息（高於面板與對話框） ===== */
+      .toast {
+        position: fixed;
+        left: 50%;
+        top: calc(36px + env(safe-area-inset-top));
+        transform: translate(-50%, -24px);
+        padding: 22px 40px;
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: var(--fs-button);
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.35s var(--ease-spring);
+        z-index: 600;
+        white-space: nowrap;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <main class="page">
+        <!-- 標題列 -->
+        <header class="titlebar rise" style="--d: 0.05">
+          <h1 class="page-title serif">受測者管理</h1>
+          <button class="add-btn" id="addBtn" type="button">
+            <i class="ti ti-user-plus"></i>新增人員
+          </button>
+        </header>
+
+        <!-- 沒有場域：一張大卡片（有場域時隱藏） -->
+        <section class="nofield rise" style="--d: 0.11" id="noField" hidden>
+          <span class="nf-icon"><i class="ti ti-map-pin"></i></span>
+          <h2 class="nf-title serif">請先選擇場域</h2>
+          <div class="nf-sub">選擇場域後即可管理該場域的受測者</div>
+          <button class="nf-btn" id="nfBtn" type="button">
+            <i class="ti ti-map-pin"></i>選擇場域
+          </button>
+        </section>
+
+        <!-- 有場域：場域卡＋搜尋列＋名單（沒有場域時隱藏） -->
+        <div id="fieldView" hidden>
+        <!-- 目前場域：點整張卡打開切換場域面板 -->
+        <button
+          class="field-card rise"
+          style="--d: 0.11"
+          id="fieldCard"
+          type="button"
+        >
+          <span class="fc-icon"><i class="ti ti-map-pin"></i></span>
+          <span class="fc-main">
+            <span class="fc-label">目前場域</span>
+            <span class="fc-name" id="fcName"></span>
+          </span>
+          <span class="fc-switch"
+            ><span>切換</span
+            ><i class="ti ti-chevron-right"></i
+          ></span>
+        </button>
+
+        <!-- 搜尋列（捲動時黏在頂部） -->
+        <div class="sticky">
+          <div class="rise" style="--d: 0.17" id="searchRise">
+            <label class="search">
+              <i class="ti ti-search"></i>
+              <input
+                class="search-input"
+                id="searchInput"
+                type="search"
+                placeholder="搜尋姓名或編號"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                enterkeyhint="search"
+              />
+              <button
+                class="search-clear"
+                id="searchClear"
+                type="button"
+                aria-label="清除搜尋"
+                hidden
+              >
+                <i class="ti ti-x"></i>
+              </button>
+            </label>
+            <div class="count" id="count" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- 人員名單 -->
+        <section class="list-wrap rise" style="--d: 0.23" id="listRise">
+          <div class="list" id="list"></div>
+        </section>
+        </div>
+      </main>
+
+      <nav class="nav" id="nav"></nav>
+    </div>
+
+    <!-- 切換場域：底部面板 -->
+    <div class="mask" id="fieldMask"></div>
+    <section
+      class="sheet field-sheet"
+      id="fieldSheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="fieldSheetTitle"
+      aria-hidden="true"
+    >
+      <div class="sheet-grab" id="fieldGrab">
+        <span class="grab-bar"></span>
+        <header class="sheet-head">
+          <div>
+            <h2 class="sheet-title serif" id="fieldSheetTitle">切換場域</h2>
+            <div class="sheet-sub">選擇要管理的場域</div>
+          </div>
+          <button
+            class="sheet-close"
+            id="fieldClose"
+            type="button"
+            aria-label="關閉"
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </header>
+      </div>
+
+      <div class="fs-body">
+        <!-- 搜尋框：固定在上方，不跟著清單捲動 -->
+        <label class="search-box">
+          <i class="ti ti-search"></i>
+          <input
+            class="search-input"
+            id="fsInput"
+            type="search"
+            placeholder="搜尋場域名稱"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            enterkeyhint="search"
+          />
+          <button
+            class="search-clear"
+            id="fsClear"
+            type="button"
+            aria-label="清除搜尋"
+            hidden
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </label>
+        <!-- 清單：最近使用＋全部場域，或搜尋結果 -->
+        <div
+          class="field-list"
+          id="fieldList"
+          role="radiogroup"
+          aria-label="場域"
+        ></div>
+      </div>
+
+      <footer class="sheet-foot">
+        <button class="primary-btn" id="fieldConfirm" type="button">
+          確認場域 <i class="ti ti-check"></i>
+        </button>
+      </footer>
+    </section>
+
+    <!-- 新增／編輯人員：底部面板 -->
+    <div class="mask" id="sheetMask"></div>
+    <section
+      class="sheet"
+      id="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sheetTitle"
+      aria-hidden="true"
+    >
+      <div class="sheet-grab" id="sheetGrab">
+        <span class="grab-bar"></span>
+        <header class="sheet-head">
+          <div>
+            <h2 class="sheet-title serif" id="sheetTitle">新增人員</h2>
+            <div class="sheet-sub" id="sheetSub"></div>
+          </div>
+          <button
+            class="sheet-close"
+            id="sheetClose"
+            type="button"
+            aria-label="關閉"
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </header>
+      </div>
+
+      <form class="sheet-body" id="addForm" novalidate autocomplete="off">
+        <!-- 編輯有編號的人時顯示（唯讀） -->
+        <div class="f-code" id="fCode" hidden>
+          <span id="fCodeText"></span><span class="s-tag">後台匯入</span>
+        </div>
+
+        <div class="f-field" id="fName">
+          <label class="f-label" for="inName">姓名</label>
+          <div class="f-input-wrap">
+            <input
+              class="f-input"
+              id="inName"
+              type="text"
+              placeholder="請輸入姓名"
+              enterkeyhint="next"
+            />
+          </div>
+          <div class="f-error">
+            <i class="ti ti-alert-circle"></i>請輸入姓名
+          </div>
+        </div>
+
+        <div class="f-field">
+          <span class="f-label" id="genderLabel">性別</span>
+          <!-- 新增：預設「男」；編輯：依資料選取 -->
+          <div
+            class="seg gender"
+            id="genderSeg"
+            role="radiogroup"
+            aria-labelledby="genderLabel"
+          >
+            <span class="seg-thumb"></span>
+            <button
+              class="seg-btn is-active"
+              type="button"
+              role="radio"
+              aria-checked="true"
+              data-gender="男"
+            >
+              男
+            </button>
+            <button
+              class="seg-btn"
+              type="button"
+              role="radio"
+              aria-checked="false"
+              data-gender="女"
+            >
+              女
+            </button>
+          </div>
+        </div>
+
+        <div class="f-field" id="fBirth">
+          <span class="f-label" id="birthLabel">出生年月日</span>
+          <button
+            class="f-input-wrap birth-btn"
+            id="birthBtn"
+            type="button"
+            aria-haspopup="dialog"
+            aria-labelledby="birthLabel birthText"
+          >
+            <i class="ti ti-calendar-event birth-ico"></i>
+            <span class="birth-text" id="birthText">請選擇出生日期</span>
+            <i class="ti ti-chevron-down birth-chev"></i>
+          </button>
+          <div class="f-error">
+            <i class="ti ti-alert-circle"></i>請選擇出生日期
+          </div>
+        </div>
+      </form>
+
+      <footer class="sheet-foot">
+        <button class="primary-btn" id="addSubmit" type="submit" form="addForm">
+          <span id="submitText">新增人員</span> <i class="ti ti-plus" id="submitIcon"></i>
+        </button>
+      </footer>
+    </section>
+
+    <!-- 出生日期選擇視窗 -->
+    <div class="mask picker-mask" id="pickerMask"></div>
+    <div
+      class="picker"
+      id="picker"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pickerTitle"
+      aria-hidden="true"
+    >
+      <div class="picker-head">
+        <h2 class="picker-title serif" id="pickerTitle">選擇出生日期</h2>
+        <button
+          class="picker-close"
+          id="pickerClose"
+          type="button"
+          aria-label="關閉"
+        >
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+      <div class="picker-preview" id="pickerPreview" aria-live="polite"></div>
+      <div class="wheels">
+        <div class="wheel-band"></div>
+        <div class="wheel" id="wheelY" aria-label="民國年"></div>
+        <div class="wheel" id="wheelM" aria-label="月"></div>
+        <div class="wheel" id="wheelD" aria-label="日"></div>
+      </div>
+      <div class="dlg-actions picker-actions">
+        <button class="dlg-btn secondary" id="pickerCancel" type="button">
+          取消
+        </button>
+        <button class="dlg-btn primary" id="pickerOk" type="button">
+          確定
+        </button>
+      </div>
+    </div>
+
+    <!-- 確認對話框 -->
+    <div class="mask dialog-mask" id="dlgMask"></div>
+    <div
+      class="dialog"
+      id="dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="dlgTitle"
+      aria-describedby="dlgDesc"
+      aria-hidden="true"
+    >
+      <div class="dlg-icon"><i class="ti" id="dlgIcon"></i></div>
+      <h2 class="dlg-title serif" id="dlgTitle"></h2>
+      <p class="dlg-desc" id="dlgDesc"></p>
+      <div class="dlg-actions">
+        <button class="dlg-btn secondary" id="dlgCancel" type="button"></button>
+        <button class="dlg-btn primary" id="dlgOk" type="button"></button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      /* =========================================================
+       * 設定區
+       * ========================================================= */
+      const CONFIG = {
+        // 底部導航：與 home.html 相同（受測者已完成）；ready 改成 true 之後才會真的換頁
+        nav: [
+          {
+            id: "home",
+            label: "鑑測",
+            icon: "ti-scan",
+            href: "home.html",
+            ready: true,
+          },
+          {
+            id: "report",
+            label: "紀錄",
+            icon: "ti-history",
+            href: "report.html",
+            ready: true,
+          },
+          {
+            id: "subjects",
+            label: "受測者",
+            icon: "ti-users",
+            href: "subjects.html",
+            ready: true,
+          },
+          {
+            id: "settings",
+            label: "設定",
+            icon: "ti-settings",
+            href: "settings.html",
+            ready: false,
+          },
+        ],
+
+        // 鑑測場域、受測人員：與 roster.html 重複，之後改成共用設定或 API
+        fields: [
+          { id: "tpe-01", name: "大安社區關懷據點" },
+          { id: "tpe-02", name: "信義長照中心" },
+          { id: "tpe-03", name: "中正區活動中心" },
+          { id: "tpe-04", name: "北投社區關懷據點" },
+        ],
+
+        // 受測人員（假資料）
+        // TODO：之後改成依 field 從 API 取得名單，例如 fetch(`/api/fields/${field.id}/subjects`)
+        // birth：西元 "YYYY-MM-DD"；code：現場新增的人為 null
+        // source："import" 後台匯入／"onsite" 現場新增；done：{ 測驗 id: 完成時間 }
+        subjects: [
+          {
+            id: "s001",
+            code: "A001",
+            name: "林淑芬",
+            birth: "1948-03-12",
+            gender: "女",
+            source: "import",
+            done: { sppb: "14:05" },
+          },
+          {
+            id: "s002",
+            code: "A002",
+            name: "王小明",
+            birth: "1954-07-21",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+          {
+            id: "s003",
+            code: "A003",
+            name: "陳美玉",
+            birth: "1945-01-30",
+            gender: "女",
+            source: "import",
+            done: { sppb: "13:52" },
+          },
+          {
+            id: "s004",
+            code: "A004",
+            name: "張志明",
+            birth: "1957-05-08",
+            gender: "男",
+            source: "import",
+            done: {},
+          },
+        ],
+      };
+
+      /* =========================================================
+       * 共用功能
+       * ========================================================= */
+      const $ = (sel) => document.querySelector(sel);
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+
+      let toastTimer;
+      function showToast(msg) {
+        const el = $("#toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+      }
+
+      // 底部導航：依目前頁面標出選中項目，點其他項目時膠囊先展開再換頁
+      function renderNav() {
+        const nav = $("#nav");
+        if (!nav) return;
+        const current = location.pathname.split("/").pop() || "home.html";
+
+        nav.innerHTML = CONFIG.nav
+          .map(
+            (n) => `
+      <button class="nav-item ${n.href === current ? "is-active" : ""}" data-href="${n.href}" data-ready="${n.ready}" aria-label="${n.label}">
+        <i class="ti ${n.icon}"></i><span>${n.label}</span>
+      </button>`,
+          )
+          .join("");
+
+        nav.addEventListener("click", (e) => {
+          const btn = e.target.closest(".nav-item");
+          if (!btn || btn.classList.contains("is-active")) return;
+          if (btn.dataset.ready !== "true") {
+            showToast(`「${btn.getAttribute("aria-label")}」頁面製作中`);
+            return;
+          }
+          nav.querySelector(".is-active")?.classList.remove("is-active");
+          btn.classList.add("is-active");
+          setTimeout(() => (location.href = btn.dataset.href), 380);
+        });
+      }
+
+      // 搜尋：不分大小寫，「臺」視同「台」，空白分隔的多個關鍵字都要符合
+      const norm = (s) => String(s).toLowerCase().replace(/臺/g, "台");
+      const termsOf = (q) => norm(q).split(/\s+/).filter(Boolean);
+      // 符合關鍵字的部分用 <mark> 標出（norm 不改變字數，位置可直接對應原文）
+      function highlight(text, terms) {
+        text = String(text);
+        if (!terms.length) return esc(text);
+        const n = norm(text);
+        const hit = new Array(text.length).fill(false);
+        terms.forEach((t) => {
+          for (let i = n.indexOf(t); i !== -1; i = n.indexOf(t, i + 1)) {
+            for (let k = i; k < i + t.length; k++) hit[k] = true;
+          }
+        });
+        let html = "";
+        for (let i = 0; i < text.length; ) {
+          let j = i;
+          while (j < text.length && hit[j] === hit[i]) j++;
+          const part = esc(text.slice(i, j));
+          html += hit[i] ? `<mark>${part}</mark>` : part;
+          i = j;
+        }
+        return html;
+      }
+
+      // 分段切換：移動滑塊到第 i 個
+      function setSeg(seg, i) {
+        seg.style.setProperty("--i", i);
+        [...seg.querySelectorAll(".seg-btn")].forEach((b, k) => {
+          b.classList.toggle("is-active", k === i);
+          b.setAttribute("aria-checked", k === i);
+        });
+      }
+
+      // 鍵盤彈出時：--vh 為可見高度、--kb 為被鍵盤蓋住的高度，讓面板與底部按鈕保持可見
+      (() => {
+        const vv = window.visualViewport;
+        if (!vv) return;
+        const sync = () => {
+          const root = document.documentElement.style;
+          root.setProperty("--vh", `${vv.height}px`);
+          root.setProperty(
+            "--kb",
+            `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`,
+          );
+        };
+        vv.addEventListener("resize", sync);
+        vv.addEventListener("scroll", sync);
+        sync();
+      })();
+
+      // 年齡：依今天日期計算，未滿生日減 1；birth 為西元 "YYYY-MM-DD"
+      function ageFrom(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        const now = new Date();
+        const beforeBirthday =
+          now.getMonth() + 1 < m ||
+          (now.getMonth() + 1 === m && now.getDate() < d);
+        return now.getFullYear() - y - (beforeBirthday ? 1 : 0);
+      }
+      const subjectAge = (s) => (s.birth ? ageFrom(s.birth) : s.age);
+
+      /* =========================================================
+       * sessionStorage（關閉分頁即清除；讀寫都包 try/catch）
+       * kf.currentField  { id, date }：date 不是今天就當作沒有目前場域（與 home.html 相同）
+       * kf.recentFields  [{ id, usedAt }]：最近使用，最新在前，最多 20 筆
+       * kf.subjects.<fieldId>（與 roster.html 共用）
+       *   { added: [現場新增的人員], done: {...}, edits: { 人員 id: { name, gender, birth, updatedAt } } }
+       *   後台匯入的人被編輯 → 存在 edits；現場新增的人被編輯 → 直接更新 added 裡那一筆
+       * ========================================================= */
+      const FIELD_KEYS = {
+        current: "kf.currentField",
+        recent: "kf.recentFields",
+      };
+      const RECENT_MAX = 20;
+      const fieldById = new Map(CONFIG.fields.map((f) => [f.id, f]));
+
+      function readJSON(key, fallback) {
+        try {
+          const v = JSON.parse(sessionStorage.getItem(key));
+          return v ?? fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+      function writeJSON(key, val) {
+        try {
+          sessionStorage.setItem(key, JSON.stringify(val));
+        } catch (e) {}
+      }
+      function todayStr() {
+        const d = new Date();
+        const p = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+      }
+
+      const fieldStore = {
+        getCurrent() {
+          const v = readJSON(FIELD_KEYS.current, null);
+          if (!v || v.date !== todayStr()) return null;
+          return fieldById.get(v.id) || null;
+        },
+        setCurrent(id) {
+          writeJSON(FIELD_KEYS.current, { id, date: todayStr() });
+          const rest = this.getRecent().filter((r) => r.id !== id);
+          writeJSON(
+            FIELD_KEYS.recent,
+            [{ id, usedAt: Date.now() }, ...rest].slice(0, RECENT_MAX),
+          );
+        },
+        // 最近使用：最新在前；舊格式（純 id 陣列）依原順序換算成時間戳
+        getRecent() {
+          const raw = readJSON(FIELD_KEYS.recent, []);
+          if (!Array.isArray(raw)) return [];
+          const now = Date.now();
+          const seen = new Set();
+          return raw
+            .map((r, i) =>
+              typeof r === "string"
+                ? { id: r, usedAt: now - (i + 1) }
+                : { id: r?.id, usedAt: Number(r?.usedAt) || 0 },
+            )
+            .filter(
+              (r) => fieldById.has(r.id) && !seen.has(r.id) && seen.add(r.id),
+            )
+            .sort((a, b) => b.usedAt - a.usedAt)
+            .slice(0, RECENT_MAX);
+        },
+      };
+
+      const subjectKey = (fieldId) => `kf.subjects.${fieldId}`;
+      function loadLocal(fieldId) {
+        try {
+          const v = JSON.parse(sessionStorage.getItem(subjectKey(fieldId)));
+          const obj = (x) => (x && typeof x === "object" ? x : {});
+          return {
+            added: Array.isArray(v?.added) ? v.added : [],
+            done: obj(v?.done),
+            edits: obj(v?.edits),
+          };
+        } catch (e) {
+          return { added: [], done: {}, edits: {} };
+        }
+      }
+      function saveLocal(fieldId, data) {
+        try {
+          sessionStorage.setItem(subjectKey(fieldId), JSON.stringify(data));
+        } catch (e) {}
+      }
+
+      /* 這頁要管理的場域（只用來顯示，不改寫 kf.currentField）：
+       * a. kf.currentField 日期是今天 → 用它
+       * b. 否則用 kf.recentFields 第一筆（最近使用，不論日期）
+       * c. 再否則 kf.currentField 有值但不是今天 → 也用它
+       * d. 都沒有 → 沒有場域
+       * id 不在 CONFIG.fields 裡的視為沒有，繼續往下一條找 */
+      function resolveField() {
+        const cur = readJSON(FIELD_KEYS.current, null);
+        const curField = (cur && fieldById.get(cur.id)) || null;
+        if (curField && cur.date === todayStr()) return curField; // a
+        const recent = fieldStore.getRecent(); // 已排除不存在的 id
+        if (recent.length) return fieldById.get(recent[0].id); // b
+        return curField; // c；沒有就是 null（d）
+      }
+
+      let field = resolveField();
+      let local = field ? loadLocal(field.id) : null;
+
+      // 名單：現場新增（新增時間由新到舊）在前，接著後台匯入（依編號排序，套用 edits 的修改）
+      function allSubjects() {
+        if (!field) return [];
+        const onsite = [...local.added]
+          .reverse()
+          .map((s) => ({ ...s, source: "onsite" }));
+        const imported = CONFIG.subjects
+          .map((s) => {
+            const e = local.edits[s.id];
+            if (!e) return s;
+            return {
+              ...s,
+              name: e.name ?? s.name,
+              gender: e.gender ?? s.gender,
+              birth: e.birth ?? s.birth,
+              updatedAt: e.updatedAt,
+            };
+          })
+          .sort((a, b) =>
+            String(a.code).localeCompare(String(b.code), "en", {
+              numeric: true,
+            }),
+          );
+        return [...onsite, ...imported];
+      }
+
+      /* =========================================================
+       * 場域卡＋名單
+       * ========================================================= */
+      const list = $("#list");
+      const searchInput = $("#searchInput");
+      const searchClear = $("#searchClear");
+      const R = { query: "" };
+      // 最近 10 秒內新增或編輯的人閃一次；記住已閃過的時間戳，重新渲染不會重複閃
+      const FLASH_WINDOW = 10000;
+      const flashed = new Map();
+      const touchedAt = (s) =>
+        Math.max(Number(s.updatedAt) || 0, Number(s.createdAt) || 0);
+
+      // 有場域：顯示場域卡＋搜尋列＋名單；沒有場域：只顯示大卡片
+      function renderView() {
+        $("#noField").hidden = Boolean(field);
+        $("#fieldView").hidden = !field;
+        if (field) renderFieldCard();
+      }
+
+      function renderFieldCard() {
+        $("#fcName").textContent = field.name;
+        $("#fieldCard").setAttribute(
+          "aria-label",
+          `目前場域 ${field.name}，切換場域`,
+        );
+      }
+
+      // 從「沒有場域」變成「有場域」：大卡片淡出縮小後移除，場域卡、搜尋列、名單依序浮現
+      function enterFieldView() {
+        renderFieldCard();
+        renderList({ animate: false });
+        const card = $("#noField");
+        card.classList.remove("rise"); // 先拿掉進場動畫，淡出的過場才會生效
+        void card.offsetWidth;
+        card.classList.add("is-leaving");
+        setTimeout(() => {
+          card.hidden = true;
+          card.classList.remove("is-leaving");
+          $("#fieldView").hidden = false;
+          [
+            ["#fieldCard", 0],
+            ["#searchRise", 0.06],
+            ["#listRise", 0.12],
+          ].forEach(([sel, d]) => {
+            const el = $(sel);
+            el.classList.remove("rise");
+            el.style.setProperty("--d", d);
+            void el.offsetWidth; // 重新觸發 .rise
+            el.classList.add("rise");
+          });
+        }, 300);
+      }
+
+      function rowHTML(s, terms) {
+        // 有編號：「A012 · 78 歲 · 男」；沒有編號（現場新增）：「78 歲 · 男」
+        const meta = `${s.code ? `${highlight(s.code, terms)} · ` : ""}${subjectAge(s)} 歲 · ${esc(s.gender)}`;
+        return `
+      <div class="srow" data-id="${esc(s.id)}" tabindex="0">
+        <div class="avatar serif">${esc(s.name.slice(0, 1))}</div>
+        <div class="s-main">
+          <div class="s-name">${highlight(s.name, terms)}</div>
+          <div class="s-meta"><span class="s-meta-text">${meta}</span>${s.source === "onsite" ? '<span class="s-tag">現場新增</span>' : ""}</div>
+        </div>
+        <button class="btn-edit" type="button" aria-label="編輯 ${esc(s.name)}"><i class="ti ti-pencil"></i>編輯</button>
+      </div>`;
+      }
+
+      function emptyHTML(icon, title, sub) {
+        return `
+      <div class="empty">
+        <i class="ti ${icon}"></i>
+        <div class="empty-title">${title}</div>
+        ${sub ? `<div class="empty-sub">${sub}</div>` : ""}
+      </div>`;
+      }
+
+      function renderList({ animate = true } = {}) {
+        if (!field) {
+          list.innerHTML = ""; // 沒有場域時名單區整個隱藏（見 renderView）
+        } else {
+          const terms = termsOf(R.query);
+          const all = allSubjects();
+          const matched = all.filter((s) => {
+            const text = norm(`${s.name} ${s.code || ""}`); // 沒有編號只比對姓名
+            return terms.every((t) => text.includes(t));
+          });
+          $("#count").textContent = terms.length
+            ? `找到 ${matched.length} 位`
+            : `共 ${all.length} 位`;
+
+          if (!all.length) {
+            list.innerHTML = emptyHTML(
+              "ti-users",
+              "目前沒有受測人員",
+              "點右上角「新增人員」加入名單",
+            );
+          } else if (matched.length) {
+            list.innerHTML = `<div class="list-card">${matched.map((s) => rowHTML(s, terms)).join("")}</div>`;
+            const now = Date.now();
+            matched.forEach((s) => {
+              const t = touchedAt(s);
+              if (!t || now - t > FLASH_WINDOW || flashed.get(s.id) === t)
+                return;
+              flashed.set(s.id, t);
+              const row = list.querySelector(
+                `[data-id="${CSS.escape(s.id)}"]`,
+              );
+              row.classList.add("flash");
+              row.addEventListener(
+                "animationend",
+                () => row.classList.remove("flash"),
+                { once: true },
+              );
+            });
+          } else {
+            list.innerHTML = emptyHTML(
+              "ti-user-search",
+              "找不到符合的人員",
+              "試試其他姓名或編號",
+            );
+          }
+        }
+
+        if (animate) {
+          list.classList.remove("is-updating");
+          void list.offsetWidth; // 重新觸發淡入
+          list.classList.add("is-updating");
+        }
+      }
+
+      function clearSearch() {
+        R.query = "";
+        searchInput.value = "";
+        searchClear.hidden = true;
+      }
+
+      // 新增或編輯後：捲到那一列
+      function revealRow(id) {
+        const row = list.querySelector(`[data-id="${CSS.escape(id)}"]`);
+        if (row)
+          setTimeout(
+            () => row.scrollIntoView({ block: "center", behavior: "smooth" }),
+            300,
+          );
+      }
+
+      /* =========================================================
+       * 切換場域：底部面板（與 home.html 的選擇場域面板相同）
+       * ========================================================= */
+      const fieldSheet = $("#fieldSheet");
+      const fieldList = $("#fieldList");
+      const fsInput = $("#fsInput");
+      const fsClear = $("#fsClear");
+      const S = { open: false, selectedId: null, query: "", lastFocus: null };
+
+      // 排序：用過的依最近使用時間在前，沒用過的在後，沒用過的依名稱排序
+      function sortFields(items, recent) {
+        const rank = new Map(recent.map((r, i) => [r.id, i]));
+        return [...items].sort((a, b) => {
+          const ra = rank.get(a.id);
+          const rb = rank.get(b.id);
+          if (ra !== undefined && rb !== undefined) return ra - rb;
+          if (ra !== undefined) return -1;
+          if (rb !== undefined) return 1;
+          return a.name.localeCompare(b.name, "zh-Hant");
+        });
+      }
+
+      function fieldRowHTML(f, terms) {
+        const sel = f.id === S.selectedId;
+        return `
+      <div class="frow ${sel ? "is-selected" : ""}" role="radio" aria-checked="${sel}" tabindex="0" data-id="${f.id}">
+        <span class="frow-radio"><i class="ti ti-check"></i></span>
+        <span class="frow-name">${highlight(f.name, terms)}</span>
+        <span class="frow-tag">已選取</span>
+      </div>`;
+      }
+
+      // 只比對場域名稱
+      function renderFieldList() {
+        const terms = termsOf(S.query);
+        const recent = fieldStore.getRecent();
+        let html = "";
+
+        if (!terms.length) {
+          // 最近使用：最多 3 個，目前場域排第一
+          const cur = fieldStore.getCurrent();
+          let ids = recent.map((r) => r.id);
+          if (cur && ids.includes(cur.id))
+            ids = [cur.id, ...ids.filter((id) => id !== cur.id)];
+          const recentFields = ids.slice(0, 3).map((id) => fieldById.get(id));
+          if (recentFields.length) {
+            html += `<h3 class="sheet-section">最近使用</h3>${recentFields.map((f) => fieldRowHTML(f, terms)).join("")}`;
+          }
+          const all = sortFields(CONFIG.fields, recent);
+          html += `<h3 class="sheet-section">全部場域（${all.length}）</h3>${all.map((f) => fieldRowHTML(f, terms)).join("")}`;
+        } else {
+          const matched = sortFields(
+            CONFIG.fields.filter((f) => {
+              const n = norm(f.name);
+              return terms.every((t) => n.includes(t));
+            }),
+            recent,
+          );
+          if (!matched.length) {
+            fieldList.innerHTML = `
+      <div class="list-empty">
+        <i class="ti ti-map-search"></i>
+        <div class="list-empty-title">找不到符合的場域</div>
+        <div class="list-empty-sub">試試其他關鍵字</div>
+      </div>`;
+            return;
+          }
+          html += `<h3 class="sheet-section">搜尋結果（${matched.length}）</h3>${matched.map((f) => fieldRowHTML(f, terms)).join("")}`;
+        }
+        fieldList.innerHTML = html;
+      }
+
+      function openFieldSheet() {
+        S.open = true;
+        S.query = "";
+        S.lastFocus = document.activeElement;
+        fsInput.value = "";
+        fsClear.hidden = true;
+        S.selectedId = field ? field.id : null; // 目前場域自動選取
+        renderFieldList();
+        fieldList.scrollTop = 0;
+
+        fieldSheet.style.transform = "";
+        fieldSheet.classList.add("is-open");
+        fieldSheet.setAttribute("aria-hidden", "false");
+        $("#fieldMask").classList.add("is-open");
+        document.body.classList.add("sheet-open", "field-open");
+        $("#app").inert = true;
+      }
+
+      function closeFieldSheet() {
+        if (!S.open) return;
+        S.open = false;
+        fsInput.blur();
+        fieldSheet.style.transform = "";
+        fieldSheet.classList.remove("is-open");
+        fieldSheet.setAttribute("aria-hidden", "true");
+        $("#fieldMask").classList.remove("is-open");
+        document.body.classList.remove("sheet-open", "field-open");
+        $("#app").inert = false;
+        S.lastFocus?.focus?.({ preventScroll: true });
+      }
+
+      function selectField(id) {
+        if (S.selectedId === id) return;
+        S.selectedId = id;
+        fieldList.querySelectorAll(".frow").forEach((row) => {
+          const on = row.dataset.id === id;
+          row.classList.toggle("is-selected", on);
+          row.setAttribute("aria-checked", on);
+          // 單選鈕小彈跳
+          const radio = row.querySelector(".frow-radio");
+          radio.classList.remove("pop");
+          if (on) {
+            void radio.offsetWidth;
+            radio.classList.add("pop");
+          }
+        });
+      }
+
+      function confirmField() {
+        const next = fieldById.get(S.selectedId);
+        if (!next) {
+          fieldList.classList.remove("shake");
+          void fieldList.offsetWidth; // 重新觸發動畫
+          fieldList.classList.add("shake");
+          showToast("請先選擇場域");
+          return;
+        }
+        // 確認場域：照原本規則寫入 kf.currentField 和 kf.recentFields
+        fieldStore.setCurrent(next.id);
+        // 與目前場域相同：直接關閉，不顯示 toast
+        if (field && next.id === field.id) return closeFieldSheet();
+
+        const wasEmpty = !field;
+        field = next;
+        local = loadLocal(field.id);
+        closeFieldSheet();
+        clearSearch();
+        if (wasEmpty) {
+          enterFieldView(); // 大卡片 → 場域卡、搜尋列、名單
+        } else {
+          renderFieldCard();
+          renderList();
+        }
+        showToast(`已切換至 ${field.name}`);
+      }
+
+      function initFieldSheet() {
+        $("#fieldCard").addEventListener("click", openFieldSheet);
+        $("#fieldClose").addEventListener("click", closeFieldSheet);
+        $("#fieldMask").addEventListener("click", closeFieldSheet);
+        $("#fieldConfirm").addEventListener("click", confirmField);
+        fieldList.addEventListener("animationend", (e) => {
+          if (e.target === fieldList) fieldList.classList.remove("shake");
+        });
+
+        // 點整列 = 選取
+        fieldList.addEventListener("click", (e) => {
+          const row = e.target.closest(".frow");
+          if (row) selectField(row.dataset.id);
+        });
+        fieldList.addEventListener("keydown", (e) => {
+          const row = e.target.closest?.(".frow");
+          if (row && e.target === row && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            selectField(row.dataset.id);
+          }
+        });
+
+        // 搜尋：即時篩選
+        fsInput.addEventListener("input", () => {
+          S.query = fsInput.value;
+          fsClear.hidden = !S.query;
+          renderFieldList();
+          fieldList.scrollTop = 0;
+        });
+        fsClear.addEventListener("click", (e) => {
+          e.preventDefault();
+          fsInput.value = "";
+          fsInput.dispatchEvent(new Event("input"));
+          fsInput.focus({ preventScroll: true });
+        });
+
+        // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉，否則彈回
+        const grab = $("#fieldGrab");
+        let drag = null;
+        grab.addEventListener("pointerdown", (e) => {
+          if (!S.open || e.target.closest("button")) return;
+          drag = { y: e.clientY, dy: 0 };
+          grab.setPointerCapture(e.pointerId);
+          fieldSheet.classList.add("is-dragging");
+        });
+        grab.addEventListener("pointermove", (e) => {
+          if (!drag) return;
+          drag.dy = Math.max(0, e.clientY - drag.y);
+          fieldSheet.style.transform = `translateY(${drag.dy}px)`;
+        });
+        const endDrag = () => {
+          if (!drag) return;
+          const { dy } = drag;
+          drag = null;
+          fieldSheet.classList.remove("is-dragging");
+          fieldSheet.style.transform = "";
+          if (dy > 120) closeFieldSheet();
+        };
+        grab.addEventListener("pointerup", endDrag);
+        grab.addEventListener("pointercancel", endDrag);
+      }
+
+      /* =========================================================
+       * 確認對話框：confirmDialog({...}) → Promise<boolean>
+       * 點遮罩或按 Esc 等同按次要按鈕
+       * ========================================================= */
+      const dialog = $("#dialog");
+      let dialogResolve = null;
+      function confirmDialog({ icon, title, desc, cancel, ok }) {
+        document.activeElement?.blur?.(); // 先收起鍵盤，避免對話框被蓋住
+        $("#dlgIcon").className = `ti ${icon}`;
+        $("#dlgTitle").textContent = title;
+        $("#dlgDesc").textContent = desc;
+        $("#dlgCancel").textContent = cancel;
+        $("#dlgOk").textContent = ok;
+        dialog.classList.add("is-open");
+        dialog.setAttribute("aria-hidden", "false");
+        $("#dlgMask").classList.add("is-open");
+        $("#dlgOk").focus({ preventScroll: true });
+        return new Promise((resolve) => (dialogResolve = resolve));
+      }
+      function closeDialog(result) {
+        if (!dialogResolve) return;
+        dialog.classList.remove("is-open");
+        dialog.setAttribute("aria-hidden", "true");
+        $("#dlgMask").classList.remove("is-open");
+        const resolve = dialogResolve;
+        dialogResolve = null;
+        resolve(result);
+      }
+      $("#dlgCancel").addEventListener("click", () => closeDialog(false));
+      $("#dlgMask").addEventListener("click", () => closeDialog(false));
+      $("#dlgOk").addEventListener("click", () => closeDialog(true));
+
+      /* =========================================================
+       * 新增／編輯人員：底部面板
+       * mode："add" 新增（性別預設「男」）／"edit" 編輯（帶入現有資料）
+       * ========================================================= */
+      const sheet = $("#sheet");
+      const form = $("#addForm");
+      const inName = $("#inName");
+      const genderSeg = $("#genderSeg");
+      const DEFAULT_GENDER = "男";
+      // birth：西元 "YYYY-MM-DD"，未選擇為 null；orig：編輯前的資料（用來判斷有沒有修改）
+      const A = {
+        open: false,
+        mode: "add",
+        subject: null,
+        orig: null,
+        gender: DEFAULT_GENDER,
+        birth: null,
+        lastFocus: null,
+      };
+
+      // 新增：只看姓名和出生年月日（性別有預設值，不算）；編輯：任何欄位和原本不同
+      function isDirty() {
+        const name = inName.value.trim();
+        if (A.mode === "add") return Boolean(name || A.birth);
+        return (
+          name !== A.orig.name ||
+          A.gender !== A.orig.gender ||
+          A.birth !== A.orig.birth
+        );
+      }
+
+      // 性別直接定位：暫時關掉滑塊與文字顏色的過場，避免看到滑動動畫
+      function setGenderInstant(g) {
+        A.gender = g;
+        const btns = [...genderSeg.querySelectorAll(".seg-btn")];
+        const animated = [genderSeg.querySelector(".seg-thumb"), ...btns];
+        animated.forEach((el) => (el.style.transition = "none"));
+        setSeg(
+          genderSeg,
+          Math.max(
+            0,
+            btns.findIndex((b) => b.dataset.gender === g),
+          ),
+        );
+        void genderSeg.offsetWidth; // 強制套用位置後再恢復過場
+        animated.forEach((el) => (el.style.transition = ""));
+      }
+
+      function openSheet(mode, subject = null) {
+        form.reset();
+        form
+          .querySelectorAll(".has-error")
+          .forEach((f) => f.classList.remove("has-error"));
+        A.mode = mode;
+        A.subject = subject;
+        const edit = mode === "edit";
+
+        $("#sheetTitle").textContent = edit ? "編輯人員" : "新增人員";
+        $("#sheetSub").textContent = edit
+          ? field.name
+          : `加入 ${field.name} 的受測名單`;
+        $("#submitText").textContent = edit ? "儲存變更" : "新增人員";
+        $("#submitIcon").className = `ti ${edit ? "ti-check" : "ti-plus"}`;
+        $("#fCode").hidden = !(edit && subject.code);
+        $("#fCodeText").textContent = edit && subject.code ? `編號 ${subject.code}` : "";
+
+        if (edit) {
+          A.orig = {
+            name: subject.name,
+            gender: subject.gender,
+            birth: subject.birth || null,
+          };
+          inName.value = subject.name;
+          setGenderInstant(subject.gender);
+          A.birth = A.orig.birth;
+        } else {
+          A.orig = null;
+          setGenderInstant(DEFAULT_GENDER);
+          A.birth = null;
+        }
+        renderBirthField();
+
+        A.open = true;
+        A.lastFocus = document.activeElement;
+        sheet.style.transform = "";
+        sheet.classList.add("is-open");
+        sheet.setAttribute("aria-hidden", "false");
+        $("#sheetMask").classList.add("is-open");
+        document.body.classList.add("sheet-open");
+        $("#app").inert = true;
+        form.scrollTop = 0;
+        if (!edit) inName.focus({ preventScroll: true }); // 新增：自動聚焦姓名
+      }
+
+      function closeSheet() {
+        if (!A.open) return;
+        A.open = false;
+        document.activeElement?.blur?.();
+        sheet.style.transform = "";
+        sheet.classList.remove("is-open");
+        sheet.setAttribute("aria-hidden", "true");
+        $("#sheetMask").classList.remove("is-open");
+        document.body.classList.remove("sheet-open");
+        $("#app").inert = false;
+      }
+
+      // ✕、遮罩、往下拖、Esc：有輸入或修改時先確認
+      async function requestCloseSheet() {
+        if (!A.open) return;
+        if (!isDirty()) return closeSheet();
+        const discard = await confirmDialog(
+          A.mode === "edit"
+            ? {
+                icon: "ti-alert-circle",
+                title: "要放棄變更嗎？",
+                desc: "修改的內容不會保存",
+                cancel: "繼續編輯",
+                ok: "放棄",
+              }
+            : {
+                icon: "ti-alert-circle",
+                title: "要放棄新增嗎？",
+                desc: "已輸入的資料不會保存",
+                cancel: "繼續填寫",
+                ok: "放棄",
+              },
+        );
+        if (discard) closeSheet();
+      }
+
+      // 新增「新增人員」：沒有目前場域時先打開場域面板
+      function onAddClick() {
+        if (!field) {
+          openFieldSheet();
+          showToast("請先選擇場域");
+          return;
+        }
+        openSheet("add");
+      }
+
+      function submitSheet(e) {
+        e.preventDefault();
+        const name = inName.value.trim();
+        const errors = {
+          fName: !name,
+          fBirth: !A.birth,
+        };
+        let first = null;
+        Object.entries(errors).forEach(([id, bad]) => {
+          $(`#${id}`).classList.toggle("has-error", bad);
+          if (bad && !first) first = id;
+        });
+        if (first) {
+          if (first === "fName") inName.focus({ preventScroll: true });
+          $(`#${first}`).scrollIntoView({
+            block: "nearest",
+            behavior: "smooth",
+          });
+          return;
+        }
+
+        // 寫入前重新讀取，避免覆蓋名單頁在這段時間寫入的資料
+        local = loadLocal(field.id);
+        const now = Date.now();
+
+        if (A.mode === "add") {
+          const subject = {
+            id: `onsite-${now}`,
+            code: null, // 現場新增沒有編號
+            name,
+            birth: A.birth,
+            gender: A.gender,
+            source: "onsite",
+            done: {},
+            createdAt: now,
+          };
+          local.added.push(subject);
+          saveLocal(field.id, local);
+          closeSheet();
+          clearSearch(); // 清除搜尋，新人員排在最上面
+          renderList();
+          revealRow(subject.id);
+          showToast(`已新增 ${name}`);
+          return;
+        }
+
+        // 編輯：沒有任何變動 → 直接關閉，不顯示 toast
+        if (!isDirty()) return closeSheet();
+        const { subject } = A;
+        const changes = { name, gender: A.gender, birth: A.birth };
+        if (subject.source === "onsite") {
+          const rec = local.added.find((x) => x.id === subject.id);
+          if (rec) Object.assign(rec, changes, { updatedAt: now });
+        } else {
+          local.edits[subject.id] = { ...changes, updatedAt: now };
+        }
+        saveLocal(field.id, local);
+        closeSheet();
+        renderList();
+        revealRow(subject.id);
+        showToast(`已更新 ${name}`);
+      }
+
+      function initSheet() {
+        $("#addBtn").addEventListener("click", onAddClick);
+        $("#sheetClose").addEventListener("click", requestCloseSheet);
+        $("#sheetMask").addEventListener("click", requestCloseSheet);
+        form.addEventListener("submit", submitSheet);
+
+        // 姓名：重新輸入時錯誤立即消失；Enter 收起鍵盤
+        inName.addEventListener("input", () =>
+          $("#fName").classList.remove("has-error"),
+        );
+        inName.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            inName.blur();
+          }
+        });
+
+        // 出生年月日：點擊打開滾輪選擇視窗
+        $("#birthBtn").addEventListener("click", openPicker);
+
+        genderSeg.addEventListener("click", (e) => {
+          const btn = e.target.closest(".seg-btn");
+          if (!btn) return;
+          A.gender = btn.dataset.gender;
+          setSeg(
+            genderSeg,
+            [...genderSeg.querySelectorAll(".seg-btn")].indexOf(btn),
+          );
+        });
+
+        // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉（有資料先確認），否則彈回
+        const grab = $("#sheetGrab");
+        let drag = null;
+        grab.addEventListener("pointerdown", (e) => {
+          if (!A.open || e.target.closest("button")) return;
+          drag = { y: e.clientY, dy: 0 };
+          grab.setPointerCapture(e.pointerId);
+          sheet.classList.add("is-dragging");
+        });
+        grab.addEventListener("pointermove", (e) => {
+          if (!drag) return;
+          drag.dy = Math.max(0, e.clientY - drag.y);
+          sheet.style.transform = `translateY(${drag.dy}px)`;
+        });
+        const endDrag = () => {
+          if (!drag) return;
+          const { dy } = drag;
+          drag = null;
+          sheet.classList.remove("is-dragging");
+          sheet.style.transform = "";
+          if (dy > 120) requestCloseSheet();
+        };
+        grab.addEventListener("pointerup", endDrag);
+        grab.addEventListener("pointercancel", endDrag);
+      }
+
+      /* =========================================================
+       * 出生日期選擇視窗（民國年滾輪）
+       * 每欄選項值 = 索引 + 1（年：民國 1 年起；月：1 月起；日：1 日起）
+       * ========================================================= */
+      const ITEM_H = 80;
+      const picker = $("#picker");
+      const wheels = { y: $("#wheelY"), m: $("#wheelM"), d: $("#wheelD") };
+      const UNITS = { y: "年", m: "月", d: "日" };
+      const P = { open: false, y: 40, m: 1, d: 1 };
+
+      const pad2 = (n) => String(n).padStart(2, "0");
+      function todayRoc() {
+        const t = new Date();
+        return {
+          y: t.getFullYear() - 1911,
+          m: t.getMonth() + 1,
+          d: t.getDate(),
+        };
+      }
+      const daysIn = (y, m) => new Date(y + 1911, m, 0).getDate(); // 閏年依西元年計算
+      // 不能選未來：今年最多到本月、本月最多到今天
+      const maxMonth = (y) => (y === todayRoc().y ? todayRoc().m : 12);
+      function maxDay(y, m) {
+        const t = todayRoc();
+        return y === t.y && m === t.m
+          ? Math.min(daysIn(y, m), t.d)
+          : daysIn(y, m);
+      }
+      const toIso = ({ y, m, d }) => `${y + 1911}-${pad2(m)}-${pad2(d)}`;
+      function isoToRoc(iso) {
+        const [Y, M, D] = iso.split("-").map(Number);
+        return { y: Y - 1911, m: M, d: D };
+      }
+      const birthHTML = (r) =>
+        `民國 ${r.y} 年 ${r.m} 月 ${r.d} 日 <em>· ${ageFrom(toIso(r))} 歲</em>`;
+
+      // 新增人員面板上的欄位
+      function renderBirthField() {
+        const btn = $("#birthBtn");
+        btn.classList.toggle("has-value", Boolean(A.birth));
+        $("#birthText").innerHTML = A.birth
+          ? birthHTML(isoToRoc(A.birth))
+          : "請選擇出生日期";
+      }
+
+      function fillWheel(key, count, maxAllowed) {
+        let html = '<div class="wheel-pad"></div>';
+        for (let v = 1; v <= count; v++) {
+          html += `<div class="wheel-item${v > maxAllowed ? " is-disabled" : ""}" data-v="${v}">${v} ${UNITS[key]}</div>`;
+        }
+        wheels[key].innerHTML = html + '<div class="wheel-pad"></div>';
+        wheels[key].dataset.count = count;
+      }
+      function centerValue(key) {
+        const w = wheels[key];
+        const i = Math.round(w.scrollTop / ITEM_H);
+        return Math.max(1, Math.min(Number(w.dataset.count), i + 1));
+      }
+      function scrollToValue(key, v, smooth) {
+        wheels[key].scrollTo({
+          top: (v - 1) * ITEM_H,
+          behavior: smooth ? "smooth" : "auto",
+        });
+      }
+      // 依捲動位置即時標出中間的選項
+      function markCenter(key) {
+        const v = centerValue(key);
+        wheels[key].querySelectorAll(".wheel-item").forEach((el) => {
+          el.classList.toggle("is-center", Number(el.dataset.v) === v);
+        });
+      }
+      function setDisabled(key, maxAllowed) {
+        wheels[key].querySelectorAll(".wheel-item").forEach((el) => {
+          el.classList.toggle("is-disabled", Number(el.dataset.v) > maxAllowed);
+        });
+      }
+
+      // 即時預覽：滾動中也依目前中間的選項更新（超出範圍的先以可選的最大值顯示）
+      function updatePreview() {
+        const y = centerValue("y");
+        const m = Math.min(centerValue("m"), maxMonth(y));
+        const d = Math.min(centerValue("d"), maxDay(y, m));
+        $("#pickerPreview").innerHTML = birthHTML({ y, m, d });
+      }
+
+      // 年、月改變後：更新月份可選範圍、重建日數，必要時把月／日拉回可選的值
+      function applyConstraints(smooth) {
+        const mm = maxMonth(P.y);
+        setDisabled("m", mm);
+        if (P.m > mm) {
+          P.m = mm;
+          scrollToValue("m", P.m, smooth);
+        }
+        const days = daysIn(P.y, P.m);
+        const md = maxDay(P.y, P.m);
+        if (P.d > md) P.d = md; // 日數變少或超過今天：改成最後一個可選的日
+        if (Number(wheels.d.dataset.count) !== days) {
+          fillWheel("d", days, md);
+          scrollToValue("d", P.d, false);
+        } else {
+          setDisabled("d", md);
+          if (centerValue("d") !== P.d) scrollToValue("d", P.d, smooth);
+        }
+        Object.keys(wheels).forEach(markCenter);
+        updatePreview();
+      }
+
+      // 捲動停止後才確定該欄的值；捲到不能選的值時自動彈回
+      function commit(key) {
+        if (!P.open) return;
+        const v = centerValue(key);
+        if (key === "y") {
+          if (v === P.y) return;
+          P.y = v;
+          applyConstraints(true);
+        } else if (key === "m") {
+          const mm = maxMonth(P.y);
+          if (v > mm) scrollToValue("m", mm, true);
+          const next = Math.min(v, mm);
+          if (next === P.m) return markCenter("m");
+          P.m = next;
+          applyConstraints(true);
+        } else {
+          const md = maxDay(P.y, P.m);
+          if (v > md) scrollToValue("d", md, true);
+          P.d = Math.min(v, md);
+          updatePreview();
+        }
+      }
+
+      function openPicker() {
+        document.activeElement?.blur?.(); // 姓名欄正在輸入時先收起鍵盤
+        Object.assign(P, A.birth ? isoToRoc(A.birth) : { y: 40, m: 1, d: 1 });
+        P.open = true;
+        fillWheel("y", todayRoc().y, Infinity);
+        fillWheel("m", 12, maxMonth(P.y));
+        fillWheel("d", daysIn(P.y, P.m), maxDay(P.y, P.m));
+        picker.classList.add("is-open");
+        picker.setAttribute("aria-hidden", "false");
+        $("#pickerMask").classList.add("is-open");
+        // 打開時直接定位，不要有捲動動畫
+        Object.keys(wheels).forEach((key) => {
+          scrollToValue(key, P[key], false);
+          markCenter(key);
+        });
+        updatePreview();
+      }
+
+      function closePicker(apply) {
+        if (!P.open) return;
+        if (apply) {
+          A.birth = toIso(P);
+          renderBirthField();
+          $("#fBirth").classList.remove("has-error");
+        }
+        P.open = false;
+        picker.classList.remove("is-open");
+        picker.setAttribute("aria-hidden", "true");
+        $("#pickerMask").classList.remove("is-open");
+        $("#birthBtn").focus({ preventScroll: true });
+      }
+
+      function initPicker() {
+        $("#pickerClose").addEventListener("click", () => closePicker(false));
+        $("#pickerCancel").addEventListener("click", () => closePicker(false));
+        $("#pickerMask").addEventListener("click", () => closePicker(false));
+        $("#pickerOk").addEventListener("click", () => closePicker(true));
+
+        const hasScrollEnd = "onscrollend" in window;
+        Object.entries(wheels).forEach(([key, wheel]) => {
+          let raf;
+          let timer;
+          wheel.addEventListener("scroll", () => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+              markCenter(key);
+              updatePreview();
+            });
+            // 不支援 scrollend 時，用 120ms 防抖判斷捲動停止
+            if (!hasScrollEnd) {
+              clearTimeout(timer);
+              timer = setTimeout(() => commit(key), 120);
+            }
+          });
+          if (hasScrollEnd)
+            wheel.addEventListener("scrollend", () => commit(key));
+          // 點擊非中間的選項：平滑捲動到該選項
+          wheel.addEventListener("click", (e) => {
+            const item = e.target.closest(".wheel-item");
+            if (item && Number(item.dataset.v) !== centerValue(key)) {
+              scrollToValue(key, Number(item.dataset.v), true);
+            }
+          });
+        });
+      }
+
+      /* =========================================================
+       * 啟動
+       * ========================================================= */
+      function init() {
+        renderNav();
+        renderView();
+        renderList({ animate: false });
+        initFieldSheet();
+        initSheet();
+        initPicker();
+
+        // 沒有場域：大卡片的「選擇場域」打開場域面板
+        $("#nfBtn").addEventListener("click", openFieldSheet);
+
+        searchInput.addEventListener("input", () => {
+          R.query = searchInput.value;
+          searchClear.hidden = !R.query;
+          renderList();
+        });
+        searchClear.addEventListener("click", (e) => {
+          e.preventDefault();
+          searchInput.value = "";
+          searchInput.dispatchEvent(new Event("input"));
+          searchInput.focus({ preventScroll: true });
+        });
+
+        // 點整列或「編輯」按鈕：打開編輯面板
+        list.addEventListener("click", (e) => {
+          const row = e.target.closest(".srow");
+          if (!row) return;
+          const subject = allSubjects().find((s) => s.id === row.dataset.id);
+          if (subject) openSheet("edit", subject);
+        });
+        list.addEventListener("keydown", (e) => {
+          if (
+            e.target.classList?.contains("srow") &&
+            (e.key === "Enter" || e.key === " ")
+          ) {
+            e.preventDefault();
+            e.target.click();
+          }
+        });
+
+        // Esc：對話框 → 日期選擇 → 人員面板 → 場域面板
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Escape") return;
+          if (dialogResolve) closeDialog(false);
+          else if (P.open) closePicker(false);
+          else if (A.open) requestCloseSheet();
+          else if (S.open) closeFieldSheet();
+        });
+      }
+      init();
+    </script>
+  </body>
+</html>
