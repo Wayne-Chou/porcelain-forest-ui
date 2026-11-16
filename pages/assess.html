@@ -1064,23 +1064,26 @@
         saveLocal(local);
         showToast(`已完成 ${T.subject.name} 的 ${test.name}`);
 
-        // 行走測驗：回到名單頁
-        if (test.id !== "sppb") {
+        // 其他測驗（目前沒有）：回到名單頁
+        if (test.id !== "sppb" && test.id !== "gait") {
           setTimeout(() => (location.href = `roster.html?test=${test.id}&field=${field.id}`), 1200);
           return;
         }
-        // SPPB：新增一筆鑑測紀錄到 kf.records.<fieldId>，再進入結果頁
+        // SPPB、行走測驗：新增一筆鑑測紀錄到 kf.records.<fieldId>，再進入各自的結果頁
         const record = {
-          id: `s${now.getTime()}`,
+          id: `${test.id === "gait" ? "g" : "s"}${now.getTime()}`,
           fieldId: field.id,
           subjectId: T.subject.id,
-          test: "sppb",
+          test: test.id,
           date: `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`,
           time: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
           retest: params.get("retest") === "1",
         };
+        // 行走測驗：風險等級 0–4（低／稍低／中／高／危險）；TODO：之後改成分析結果，現在用隨機值方便測試
+        if (test.id === "gait") record.riskLevel = Math.floor(Math.random() * 5);
         addRecord(record);
-        setTimeout(() => (location.href = `result.html?record=${record.id}&from=assess`), 1200);
+        const resultPage = test.id === "gait" ? "result-gait.html" : "result.html";
+        setTimeout(() => (location.href = `${resultPage}?record=${record.id}&from=assess`), 1200);
       }
 
       // kf.records.<fieldId>：測驗完成時新增的鑑測紀錄（陣列；紀錄頁、結果頁會一起讀取）

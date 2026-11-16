@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="build-version" content="__BUILD_TIME__" />
+    <title>步態分析詳細報告</title>
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="../css/detail.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 多語系（中／日／EN）：先載入，讓 <html lang> 與日文字型在內容出現前就緒 -->
+    <script src="../js/detail-i18n.js"></script>
+  </head>
+  <body class="page-gait">
+    <!-- 儲存視窗（進入頁面時先顯示） -->
+    <div class="modal-overlay show" id="saveModal" data-html2canvas-ignore>
+      <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-handle"></div>
+        <div class="modal-icon-wrap"><i class="ti ti-photo"></i></div>
+        <div class="modal-title" id="modalTitle" data-i18n="modal.title"></div>
+        <div class="modal-desc" data-i18n-html="gait.modalDesc"></div>
+        <div class="modal-hint" data-i18n-html="modal.hint"></div>
+        <div class="modal-expire" id="modalExpire">
+          <i class="ti ti-clock"></i>
+          <span><span data-i18n="modal.expirePre"></span><span id="modalCountdown">…</span><span data-i18n="modal.expirePost"></span></span>
+        </div>
+        <div class="modal-btn-group">
+          <button class="modal-btn modal-btn-save" type="button" onclick="saveReport()">
+            <i class="ti ti-download"></i><span data-i18n="modal.save"></span>
+          </button>
+          <button class="modal-btn modal-btn-cancel" type="button" onclick="closeModal()" data-i18n="modal.skip"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 過期頁、無權限頁（由 showStatusPage 填入；顯示時報告頁隱藏） -->
+    <div class="expired-page" id="statusView" hidden></div>
+
+    <div id="reportPage">
+      <!-- ① 頂帶＋結果卡 -->
+      <section id="secResult">
+        <header class="band">
+          <div class="wrap">
+            <div class="band-top">
+              <!-- 回首頁：只有從結果頁點 QR Code（from=result）或預覽（preview=1）進來時顯示；存圖時不出現 -->
+              <div class="band-lead">
+                <button type="button" class="band-home" id="bandHome" hidden data-html2canvas-ignore data-i18n-aria="nav.home"><i class="ti ti-home"></i></button>
+                <div class="band-eyebrow" data-i18n="gait.docTitle"></div>
+              </div>
+              <div id="bandLang" data-html2canvas-ignore></div>
+            </div>
+            <h1 class="band-name" id="bandName" data-i18n="loading"></h1>
+            <div class="band-meta">
+              <span class="band-meta-item" id="bandWho"><i class="ti ti-user"></i></span>
+              <span class="band-meta-item" id="bandDate"><i class="ti ti-calendar"></i></span>
+            </div>
+          </div>
+        </header>
+        <div class="wrap result-wrap">
+          <div class="result-card" id="resultCard">
+            <div class="pv-box" data-pv="risk" hidden data-html2canvas-ignore></div>
+            <div class="result-label" data-i18n="result.gait"></div>
+            <div class="gauge-box">
+              <svg class="gauge" id="gauge" viewBox="0 0 760 360" role="img" aria-hidden="true"></svg>
+              <div class="gauge-ends"><span data-i18n="risk.lbl.low2"></span><span data-i18n="risk.lbl.danger"></span></div>
+            </div>
+            <div class="gauge-value is-level" id="gaugeValue"></div>
+            <div class="risk-desc" id="riskDesc"></div>
+          </div>
+          <div class="api-error-banner" id="apiErrorBanner" role="alert">
+            <i class="ti ti-alert-circle"></i>
+            <span id="apiErrorMessage"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ② 步行速度：上段深綠大數字、下段區間條與說明 -->
+      <section class="wrap blk" id="secSpeed">
+        <article class="blk-card reveal" id="speedCard">
+          <div class="spd-top">
+            <div class="spd-head">
+              <div class="blk-eyebrow" data-i18n="sec.gait"></div>
+              <h2 class="blk-title" data-i18n="term.speed"></h2>
+            </div>
+            <div class="spd-big"><span id="spdNum">—</span><small>cm/s</small></div>
+          </div>
+          <div class="spd-bottom">
+            <div class="pv-box" data-pv="speed" hidden data-html2canvas-ignore></div>
+            <div class="spd-bar" id="spdBar">
+              <span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span>
+            </div>
+            <div class="spd-lbls" id="spdLbls">
+              <span>&lt;46</span><span>46–64</span><span>65–83</span><span>&gt;83</span>
+            </div>
+            <div class="spd-pill-row"><div class="pill" id="speedPill"></div></div>
+            <p class="desc" id="speedDesc"></p>
+          </div>
+        </article>
+      </section>
+
+      <!-- ③ 行動力狀態：插圖為主角（手機上下、≥ 768px 左右兩欄） -->
+      <section class="wrap blk" id="secMobility">
+        <div class="pv-box" data-pv="sway" hidden data-html2canvas-ignore></div>
+        <article class="blk-card mob reveal" id="mobCard">
+          <div class="img-frame mob-art" id="mobArt">
+            <span class="mob-badge" data-i18n-pill="mob.badge"><i class="ti ti-arrows-left-right"></i></span>
+            <img id="mobImg" alt="" onerror="imgMissing(this)" />
+            <i class="ti ti-photo ph-icon"></i>
+          </div>
+          <div class="mob-body">
+            <div class="blk-eyebrow" data-i18n="mobility.title"></div>
+            <h2 class="mob-title" id="mobTitle"></h2>
+            <div class="mtrack">
+              <div class="mseg" data-l="low"><span class="mseg-bar"><span class="mseg-fill"></span></span><span class="mseg-lbl" data-i18n="sway.word.low"></span></div>
+              <div class="mseg" data-l="medium"><span class="mseg-bar"><span class="mseg-fill"></span></span><span class="mseg-lbl" data-i18n="sway.word.medium"></span></div>
+              <div class="mseg" data-l="high"><span class="mseg-bar"><span class="mseg-fill"></span></span><span class="mseg-lbl" data-i18n="sway.word.high"></span></div>
+            </div>
+            <div class="pill" id="swayPill"></div>
+            <p class="desc" id="mobDesc"></p>
+            <hr class="mob-rule" />
+            <p class="desc" id="swayDesc"></p>
+          </div>
+        </article>
+      </section>
+
+      <!-- ④ 行動建議：深綠卡（第一條為主步驟，第 2 條起為列表） -->
+      <section class="wrap blk" id="secActions">
+        <article class="adv reveal" id="advCard">
+          <div class="adv-head">
+            <div>
+              <div class="blk-eyebrow" data-i18n="blk.next"></div>
+              <h2 class="blk-title" data-i18n="sub.actions"></h2>
+            </div>
+            <div class="adv-pill" id="advLevel"><i class="ti ti-alert-triangle"></i></div>
+          </div>
+          <div class="adv-main" id="advMain">
+            <span class="adv-wm" aria-hidden="true">1</span>
+            <span class="adv-start" data-i18n="blk.start"></span>
+            <h3 class="adv-main-title" id="advMainTitle"></h3>
+            <p class="adv-main-desc" id="advMainDesc"></p>
+          </div>
+          <ol class="adv-list" id="advList"></ol>
+        </article>
+      </section>
+
+      <!-- ⑤ 衛教資訊：ICOPE banner 當封面＋4 則列表 -->
+      <section class="wrap blk" id="secEdu">
+        <article class="blk-card reveal">
+          <div class="img-frame edu-cover">
+            <img src="../img/detail/icope-banner.png" alt="" data-i18n-alt="edu.bannerAlt" onerror="imgMissing(this)" />
+            <i class="ti ti-photo ph-icon"></i>
+          </div>
+          <div class="edu2-body">
+            <div class="blk-eyebrow" data-i18n="blk.eduEyebrow"></div>
+            <h2 class="blk-title" data-i18n="sub.edu"></h2>
+            <ul class="edu2-list">
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-shoe"></i></span>
+                <div><div class="edu2-t" data-i18n="gedu.1.t"></div><div class="edu2-d" data-i18n="gedu.1.d"></div></div>
+              </li>
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-pill"></i></span>
+                <div><div class="edu2-t" data-i18n="gedu.2.t"></div><div class="edu2-d" data-i18n="gedu.2.d"></div></div>
+              </li>
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-salad"></i></span>
+                <div><div class="edu2-t" data-i18n="gedu.3.t"></div><div class="edu2-d" data-i18n="gedu.3.d"></div></div>
+              </li>
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-eye"></i></span>
+                <div><div class="edu2-t" data-i18n="gedu.4.t"></div><div class="edu2-d" data-i18n="gedu.4.d"></div></div>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- ⑥ 最新消息：森林插畫封面（沒有消息時整個區塊隱藏；標題與內容不翻譯） -->
+      <section class="wrap blk" id="secNews">
+        <div class="pv-box" data-pv="news" hidden data-html2canvas-ignore></div>
+        <article class="blk-card reveal" id="newsCard">
+          <div class="news-cover">
+            <svg class="news-art" viewBox="0 0 390 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+              <g fill="none" stroke="#c9a46a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.6">
+                <path vector-effect="non-scaling-stroke" d="M150 190 Q230 72 300 108 T420 54" />
+                <path vector-effect="non-scaling-stroke" d="M200 112 Q215 54 250 32" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.22)" d="M250 32 q-6 -18 6 -32 q8 16 -6 32z" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.18)" d="M226 72 q-20 -8 -22 -28 q18 8 22 28z" />
+                <path vector-effect="non-scaling-stroke" d="M320 190 Q330 108 370 90" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.25)" d="M370 90 q2 -20 20 -26 q-2 20 -20 26z" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.2)" d="M335 135 q18 -4 30 8 q-18 4 -30 -8z" />
+                <circle vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.18)" cx="330" cy="45" r="14" />
+              </g>
+            </svg>
+            <div class="news-cover-in">
+              <div class="blk-eyebrow" data-i18n="news.tag"></div>
+              <h2 class="news-title" id="newsTitle"></h2>
+            </div>
+          </div>
+          <div class="news-body" id="newsBody"><div class="news-box" id="newsBox"></div></div>
+        </article>
+      </section>
+
+      <!-- ⑦ 推薦影片：點擊縮圖才載入播放器（設定在 js/detail-common.js 的 REPORT_VIDEOS） -->
+      <section class="wrap blk" id="secVideo">
+        <div class="pv-box" data-pv="video" hidden data-html2canvas-ignore></div>
+        <article class="blk-card reveal" id="videoCard">
+          <div class="vid-head">
+            <div class="blk-eyebrow" data-i18n="blk.videoEyebrow"></div>
+            <h2 class="blk-title" data-i18n="blk.video"></h2>
+          </div>
+          <div class="vid-media" id="vidMedia">
+            <div class="vid-thumb" id="vidThumb" role="button" tabindex="0" data-i18n-aria="video.play">
+              <span class="vid-shade"></span>
+              <!-- 實心播放圖示（同 Tabler player-play-filled；webfont 的 filled 樣式表會覆蓋其他圖示的字型，所以改用 inline SVG） -->
+              <span class="vid-play"><svg class="vid-play-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13 -8z" fill="#1f3b33" stroke="#1f3b33" stroke-width="2" stroke-linejoin="round" /></svg></span>
+              <span class="vid-brand"><i class="ti ti-brand-youtube"></i>YouTube</span>
+            </div>
+          </div>
+          <div class="vid-foot">
+            <h3 class="vid-title" id="vidTitle" hidden></h3>
+            <a class="vid-link" id="vidLink" target="_blank" rel="noopener"><i class="ti ti-external-link"></i></a>
+          </div>
+        </article>
+      </section>
+
+      <!-- 頁尾說明 -->
+      <footer class="wrap">
+        <p class="foot-note" data-i18n="gait.closing"></p>
+        <div class="pv-pages" id="pvPages" hidden data-html2canvas-ignore>
+          <button type="button" class="pv-pill" data-page="expired"><i class="ti ti-eye"></i><span data-i18n="pv.expired"></span></button>
+          <button type="button" class="pv-pill" data-page="unauth"><i class="ti ti-eye"></i><span data-i18n="pv.unauth"></span></button>
+        </div>
+      </footer>
+
+      <!-- 儲存報告：固定在畫面底部的浮動膠囊（存圖時不顯示） -->
+      <div class="save-dock" id="saveDock" data-html2canvas-ignore>
+        <button class="save-pill" type="button" onclick="triggerSave()">
+          <i class="ti ti-download"></i><span data-i18n="save.short"></span><small id="dockCountdown">…</small>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      window.PAGE_KEY = "gait";
+    </script>
+    <script src="../js/detail-common.js"></script>
+    <script>
+      /* 行走測驗詳細報告：頁面專用的計分與渲染
+       * 共用程式在 js/detail-common.js（推薦影片設定 REPORT_VIDEOS、儀表、行動力、行動建議、最新消息、推薦影片、存圖…）
+       * 注意：<script> 內字串裡的結束標籤一律寫成 <\/body>、<\/html>、<\/script>
+       * （瀏覽器結果相同；避免 Live Server 等工具把腳本插進字串中的 body 結束標籤前、截斷整段 script）
+       * 切換語系時觸發 "langchange"，用上一次的資料重新渲染，不重新呼叫 API、不重播動畫 */
+
+      function getSppbScore(speed) {
+        if (speed > 83) return 4;
+        if (speed >= 65) return 3;
+        if (speed >= 46) return 2;
+        return 1;
+      }
+
+      /* ── ② 步行速度：大數字（進場時從 0 數到實際值）＋區間條（所在區段由左往右填色） ── */
+      let speedCounter = null;
+      function renderSpeed(speed) {
+        const score = getSppbScore(speed);
+        const speedText = formatSpeed(speed);
+        speedCounter.set(speed, speedText);
+        $("#speedCard").setAttribute("aria-label", t("term.speed") + " " + speedText + " cm/s");
+        setRange($("#spdBar"), $("#spdLbls"), score - 1);
+        setPill($("#speedPill"), PILL_KIND[score], t("walk.pill." + score));
+        $("#speedDesc").textContent = t("walk.desc." + score, { v: speedText });
+      }
+
+      // 風險等級：依 API riskLevel；指針在該段中央
+      function renderRisk(riskLevel) {
+        const level = riskLevelMap[riskLevel];
+        if (!level) {
+          showApiError(t("api.risk", { v: riskLevel }));
+          return;
+        }
+        renderGaugeRisk(level, null);
+        renderAdvice(level);
+      }
+
+      // 上一次成功渲染的資料：切換語系時用它重新渲染，不重新呼叫 API
+      let lastReport = null;
+      function renderReport(payload, isGuest) {
+        const profile = payload?.profile;
+        const examData = payload?.data;
+        if (!profile || !examData) {
+          showUnauthorizedPage();
+          return;
+        }
+        lastReport = [payload, isGuest];
+        renderBand(profile, examData.date, isGuest);
+        renderRisk(examData.riskLevel);
+        renderSpeed(examData.speed);
+        renderMobility(examData.leftOffset, examData.rightOffset);
+        renderNewsCard(payload?.news);
+        renderVideo();
+        startCountdown(examData.date);
+      }
+
+      async function loadExamData() {
+        if (PREVIEW) return initPreview(); // 預覽模式：不呼叫 API
+
+        const token = getExamTokenFromUrl();
+        if (!token) {
+          showUnauthorizedPage();
+          return;
+        }
+
+        const isGuest = isGuestToken(token);
+        const apiToken = isGuest ? token.slice(2) : token;
+        if (!apiToken) {
+          showUnauthorizedPage();
+          return;
+        }
+
+        const url = isGuest
+          ? `${API_BASE_URL}/AllInOneAPI/App/guest/exam/get/${apiToken}`
+          : `${API_BASE_URL}/AllInOneAPI/App/exam/get/${apiToken}`;
+
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            showUnauthorizedPage();
+            return;
+          }
+
+          const result = await response.json();
+          if (!result.success) {
+            showUnauthorizedPage();
+            return;
+          }
+
+          hideApiError();
+          renderReport(result.data, isGuest);
+        } catch (error) {
+          showApiError(error.message || t("api.network"));
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("bandLang").innerHTML = I18N.switchHTML();
+        I18N.apply();
+        document.title = t("gait.docTitle");
+        drawGauge();
+        initHomeButton();
+        speedCounter = makeCounter($("#speedCard"), $("#spdNum"));
+        initVideo();
+        initReveal();
+        loadExamData();
+      });
+
+      // 切換語系：固定文字由 I18N.apply 更新，這裡用上一次的資料重新渲染（不重播動畫）
+      document.addEventListener("langchange", () => {
+        document.title = t("gait.docTitle");
+        if (lastReport) renderReport(...lastReport);
+        else {
+          renderNewsCard(null);
+          renderVideo();
+        }
+      });
+
+      /* =========================================================
+       * 預覽模式（?preview=1，開發用）
+       * 假資料：王*明、男性、72 歲、今天、speed 70、左右偏移 3／2、riskLevel 1、一則消息、推薦影片
+       * 切換位置：① 結果卡＝風險等級、② 步行速度＝分數、③ 行動力＝晃動、⑥ 最新消息＝有／無、
+       *          ⑦ 推薦影片＝有／無；頁尾下方＝過期頁／無權限頁
+       * ========================================================= */
+      const PREVIEW_OPTIONS = {
+        risk: [
+          { i18n: "risk.lbl.low2", value: 0 },
+          { i18n: "risk.lbl.low", value: 1 },
+          { i18n: "risk.lbl.medium", value: 2 },
+          { i18n: "risk.lbl.high", value: 3 },
+          { i18n: "risk.lbl.danger", value: 4 },
+        ],
+        speed: [
+          { label: "1", value: 30 },
+          { label: "2", value: 55 },
+          { label: "3", value: 70 },
+          { label: "4", value: 95 },
+        ],
+        sway: [
+          { i18n: "sway.word.low", value: [3, 2] },
+          { i18n: "sway.word.medium", value: [5, 5] },
+          { i18n: "sway.word.high", value: [9, 8] },
+        ],
+        news: [
+          { i18n: "pv.has", value: true },
+          { i18n: "pv.none", value: false },
+        ],
+        video: [
+          { i18n: "pv.has", value: true },
+          { i18n: "pv.none", value: false },
+        ],
+      };
+      // 內容混合：開頭沒有冒號的段落、「項目：內容」、以及一行沒有冒號的接續內容（接在「地點」後面）
+      const PREVIEW_NEWS = {
+        title: "長者六力 ICOPE 免費檢測開放預約",
+        content:
+          "65 歲以上長者每年可接受 1 次公費檢測，評估認知、視力、聽力、行動、營養、憂鬱六大面向。\n" +
+          "時間：每週二、四 上午 9:00–11:30\n" +
+          "地點：各區衛生所\n" +
+          "社區關懷據點也可預約\n" +
+          "攜帶：健保卡\n" +
+          "洽詢：(02) 2345-6789",
+      };
+
+      function previewPayload(st) {
+        const birth = new Date();
+        birth.setFullYear(birth.getFullYear() - 72); // 今天剛滿 72 歲
+        return {
+          profile: { name: "王*明", gender: 1, birth: birth.getTime() },
+          data: { date: Date.now(), speed: st.speed, leftOffset: st.sway[0], rightOffset: st.sway[1], riskLevel: st.risk },
+          news: st.news ? PREVIEW_NEWS : null,
+        };
+      }
+
+      function initPreview() {
+        const st = { risk: 1, speed: 70, sway: [3, 2], news: true, video: true };
+        buildPreviewBox("risk", "risk", "pv.risk", PREVIEW_OPTIONS.risk);
+        buildPreviewBox("speed", "speed", "pv.speed", PREVIEW_OPTIONS.speed);
+        buildPreviewBox("sway", "sway", "pv.sway", PREVIEW_OPTIONS.sway);
+        buildPreviewBox("news", "news", "pv.news", PREVIEW_OPTIONS.news);
+        buildPreviewBox("video", "video", "pv.video", PREVIEW_OPTIONS.video);
+        document.getElementById("pvPages").hidden = false;
+
+        document.getElementById("reportPage").addEventListener("click", (e) => {
+          const b = e.target.closest(".pv-btns button[data-key], .pv-pill");
+          if (!b) return;
+          if (b.dataset.page) return showStatusPage(b.dataset.page);
+          st[b.dataset.key] = PREVIEW_OPTIONS[b.dataset.key][b.dataset.i].value;
+          videoOn = st.video;
+          renderReport(previewPayload(st), false);
+          syncPreviewButtons(PREVIEW_OPTIONS, st);
+        });
+        renderReport(previewPayload(st), false);
+        syncPreviewButtons(PREVIEW_OPTIONS, st);
+      }
+    </script>
+    <div class="build-version" id="buildVersion" data-html2canvas-ignore>v: <span id="buildVersionDisplay"></span></div>
+    <script>
+      document.getElementById("buildVersionDisplay").textContent = document.querySelector('meta[name="build-version"]').content;
+    </script>
+  </body>
+</html>

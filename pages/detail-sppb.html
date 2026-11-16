@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="build-version" content="__BUILD_TIME__" />
+    <title>SPPB 詳細報告</title>
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="../css/detail.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 多語系（中／日／EN）：先載入，讓 <html lang> 與日文字型在內容出現前就緒 -->
+    <script src="../js/detail-i18n.js"></script>
+  </head>
+  <body class="page-sppb">
+    <!-- 儲存視窗（進入頁面時先顯示） -->
+    <div class="modal-overlay show" id="saveModal" data-html2canvas-ignore>
+      <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-handle"></div>
+        <div class="modal-icon-wrap"><i class="ti ti-photo"></i></div>
+        <div class="modal-title" id="modalTitle" data-i18n="modal.title"></div>
+        <div class="modal-desc" data-i18n-html="sppb.modalDesc"></div>
+        <div class="modal-hint" data-i18n-html="modal.hint"></div>
+        <div class="modal-expire" id="modalExpire">
+          <i class="ti ti-clock"></i>
+          <span><span data-i18n="modal.expirePre"></span><span id="modalCountdown">…</span><span data-i18n="modal.expirePost"></span></span>
+        </div>
+        <div class="modal-btn-group">
+          <button class="modal-btn modal-btn-save" type="button" onclick="saveReport()">
+            <i class="ti ti-download"></i><span data-i18n="modal.save"></span>
+          </button>
+          <button class="modal-btn modal-btn-cancel" type="button" onclick="closeModal()" data-i18n="modal.skip"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 過期頁、無權限頁（由 showStatusPage 填入；顯示時報告頁隱藏） -->
+    <div class="expired-page" id="statusView" hidden></div>
+
+    <div id="reportPage">
+      <!-- 頂帶＋① 結果區塊（拱門＋奶油色基座） -->
+      <section id="secResult">
+        <header class="band">
+          <div class="wrap">
+            <div class="band-top">
+              <!-- 回首頁：只有從結果頁點 QR Code（from=result）或預覽（preview=1）進來時顯示；存圖時不出現 -->
+              <div class="band-lead">
+                <button type="button" class="band-home" id="bandHome" hidden data-html2canvas-ignore data-i18n-aria="nav.home"><i class="ti ti-home"></i></button>
+                <div class="band-eyebrow" data-i18n="sppb.docTitle"></div>
+              </div>
+              <div id="bandLang" data-html2canvas-ignore></div>
+            </div>
+            <h1 class="band-name" id="bandName" data-i18n="loading"></h1>
+            <div class="band-meta">
+              <span class="band-meta-item" id="bandWho"><i class="ti ti-user"></i></span>
+              <span class="band-meta-item" id="bandDate"><i class="ti ti-calendar"></i></span>
+            </div>
+          </div>
+        </header>
+        <div class="wrap result-wrap">
+          <div class="arch" id="resultCard">
+            <div class="gauge-box">
+              <svg class="gauge" id="gauge" viewBox="0 0 760 360" role="img" aria-hidden="true"></svg>
+              <div class="gauge-ends"><span data-i18n="risk.lbl.low2"></span><span data-i18n="risk.lbl.danger"></span></div>
+            </div>
+            <div class="gauge-value is-level" id="gaugeValue"></div>
+            <div class="risk-desc" id="riskDesc"></div>
+            <div class="arch-base">
+              <div class="base-col">
+                <div class="base-k" data-i18n="sppb.total"></div>
+                <div class="base-total"><span id="totalNum">0</span><small>/12</small></div>
+              </div>
+              <div class="base-col" id="viviCol">
+                <div class="base-k">VIVIFRAIL</div>
+                <div class="vv-row">
+                  <span class="vv-badge" id="viviBadge">—</span>
+                  <span class="vv-name" id="viviName"></span>
+                </div>
+                <div class="vv-grades" id="viviGrades"><span>A</span><span>B</span><span>C</span><span>D</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="pv-box" data-pv="total" hidden data-html2canvas-ignore></div>
+          <div class="api-error-banner" id="apiErrorBanner" role="alert">
+            <i class="ti ti-alert-circle"></i>
+            <span id="apiErrorMessage"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ② 三項測驗（儀表格）：深綠底座＋平衡／起坐／步行三塊白色儀表格
+           每格：左欄小儀表（4 段弧＋分數＋項目名稱）、右欄大數值（起坐、步行接區間條）＋狀態膠囊；平衡另有三列站姿進度條；最下方完整說明
+           小儀表的弧線與分數字色依狀態膠囊的 good／warn／danger -->
+      <section class="wrap blk" id="secTests">
+        <article class="tst" id="testsCard">
+          <div class="tst-head">
+            <div class="blk-eyebrow" data-i18n="sec.sppb"></div>
+            <h2 class="blk-title" data-i18n="sppb.tests"></h2>
+          </div>
+
+          <!-- 平衡 -->
+          <div class="tcell reveal" id="balCell">
+            <div class="pv-box" data-pv="balance" hidden data-html2canvas-ignore></div>
+            <div class="tcell-top">
+              <div class="mg">
+                <svg class="mg-arc" id="balArc" viewBox="0 0 120 62" aria-hidden="true"></svg>
+                <div class="mg-score"><span id="balScore">0</span><small>/4</small></div>
+                <div class="mg-name" data-i18n="test.balance"></div>
+              </div>
+              <div class="tval" id="balBig"><span class="num" id="balNum">—</span><small id="balUnit"></small></div>
+              <div class="tcell-pill"><div class="pill" id="balancePill"></div></div>
+            </div>
+            <div class="brows" id="balRows"></div>
+            <p class="tcell-desc" id="balanceDesc"></p>
+          </div>
+
+          <!-- 起坐 -->
+          <div class="tcell reveal" id="chairCell">
+            <div class="pv-box" data-pv="chair" hidden data-html2canvas-ignore></div>
+            <div class="tcell-top has-range">
+              <div class="mg">
+                <svg class="mg-arc" id="chairArc" viewBox="0 0 120 62" aria-hidden="true"></svg>
+                <div class="mg-score"><span id="chairScore">0</span><small>/4</small></div>
+                <div class="mg-name" data-i18n="test.chair"></div>
+              </div>
+              <div class="tval" id="chairBig"><span class="num" id="chairNum">—</span><small id="chairUnit" data-i18n="unit.chair"></small></div>
+              <div class="tcell-range">
+                <div class="spd-bar" id="chairBar">
+                  <span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span>
+                </div>
+                <!-- 起坐標籤較長：窄的時候允許在「–」後換行 -->
+                <div class="spd-lbls is-wrap" id="chairLbls">
+                  <span>≤11.19</span><span>11.20–<wbr />13.69</span><span>13.70–<wbr />16.69</span><span>&gt;16.70</span>
+                </div>
+              </div>
+              <div class="tcell-pill"><div class="pill" id="chairPill"></div></div>
+            </div>
+            <p class="tcell-desc" id="chairDesc"></p>
+          </div>
+
+          <!-- 步行 -->
+          <div class="tcell reveal" id="walkCell">
+            <div class="pv-box" data-pv="speed" hidden data-html2canvas-ignore></div>
+            <div class="tcell-top has-range">
+              <div class="mg">
+                <svg class="mg-arc" id="walkArc" viewBox="0 0 120 62" aria-hidden="true"></svg>
+                <div class="mg-score"><span id="walkScore">0</span><small>/4</small></div>
+                <div class="mg-name" data-i18n="test.walk"></div>
+              </div>
+              <div class="tval" id="walkBig"><span class="num" id="walkNum">—</span><small id="walkUnit">cm/s</small></div>
+              <div class="tcell-range">
+                <div class="spd-bar" id="walkBar">
+                  <span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span><span class="spd-seg"><span class="spd-fill"></span></span>
+                </div>
+                <div class="spd-lbls" id="walkLbls">
+                  <span>&lt;46</span><span>46–64</span><span>65–83</span><span>&gt;83</span>
+                </div>
+              </div>
+              <div class="tcell-pill"><div class="pill" id="walkPill"></div></div>
+            </div>
+            <p class="tcell-desc" id="walkDesc"></p>
+          </div>
+        </article>
+      </section>
+
+      <!-- ⑤ 行動力狀態（身體晃動）：SPPB 頁暫時不顯示，原始碼保留；要打開時把這段註解的開頭與結尾拿掉即可
+           （JS 已有防呆：找不到 #mobCard 時略過；預覽的晃動切換也不建立）
+      <section class="wrap blk" id="secMobility">
+        <div class="pv-box" data-pv="sway" hidden data-html2canvas-ignore></div>
+        <article class="blk-card mob reveal" id="mobCard">
+          <div class="img-frame mob-art" id="mobArt">
+            <span class="mob-badge" data-i18n-pill="mob.badge"><i class="ti ti-arrows-left-right"></i></span>
+            <img id="mobImg" alt="" onerror="imgMissing(this)" />
+            <i class="ti ti-photo ph-icon"></i>
+          </div>
+          <div class="mob-body">
+            <div class="blk-eyebrow" data-i18n="mobility.title"></div>
+            <h2 class="mob-title" id="mobTitle"></h2>
+            <div class="mtrack">
+              <div class="mseg" data-l="low"><span class="mseg-bar"><span class="mseg-fill"></span></span><span class="mseg-lbl" data-i18n="sway.word.low"></span></div>
+              <div class="mseg" data-l="medium"><span class="mseg-bar"><span class="mseg-fill"></span></span><span class="mseg-lbl" data-i18n="sway.word.medium"></span></div>
+              <div class="mseg" data-l="high"><span class="mseg-bar"><span class="mseg-fill"></span></span><span class="mseg-lbl" data-i18n="sway.word.high"></span></div>
+            </div>
+            <div class="pill" id="swayPill"></div>
+            <p class="desc" id="mobDesc"></p>
+            <hr class="mob-rule" />
+            <p class="desc" id="swayDesc"></p>
+          </div>
+        </article>
+      </section>
+      ⑤ 行動力狀態 結束 -->
+
+      <!-- ⑥ 行動建議：深綠卡（第一條為主步驟，第 2 條起為列表；文字為 SPPB 版） -->
+      <section class="wrap blk" id="secActions">
+        <article class="adv reveal" id="advCard">
+          <div class="adv-head">
+            <div>
+              <div class="blk-eyebrow" data-i18n="blk.next"></div>
+              <h2 class="blk-title" data-i18n="sub.actions"></h2>
+            </div>
+            <div class="adv-pill" id="advLevel"><i class="ti ti-alert-triangle"></i></div>
+          </div>
+          <div class="adv-main" id="advMain">
+            <span class="adv-wm" aria-hidden="true">1</span>
+            <span class="adv-start" data-i18n="blk.start"></span>
+            <h3 class="adv-main-title" id="advMainTitle"></h3>
+            <p class="adv-main-desc" id="advMainDesc"></p>
+          </div>
+          <ol class="adv-list" id="advList"></ol>
+        </article>
+      </section>
+
+      <!-- ⑦ 衛教資訊：ICOPE banner 當封面＋4 則列表（SPPB 版內容） -->
+      <section class="wrap blk" id="secEdu">
+        <article class="blk-card reveal">
+          <div class="img-frame edu-cover">
+            <img src="../img/detail/icope-banner.png" alt="" data-i18n-alt="edu.bannerAlt" onerror="imgMissing(this)" />
+            <i class="ti ti-photo ph-icon"></i>
+          </div>
+          <div class="edu2-body">
+            <div class="blk-eyebrow" data-i18n="blk.eduEyebrow"></div>
+            <h2 class="blk-title" data-i18n="sub.edu"></h2>
+            <ul class="edu2-list">
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-barbell"></i></span>
+                <div><div class="edu2-t" data-i18n="edu.1.t"></div><div class="edu2-d" data-i18n="edu.1.d"></div></div>
+              </li>
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-hand-stop"></i></span>
+                <div><div class="edu2-t" data-i18n="edu.2.t"></div><div class="edu2-d" data-i18n="edu.2.d"></div></div>
+              </li>
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-egg"></i></span>
+                <div><div class="edu2-t" data-i18n="edu.3.t"></div><div class="edu2-d" data-i18n="edu.3.d"></div></div>
+              </li>
+              <li class="edu2-row">
+                <span class="edu2-ic"><i class="ti ti-shoe"></i></span>
+                <div><div class="edu2-t" data-i18n="edu.4.t"></div><div class="edu2-d" data-i18n="edu.4.d"></div></div>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- ⑧ 最新消息：森林插畫封面（沒有消息時整個區塊隱藏；標題與內容不翻譯） -->
+      <section class="wrap blk" id="secNews">
+        <div class="pv-box" data-pv="news" hidden data-html2canvas-ignore></div>
+        <article class="blk-card reveal" id="newsCard">
+          <div class="news-cover">
+            <svg class="news-art" viewBox="0 0 390 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+              <g fill="none" stroke="#c9a46a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.6">
+                <path vector-effect="non-scaling-stroke" d="M150 190 Q230 72 300 108 T420 54" />
+                <path vector-effect="non-scaling-stroke" d="M200 112 Q215 54 250 32" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.22)" d="M250 32 q-6 -18 6 -32 q8 16 -6 32z" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.18)" d="M226 72 q-20 -8 -22 -28 q18 8 22 28z" />
+                <path vector-effect="non-scaling-stroke" d="M320 190 Q330 108 370 90" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.25)" d="M370 90 q2 -20 20 -26 q-2 20 -20 26z" />
+                <path vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.2)" d="M335 135 q18 -4 30 8 q-18 4 -30 -8z" />
+                <circle vector-effect="non-scaling-stroke" fill="rgba(201,164,106,.18)" cx="330" cy="45" r="14" />
+              </g>
+            </svg>
+            <div class="news-cover-in">
+              <div class="blk-eyebrow" data-i18n="news.tag"></div>
+              <h2 class="news-title" id="newsTitle"></h2>
+            </div>
+          </div>
+          <div class="news-body" id="newsBody"><div class="news-box" id="newsBox"></div></div>
+        </article>
+      </section>
+
+      <!-- ⑨ 推薦影片：點擊縮圖才載入播放器（設定在 js/detail-common.js 的 REPORT_VIDEOS） -->
+      <section class="wrap blk" id="secVideo">
+        <div class="pv-box" data-pv="video" hidden data-html2canvas-ignore></div>
+        <article class="blk-card reveal" id="videoCard">
+          <div class="vid-head">
+            <div class="blk-eyebrow" data-i18n="blk.videoEyebrow"></div>
+            <h2 class="blk-title" data-i18n="blk.video"></h2>
+          </div>
+          <div class="vid-media" id="vidMedia">
+            <div class="vid-thumb" id="vidThumb" role="button" tabindex="0" data-i18n-aria="video.play">
+              <span class="vid-shade"></span>
+              <!-- 實心播放圖示（同 Tabler player-play-filled；webfont 的 filled 樣式表會覆蓋其他圖示的字型，所以改用 inline SVG） -->
+              <span class="vid-play"><svg class="vid-play-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13 -8z" fill="#1f3b33" stroke="#1f3b33" stroke-width="2" stroke-linejoin="round" /></svg></span>
+              <span class="vid-brand"><i class="ti ti-brand-youtube"></i>YouTube</span>
+            </div>
+          </div>
+          <div class="vid-foot">
+            <h3 class="vid-title" id="vidTitle" hidden></h3>
+            <a class="vid-link" id="vidLink" target="_blank" rel="noopener"><i class="ti ti-external-link"></i></a>
+          </div>
+        </article>
+      </section>
+
+      <!-- 頁尾說明 -->
+      <footer class="wrap">
+        <p class="foot-note" data-i18n="sppb.closing"></p>
+        <div class="pv-pages" id="pvPages" hidden data-html2canvas-ignore>
+          <button type="button" class="pv-pill" data-page="expired"><i class="ti ti-eye"></i><span data-i18n="pv.expired"></span></button>
+          <button type="button" class="pv-pill" data-page="unauth"><i class="ti ti-eye"></i><span data-i18n="pv.unauth"></span></button>
+        </div>
+      </footer>
+
+      <!-- 儲存報告：固定在畫面底部的浮動膠囊（存圖時不顯示） -->
+      <div class="save-dock" id="saveDock" data-html2canvas-ignore>
+        <button class="save-pill" type="button" onclick="triggerSave()">
+          <i class="ti ti-download"></i><span data-i18n="save.short"></span><small id="dockCountdown">…</small>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      window.PAGE_KEY = "sppb";
+    </script>
+    <script src="../js/detail-common.js"></script>
+    <script>
+      /* =========================================================
+       * SPPB 詳細報告：頁面專用的計分與渲染（共用程式在 js/detail-common.js）
+       * 資料格式（待 API 確認）：API 回傳 result.data = { profile, data, news }
+       *   profile: { name, gender（1 男、0 女）, birth（出生時間戳） }
+       *   data: {
+       *     date,                                  // 檢測時間戳
+       *     balance: { sideBySide, semiTandem, tandem }, // 各站姿維持秒數，未進行為 null
+       *     chairStand,                            // 五次起坐秒數，無法完成為 null
+       *     speed,                                 // 步行速度 cm/s，無法完成為 null
+       *     leftOffset, rightOffset,               // 身體晃動（左右偏移角度）
+       *     riskLevel,                             // 可選：0 低～4 危險；有值就用，沒有就由總分計算
+       *   }
+       *   news: { title, content } 或 null（為空時隱藏最新消息；不翻譯）
+       * 注意：<script> 內字串裡的結束標籤一律寫成 <\/body>、<\/html>、<\/script>
+       * （瀏覽器結果相同；避免 Live Server 等工具把腳本插進字串中的 body 結束標籤前、截斷整段 script）
+       * ========================================================= */
+
+      // 秒數：取 1 位小數，整數不帶小數（10 → 10、6.25 → 6.3）
+      function fmt1(sec) {
+        const r = Math.round(Number(sec) * 10) / 10;
+        return Number.isInteger(r) ? String(r) : r.toFixed(1);
+      }
+      const isNum = (v) => v !== null && v !== undefined && v !== "" && Number.isFinite(Number(v));
+
+      /* 三塊儀表格的大數值（進場時從 0 數到目標）；DOMContentLoaded 時建立 */
+      const counters = {};
+
+      /* 小儀表：4 段半圓弧（每段 1 分），得分段用狀態色；狀態依膠囊的 good／warn／danger（PILL_KIND），兩者一定一致
+       * 弧線顏色寫在 SVG 屬性上（存圖時 html2canvas 只看得到屬性）；畫面上的依序點亮由 CSS（.is-in .mg-seg.on）處理 */
+      const STATUS_COLOR = {
+        good: { arc: "#2f7a52", text: "#1f5a3f" },
+        warn: { arc: "#c07a1a", text: "#8a5a12" },
+        danger: { arc: "#b5473a", text: "#a33a2c" },
+      };
+      function setMiniGauge(key, score) {
+        const kind = PILL_KIND[score];
+        const c = STATUS_COLOR[kind];
+        const cell = $("#" + key + "Cell");
+        cell.dataset.status = kind;
+        cell.style.setProperty("--st-arc", c.arc);
+        cell.style.setProperty("--st-text", c.text);
+        const GAP = 2; // 段與段之間各留 2°
+        $("#" + key + "Arc").innerHTML = [0, 1, 2, 3]
+          .map((k) => {
+            const a1 = 180 - 45 * k - (k > 0 ? GAP : 0);
+            const a0 = 180 - 45 * (k + 1) + (k < 3 ? GAP : 0);
+            const [x1, y1] = pt(60, 60, 50, a1);
+            const [x0, y0] = pt(60, 60, 50, a0);
+            const on = k < score;
+            return `<path class="mg-seg${on ? " on" : ""}" style="--i:${k}" d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A 50 50 0 0 1 ${x0.toFixed(2)} ${y0.toFixed(2)}" fill="none" stroke="${on ? c.arc : "#ece4d6"}" stroke-width="10" />`;
+          })
+          .join("");
+        $("#" + key + "Score").textContent = score;
+        $("#" + key + "Arc").setAttribute("aria-label", score + "/4");
+      }
+      // 大數字：value 為 null 時顯示 text（「無法完成」用較小字級、不顯示單位）
+      function setBig(key, value, text, unit, isText) {
+        counters[key].set(value, text);
+        $("#" + key + "Big").classList.toggle("is-text", !!isText);
+        const u = $("#" + key + "Unit");
+        u.hidden = !unit;
+        if (unit) u.textContent = unit;
+      }
+
+      /* ── ② 平衡（0–4）：並排 ≥10 秒 1 分 → 半並排 ≥10 秒 1 分 → 直線 ≥10 秒 2 分、3–9.99 秒 1 分、<3 秒 0 分
+       * 前一項未達 10 秒（或沒有資料），後面的項目視為「未進行」 ── */
+      const BAL_STAGES = ["sideBySide", "semiTandem", "tandem"];
+      function getBalanceResult(balance) {
+        let score = 0;
+        let stopped = false;
+        const rows = BAL_STAGES.map((key) => {
+          const v = balance?.[key];
+          if (stopped || !isNum(v)) {
+            stopped = true;
+            return { key, skipped: true };
+          }
+          const sec = Number(v);
+          if (key === "tandem") score += sec >= 10 ? 2 : sec >= 3 ? 1 : 0;
+          else if (sec >= 10) score += 1;
+          if (sec < 10) stopped = true;
+          return { key, sec, passed: sec >= 10 };
+        });
+        return { score, rows };
+      }
+      /* 大數字：第一個未達 10 秒的站姿；都達 10 秒時取最後一個有做的站姿（三項都做＝直線 10 秒）；並排沒有資料時為 null */
+      function balanceHeadline(rows) {
+        if (rows[0].skipped) return null;
+        return rows.find((r) => !r.skipped && !r.passed) || rows.filter((r) => !r.skipped).pop();
+      }
+      function renderBalance(balance) {
+        const { score, rows } = getBalanceResult(balance);
+        const head = balanceHeadline(rows);
+        if (head) setBig("bal", head.sec, fmt1(head.sec), t("unit." + head.key), false);
+        else setBig("bal", null, "—", "", false);
+        setMiniGauge("bal", score);
+        $("#balRows").innerHTML = rows
+          .map((r) => {
+            const w = r.skipped ? 0 : Math.min(100, (r.sec / 10) * 100);
+            const v = r.skipped
+              ? `<span class="brow-v is-skip">${t("bal.skipped")}</span>`
+              : `<span class="brow-v">${t("sec", { v: fmt1(r.sec) })}${r.passed ? `<i class="ti ti-check" aria-label="${t("bal.passed")}"></i>` : ""}</span>`;
+            return `<div class="brow${r.passed ? " is-pass" : ""}${r.skipped ? " is-skip" : ""}">
+              <span class="brow-k">${t("bal." + r.key)}</span>
+              <span class="brow-bar"><span class="brow-fill" style="--w:${w.toFixed(1)}%"></span></span>
+              ${v}
+            </div>`;
+          })
+          .join("");
+        setPill($("#balancePill"), PILL_KIND[score], t("bal.pill." + score));
+        $("#balanceDesc").textContent = t("bal.desc." + score);
+        return score;
+      }
+
+      /* ── ③ 起坐（0–4）：≤ 11.19 秒 4 分、11.20–13.69 3 分、13.70–16.69 2 分、16.70–60 1 分、> 60 秒或 null 0 分 ── */
+      function getChairScore(sec) {
+        if (!isNum(sec)) return 0;
+        const s = Number(sec);
+        if (s < 11.2) return 4;
+        if (s < 13.7) return 3;
+        if (s < 16.7) return 2;
+        if (s <= 60) return 1;
+        return 0;
+      }
+      function renderChair(sec) {
+        const score = getChairScore(sec);
+        const x = score > 0 ? fmt1(sec) : "";
+        if (score > 0) setBig("chair", Number(sec), x, t("unit.chair"), false);
+        else setBig("chair", null, t("common.unable"), "", true);
+        setMiniGauge("chair", score);
+        setRange($("#chairBar"), $("#chairLbls"), score > 0 ? 4 - score : -1); // 4 分亮第 1 段 … 1 分亮第 4 段
+        setPill($("#chairPill"), PILL_KIND[score], t("chair.pill." + score));
+        $("#chairDesc").textContent = t("chair.desc." + score, { x });
+        return score;
+      }
+
+      /* ── ④ 步行（0–4）：> 83 cm/s 4 分、65–83 3 分、46–64 2 分、< 46 1 分、無法完成（null）0 分 ── */
+      function getSppbScore(speed) {
+        if (!isNum(speed)) return 0;
+        if (speed > 83) return 4;
+        if (speed >= 65) return 3;
+        if (speed >= 46) return 2;
+        return 1;
+      }
+      function renderWalk(speed) {
+        const score = getSppbScore(speed);
+        const speedText = score > 0 ? formatSpeed(speed) : "";
+        if (score > 0) setBig("walk", Number(speed), speedText, "cm/s", false);
+        else setBig("walk", null, t("common.unable"), "", true);
+        setMiniGauge("walk", score);
+        setRange($("#walkBar"), $("#walkLbls"), score - 1); // 1 分亮第 1 段 … 4 分亮第 4 段；0 分不亮
+        setPill($("#walkPill"), PILL_KIND[score], t("walk.pill." + score));
+        $("#walkDesc").textContent = t("walk.desc." + score, { v: speedText });
+        return score;
+      }
+
+      /* 由總分決定風險等級：0–2 危險、3–5 高風險、6–8 中度、9–11 稍低、12 低（回傳 riskLevel 0–4） */
+      function riskLevelFromScore(total) {
+        if (total >= 12) return 0;
+        if (total >= 9) return 1;
+        if (total >= 6) return 2;
+        if (total >= 3) return 3;
+        return 4;
+      }
+
+      /* ── ① 基座：總分（從 0 數到目標）、VIVIFRAIL（與 result.html 相同：A 0–3、B 4–6、C 7–9、D 10–12） ── */
+      const VIVIFRAIL = [
+        { letter: "A", max: 3, color: "#DC3545" },
+        { letter: "B", max: 6, color: "#FFC107", text: "#3a2a00" }, // 黃底用深色字母
+        { letter: "C", max: 9, color: "#0D6EFD" },
+        { letter: "D", max: 12, color: "#198754" },
+      ];
+      function renderTotal(total) {
+        countTo(total);
+        const v = VIVIFRAIL.find((l) => total <= l.max);
+        const col = $("#viviCol");
+        col.style.setProperty("--vv", v.color);
+        col.style.setProperty("--vv-text", v.text || "#fff");
+        col.dataset.grade = v.letter;
+        $("#viviBadge").textContent = v.letter;
+        $("#viviName").textContent = t("vivi." + v.letter);
+        $("#viviGrades").querySelectorAll("span").forEach((s) => s.classList.toggle("is-on", s.textContent === v.letter));
+      }
+
+      // 風險等級：指針在所屬色段內依總分擺放（與 result.html 相同）
+      function renderRisk(riskLevel, total) {
+        const level = riskLevelMap[riskLevel];
+        if (!level) {
+          showApiError(t("api.risk", { v: riskLevel }));
+          return;
+        }
+        renderGaugeRisk(level, total);
+        renderAdvice(level);
+      }
+
+      // 上一次成功渲染的資料：切換語系時用它重新渲染，不重新呼叫 API
+      let lastReport = null;
+      function renderReport(payload, isGuest) {
+        const profile = payload?.profile;
+        const examData = payload?.data;
+        if (!profile || !examData) {
+          showUnauthorizedPage();
+          return;
+        }
+        lastReport = [payload, isGuest];
+        renderBand(profile, examData.date, isGuest);
+        const total = renderBalance(examData.balance) + renderChair(examData.chairStand) + renderWalk(examData.speed);
+        renderTotal(total);
+        const riskLevel = isNum(examData.riskLevel) && riskLevelMap[examData.riskLevel] ? Number(examData.riskLevel) : riskLevelFromScore(total);
+        renderRisk(riskLevel, total);
+        renderMobility(examData.leftOffset, examData.rightOffset);
+        renderNewsCard(payload?.news);
+        renderVideo();
+        startCountdown(examData.date);
+      }
+
+      async function loadExamData() {
+        if (PREVIEW) return initPreview(); // 預覽模式：不呼叫 API
+
+        const token = getExamTokenFromUrl();
+        if (!token) {
+          showUnauthorizedPage();
+          return;
+        }
+
+        const isGuest = isGuestToken(token);
+        const apiToken = isGuest ? token.slice(2) : token;
+        if (!apiToken) {
+          showUnauthorizedPage();
+          return;
+        }
+
+        // TODO（待 API 確認）：SPPB 報告的端點；目前沿用行走頁的網址
+        const url = isGuest
+          ? `${API_BASE_URL}/AllInOneAPI/App/guest/exam/get/${apiToken}`
+          : `${API_BASE_URL}/AllInOneAPI/App/exam/get/${apiToken}`;
+
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            showUnauthorizedPage();
+            return;
+          }
+
+          const result = await response.json();
+          if (!result.success) {
+            showUnauthorizedPage();
+            return;
+          }
+
+          hideApiError();
+          renderReport(result.data, isGuest);
+        } catch (error) {
+          showApiError(error.message || t("api.network"));
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("bandLang").innerHTML = I18N.switchHTML();
+        I18N.apply();
+        document.title = t("sppb.docTitle");
+        drawGauge();
+        initHomeButton();
+        counters.bal = makeCounter($("#balCell"), $("#balNum"));
+        counters.chair = makeCounter($("#chairCell"), $("#chairNum"));
+        counters.walk = makeCounter($("#walkCell"), $("#walkNum"));
+        initVideo();
+        initReveal();
+        loadExamData();
+      });
+
+      // 切換語系：固定文字由 I18N.apply 更新，這裡用上一次的資料重新渲染（不重播動畫）
+      document.addEventListener("langchange", () => {
+        document.title = t("sppb.docTitle");
+        if (lastReport) renderReport(...lastReport);
+        else {
+          renderNewsCard(null);
+          renderVideo();
+        }
+      });
+
+      /* =========================================================
+       * 預覽模式（?preview=1，開發用）
+       * 假資料：平衡 10／10／6.2、起坐 12.5 秒、步速 70、左右偏移 3／2 → 總分 9、稍低風險、C 級
+       * 切換位置：① 結果區塊＝「總分由三項自動計算」說明；② 三項測驗的平衡、起坐、步行格＝各自分數 0–4；
+       *          最新消息＝有／無、推薦影片＝有／無；頁尾下方＝過期頁／無權限頁（身體晃動區塊暫時註解，不建立切換）
+       * ========================================================= */
+      const PREVIEW_OPTIONS = {
+        balance: [
+          { label: "0", value: { sideBySide: 3.2, semiTandem: null, tandem: null } },
+          { label: "1", value: { sideBySide: 10, semiTandem: 4.5, tandem: null } },
+          { label: "2", value: { sideBySide: 10, semiTandem: 10, tandem: 2.1 } },
+          { label: "3", value: { sideBySide: 10, semiTandem: 10, tandem: 6.2 } },
+          { label: "4", value: { sideBySide: 10, semiTandem: 10, tandem: 10 } },
+        ],
+        chair: [
+          { label: "0", value: null },
+          { label: "1", value: 22.0 },
+          { label: "2", value: 15.0 },
+          { label: "3", value: 12.5 },
+          { label: "4", value: 10.5 },
+        ],
+        walk: [
+          { label: "0", value: null },
+          { label: "1", value: 30 },
+          { label: "2", value: 55 },
+          { label: "3", value: 70 },
+          { label: "4", value: 95 },
+        ],
+        news: [
+          { i18n: "pv.has", value: true },
+          { i18n: "pv.none", value: false },
+        ],
+        video: [
+          { i18n: "pv.has", value: true },
+          { i18n: "pv.none", value: false },
+        ],
+      };
+      // 內容混合：開頭沒有冒號的段落、「項目：內容」、以及一行沒有冒號的接續內容（接在「地點」後面）
+      const PREVIEW_NEWS = {
+        title: "長者六力 ICOPE 免費檢測開放預約",
+        content:
+          "65 歲以上長者每年可接受 1 次公費檢測，評估認知、視力、聽力、行動、營養、憂鬱六大面向。\n" +
+          "時間：每週二、四 上午 9:00–11:30\n" +
+          "地點：各區衛生所\n" +
+          "社區關懷據點也可預約\n" +
+          "攜帶：健保卡\n" +
+          "洽詢：(02) 2345-6789",
+      };
+
+      function previewPayload(st) {
+        const birth = new Date();
+        birth.setFullYear(birth.getFullYear() - 72); // 今天剛滿 72 歲
+        return {
+          profile: { name: "王*明", gender: 1, birth: birth.getTime() },
+          data: {
+            date: Date.now(),
+            balance: st.balance,
+            chairStand: st.chair,
+            speed: st.walk,
+            leftOffset: st.sway[0],
+            rightOffset: st.sway[1],
+            // riskLevel 省略：由總分計算
+          },
+          news: st.news ? PREVIEW_NEWS : null,
+        };
+      }
+
+      function initPreview() {
+        const st = {
+          balance: PREVIEW_OPTIONS.balance[3].value,
+          chair: 12.5,
+          walk: 70,
+          sway: [3, 2],
+          news: true,
+          video: true,
+        };
+        buildPreviewBox("balance", "balance", "pv.balance", PREVIEW_OPTIONS.balance);
+        buildPreviewBox("chair", "chair", "pv.chair", PREVIEW_OPTIONS.chair);
+        buildPreviewBox("speed", "walk", "pv.speed", PREVIEW_OPTIONS.walk);
+        // 身體晃動區塊暫時註解：不建立晃動切換（資料仍沿用 st.sway）
+        buildPreviewBox("news", "news", "pv.news", PREVIEW_OPTIONS.news);
+        buildPreviewBox("video", "video", "pv.video", PREVIEW_OPTIONS.video);
+        // 結果區塊：只說明總分由三項自動計算（沒有按鈕）
+        const totalBox = document.querySelector('[data-pv="total"]');
+        totalBox.innerHTML = `<div class="pv-title"><i class="ti ti-eye"></i><span data-i18n="pv.total"></span><span>・</span><span data-i18n="pv.autoTotal"></span></div>`;
+        totalBox.hidden = false;
+        I18N.apply(totalBox);
+        document.getElementById("pvPages").hidden = false;
+
+        document.getElementById("reportPage").addEventListener("click", (e) => {
+          const b = e.target.closest(".pv-btns button[data-key], .pv-pill");
+          if (!b) return;
+          if (b.dataset.page) return showStatusPage(b.dataset.page);
+          st[b.dataset.key] = PREVIEW_OPTIONS[b.dataset.key][b.dataset.i].value;
+          videoOn = st.video;
+          renderReport(previewPayload(st), false);
+          syncPreviewButtons(PREVIEW_OPTIONS, st);
+        });
+        renderReport(previewPayload(st), false);
+        syncPreviewButtons(PREVIEW_OPTIONS, st);
+      }
+    </script>
+    <div class="build-version" id="buildVersion" data-html2canvas-ignore>v: <span id="buildVersionDisplay"></span></div>
+    <script>
+      document.getElementById("buildVersionDisplay").textContent = document.querySelector('meta[name="build-version"]').content;
+    </script>
+  </body>
+</html>

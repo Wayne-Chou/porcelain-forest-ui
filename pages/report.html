@@ -1808,7 +1808,8 @@
           },
         ],
 
-        // 鑑測紀錄（假資料）：{ id, subjectId, test, date, time, retest }
+        // 鑑測紀錄（假資料）：{ id, subjectId, test, date, time, retest, riskLevel }
+        // riskLevel：行走測驗的風險等級 0–4（低／稍低／中／高／危險）；沒有時結果頁預設 1（稍低風險）
         // date 依今天往前推算；今天這 12 筆與 roster.html 已完成 SPPB 的人員和時間相同
         // retest：同一個人同一天同一項測驗的第二次
         // 假資料階段：同一份紀錄套用到每個場域
@@ -1818,10 +1819,10 @@
           { id: "r001", subjectId: "s001", test: "sppb", date: daysAgo(0), time: "14:05" },
           { id: "r002", subjectId: "s003", test: "sppb", date: daysAgo(0), time: "13:52" },
           // 過去 60 天
-          { id: "r101", subjectId: "s002", test: "gait", date: daysAgo(1), time: "15:20" },
+          { id: "r101", subjectId: "s002", test: "gait", date: daysAgo(1), time: "15:20", riskLevel: 2 },
           { id: "r102", subjectId: "s004", test: "sppb", date: daysAgo(3), time: "10:40" },
           { id: "r103", subjectId: "s004", test: "sppb", date: daysAgo(3), time: "11:05", retest: true },
-          { id: "r104", subjectId: "s001", test: "gait", date: daysAgo(9), time: "09:30" },
+          { id: "r104", subjectId: "s001", test: "gait", date: daysAgo(9), time: "09:30", riskLevel: 0 },
           { id: "r105", subjectId: "s003", test: "gait", date: daysAgo(17), time: "14:15" },
           { id: "r106", subjectId: "s002", test: "sppb", date: daysAgo(26), time: "10:10" },
           { id: "r107", subjectId: "s001", test: "sppb", date: daysAgo(40), time: "13:45" },
@@ -2298,16 +2299,12 @@
         renderList({ scroll: true });
       }
 
-      // 點紀錄：SPPB 進入鑑測結果頁；行走測驗的結果頁還在製作中
+      // 點紀錄：SPPB 進入 SPPB 鑑測結果頁；行走測驗進入行走結果頁
       function openRecord(id) {
         const record = field ? recordsOf(field.id).find((r) => r.id === id) : null;
         if (!record) return;
-        if (record.test === "sppb") {
-          location.href = `result.html?record=${record.id}`;
-          return;
-        }
-        showToast("行走測驗結果頁製作中");
-        // TODO：行走測驗結果頁做好之後改成換頁
+        if (record.test === "sppb") location.href = `result.html?record=${record.id}`;
+        else if (record.test === "gait") location.href = `result-gait.html?record=${record.id}`;
       }
 
       /* =========================================================
