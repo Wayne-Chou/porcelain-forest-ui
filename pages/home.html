@@ -148,18 +148,67 @@
         padding: calc(calc(56 * var(--u)) + env(safe-area-inset-top)) var(--gutter) calc(219 * var(--u)); /* 底部 219 = 原本 180 ＋ 13 吋上原本留在底部的 39 */
       }
 
-      /* 頂部：Logo、日期、問候語、今日數據 */
+      /* 頂部：第一列 Logo＋日期（左）、語系切換（右）；第二列問候語（左）、今日數據（右） */
       .hero {
         padding: 0 var(--pad);
+      }
+      .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: calc(24 * var(--u));
+      }
+      .hero-main {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
         gap: calc(24 * var(--u));
       }
       .brand-row {
+        min-width: 0;
         display: flex;
         align-items: center;
         gap: calc(22 * var(--u));
+      }
+      .brand-row .logo {
+        flex-shrink: 0;
+      }
+
+      /* 語系切換（淺底版，與詳細頁同造型）：三格並排膠囊；每格至少 44 × 44px（13 吋上 96 × 72） */
+      .lang-sw {
+        flex-shrink: 0;
+        display: inline-flex;
+        gap: calc(2 * var(--u));
+        padding: calc(4 * var(--u));
+        border: max(1px, calc(2 * var(--u))) solid #c7bba6;
+        border-radius: 999px;
+        background: #f7f4ee;
+      }
+      .lang-opt {
+        min-width: max(44px, calc(96 * var(--u)));
+        height: max(44px, calc(72 * var(--u)));
+        padding: 0 calc(12 * var(--u));
+        border-radius: 999px;
+        font-family: var(--font-sans);
+        font-size: var(--fs-button); /* max(18px, …) */
+        font-weight: 700;
+        line-height: 1;
+        color: var(--muted);
+        transition:
+          background 0.2s,
+          color 0.2s,
+          transform 0.2s var(--ease-out);
+      }
+      .lang-opt:active {
+        transform: scale(0.96);
+      }
+      .lang-opt[aria-checked="true"] {
+        background: var(--forest);
+        color: var(--on-forest);
+      }
+      .lang-opt:focus-visible {
+        outline: 3px solid var(--brass);
+        outline-offset: 2px;
       }
       .logo {
         width: calc(84 * var(--u));
@@ -1225,15 +1274,22 @@
   <body>
     <div class="app" id="app">
       <main class="home">
-        <!-- 頂部：日期、問候語、今日數據 -->
+        <!-- 頂部：第一列 Logo、日期、語系切換；第二列問候語、今日數據 -->
         <header class="hero">
-          <div class="rise" style="--d: 0.05">
+          <div class="hero-top rise" style="--d: 0.05">
             <div class="brand-row">
               <img class="logo" src="../img/logo.png" alt="建豐健康科技" />
               <div class="hero-date" id="heroDate"></div>
             </div>
-            <h1 class="hero-title serif" id="heroTitle"></h1>
+            <!-- 語系切換：目前只切換選中狀態並記在 sessionStorage「kf.lang」（與詳細頁共用）；翻譯之後沿用 js/detail-i18n.js 擴充 -->
+            <div class="lang-sw" id="langSwitch" role="radiogroup" aria-label="語系">
+              <button type="button" class="lang-opt" role="radio" data-lang="zh-TW" aria-label="繁體中文" aria-checked="true">中</button>
+              <button type="button" class="lang-opt" role="radio" data-lang="ja" aria-label="日本語" aria-checked="false" lang="ja">日</button>
+              <button type="button" class="lang-opt" role="radio" data-lang="en" aria-label="English" aria-checked="false" lang="en">EN</button>
+            </div>
           </div>
+          <div class="hero-main">
+          <h1 class="hero-title serif rise" style="--d: 0.05" id="heroTitle"></h1>
           <div class="stats rise" style="--d: 0.15">
             <div>
               <div class="stat-num serif brass" id="statDone">0</div>
@@ -1243,6 +1299,7 @@
               <div class="stat-num serif forest" id="statPending">0</div>
               <div class="stat-label">待上傳</div>
             </div>
+          </div>
           </div>
         </header>
 
@@ -2279,8 +2336,54 @@
         grab.addEventListener("pointercancel", endDrag);
       }
 
+      /* =========================================================
+       * 語系切換（radiogroup）：預設「中」；點擊只切換選中狀態並寫入 sessionStorage「kf.lang」
+       * （zh-TW／ja／en，與詳細頁的 js/detail-i18n.js 共用同一個 key，兩邊選擇會同步）
+       * 鍵盤：Tab 進出整組（只有選中那格可聚焦）；方向鍵、Home、End 切換
+       * TODO：之後沿用 js/detail-i18n.js 的機制把首頁等 iPad 端頁面翻譯
+       * ========================================================= */
+      const LANGS = ["zh-TW", "ja", "en"];
+      function readLang() {
+        try {
+          const v = sessionStorage.getItem("kf.lang");
+          return LANGS.includes(v) ? v : "zh-TW";
+        } catch (e) {
+          return "zh-TW";
+        }
+      }
+      function setLang(lang, focus = false) {
+        const sw = $("#langSwitch");
+        if (!sw) return;
+        sw.querySelectorAll(".lang-opt").forEach((b) => {
+          const on = b.dataset.lang === lang;
+          b.setAttribute("aria-checked", String(on));
+          b.tabIndex = on ? 0 : -1;
+          if (on && focus) b.focus();
+        });
+        try {
+          sessionStorage.setItem("kf.lang", lang);
+        } catch (e) {}
+      }
+      function initLangSwitch() {
+        const sw = $("#langSwitch");
+        if (!sw) return;
+        setLang(readLang());
+        sw.addEventListener("click", (e) => {
+          const b = e.target.closest(".lang-opt");
+          if (b) setLang(b.dataset.lang);
+        });
+        sw.addEventListener("keydown", (e) => {
+          const i = LANGS.indexOf(readLang());
+          const next = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: LANGS.length - 1 }[e.key];
+          if (next === undefined) return;
+          e.preventDefault();
+          setLang(LANGS[(next + LANGS.length) % LANGS.length], true);
+        });
+      }
+
       /* ===== 啟動 ===== */
       renderNav();
+      initLangSwitch();
       if ($("#testList")) {
         renderHero();
         renderTests();
