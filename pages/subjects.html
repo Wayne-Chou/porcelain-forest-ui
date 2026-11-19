@@ -18,6 +18,13 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
+    <!-- 共用選擇場域面板（新增／編輯自訂場域）：與首頁共用 -->
+    <link rel="stylesheet" href="../css/field-sheet.css" />
+    <script src="../js/fields.js"></script>
+    <script src="../js/field-sheet.js"></script>
+    <!-- 共用底部導覽（鑑測｜紀錄｜上傳｜受測者｜設定） -->
+    <link rel="stylesheet" href="../css/nav.css" />
+    <script src="../js/nav.js"></script>
     <style>
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
@@ -144,10 +151,10 @@
         overflow: hidden;
       }
 
-      /* 底部留 calc(220 * var(--u))，名單最後一列不會被底部導航蓋住 */
+      /* 底部留 --nav-clear（css/nav.css：導覽列＋往上凸出的上傳圓鈕）再加間距，名單最後一列不會被蓋住 */
       .page {
         padding: calc(calc(56 * var(--u)) + env(safe-area-inset-top)) calc(var(--pad) + var(--gutter)) /* 左右加上 --gutter：橫式時內容置中 */
-          calc(calc(220 * var(--u)) + env(safe-area-inset-bottom));
+          calc(var(--nav-clear) + max(24px, calc(36 * var(--u))));
       }
 
       /* ===== 標題列 ===== */
@@ -339,13 +346,11 @@
           border-color 0.2s,
           box-shadow 0.2s;
       }
-      .search:focus-within,
-      .search-box:focus-within {
+      .search:focus-within {
         border-color: var(--forest);
         box-shadow: 0 0 0 calc(6 * var(--u)) rgba(31, 59, 51, 0.12);
       }
-      .search > .ti-search,
-      .search-box > .ti-search {
+      .search > .ti-search {
         margin-left: calc(28 * var(--u));
         font-size: max(16px, calc((var(--fs-body) + calc(4 * var(--u))) * 1.2));
         color: var(--brass-text);
@@ -539,75 +544,6 @@
         color: var(--muted);
       }
 
-      /* ===== 底部膠囊導航（與 home.html 相同） ===== */
-      .nav {
-        position: fixed;
-        left: 50%;
-        bottom: calc(calc(36 * var(--u)) + env(safe-area-inset-bottom));
-        transform: translateX(-50%);
-        display: flex;
-        align-items: center;
-        gap: calc(10 * var(--u));
-        padding: calc(14 * var(--u));
-        background: var(--card);
-        border: 2px solid var(--line);
-        border-radius: calc(999 * var(--u));
-        box-shadow: 0 calc(12 * var(--u)) calc(40 * var(--u)) rgba(31, 59, 51, 0.1);
-        z-index: 100;
-        animation: navIn 1s 0.5s var(--ease-spring) both;
-      }
-      @keyframes navIn {
-        from {
-          transform: translate(-50%, 200%);
-        }
-        to {
-          transform: translate(-50%, 0);
-        }
-      }
-      .nav-item {
-        height: max(44px, calc(92 * var(--u)));
-        min-width: max(44px, calc(104 * var(--u)));
-        padding: 0 calc(22 * var(--u));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: calc(999 * var(--u));
-        color: var(--nav-off);
-        font-size: max(18px, calc(var(--fs-button) + calc(4 * var(--u))));
-        font-weight: 700;
-        transition:
-          background 0.45s var(--ease-spring),
-          color 0.3s,
-          padding 0.45s var(--ease-spring);
-      }
-      .nav-item i {
-        font-size: 1.3529em;
-        transition: transform 0.45s var(--ease-spring);
-      }
-      .nav-item span {
-        max-width: 0;
-        opacity: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        transition:
-          max-width 0.45s var(--ease-spring),
-          opacity 0.3s,
-          margin 0.45s var(--ease-spring);
-      }
-      .nav-item.is-active {
-        background: var(--forest);
-        color: var(--on-forest);
-        padding: 0 calc(44 * var(--u));
-      }
-      .nav-item.is-active span {
-        max-width: 5em;
-        opacity: 1;
-        margin-left: calc(14 * var(--u));
-      }
-      .nav-item:active i {
-        transform: scale(0.82);
-      }
-
       /* =========================================================
        * 底部面板共用（切換場域、新增／編輯人員）
        * --vh：可見高度；--kb：鍵盤高度（皆由 visualViewport 更新）
@@ -726,7 +662,7 @@
       }
 
       /* =========================================================
-       * 切換場域面板（與 home.html 的選擇場域面板相同：單一固定高度）
+       * 切換場域面板外框（單一固定高度；內容由共用的 js/field-sheet.js 產生）
        * ========================================================= */
       .field-sheet {
         height: calc(var(--vh, 100dvh) - calc(120 * var(--u)));
@@ -734,180 +670,12 @@
         user-select: none;
         -webkit-user-select: none;
       }
-      .field-sheet .sheet-foot {
-        border-top: none;
-      }
       /* 場域面板開啟時 toast 稍微上移，停在面板頂端（calc(120 * var(--u))）上方，不與面板重疊 */
       body.field-open .toast {
         top: calc(calc(20 * var(--u)) + env(safe-area-inset-top));
       }
-      .fs-body {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-      }
-      .search-box {
-        flex: 0 0 auto;
-        margin: calc(16 * var(--u)) calc(56 * var(--u)) 0;
-        height: max(48px, calc(96 * var(--u)));
-        display: flex;
-        align-items: center;
-        border-radius: calc(28 * var(--u));
-        background: var(--card);
-        border: 2px solid var(--line);
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-      }
-      .field-list {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        padding: 0 calc(56 * var(--u)) calc(32 * var(--u));
-      }
-      .field-list.shake {
-        animation: shake 0.4s var(--ease-out);
-      }
-      @keyframes shake {
-        0%,
-        100% {
-          transform: none;
-        }
-        20% {
-          transform: translateX(calc(-14 * var(--u)));
-        }
-        40% {
-          transform: translateX(calc(12 * var(--u)));
-        }
-        60% {
-          transform: translateX(calc(-8 * var(--u)));
-        }
-        80% {
-          transform: translateX(calc(4 * var(--u)));
-        }
-      }
-      .sheet-section {
-        margin: calc(32 * var(--u)) 0 calc(16 * var(--u));
-        font-size: max(16px, var(--fs-small));
-        font-weight: 700;
-        color: var(--muted);
-        letter-spacing: 0.1em;
-      }
-      .list-empty {
-        padding: calc(96 * var(--u)) 0;
-        text-align: center;
-      }
-      .list-empty i {
-        font-size: max(16px, calc(var(--fs-lead) * 2));
-        color: var(--line-soft);
-      }
-      .list-empty-title {
-        margin-top: calc(16 * var(--u));
-        font-size: max(16px, calc(var(--fs-body) + calc(4 * var(--u))));
-        font-weight: 700;
-      }
-      .list-empty-sub {
-        margin-top: calc(8 * var(--u));
-        font-size: max(16px, var(--fs-small));
-        color: var(--muted);
-      }
-      .frow {
-        height: max(44px, calc(104 * var(--u)));
-        padding: 0 calc(28 * var(--u));
-        display: flex;
-        align-items: center;
-        gap: calc(20 * var(--u));
-        background: var(--card);
-        border: 2px solid var(--line);
-        border-radius: calc(28 * var(--u));
-        cursor: pointer;
-        transition:
-          transform 0.2s var(--ease-out),
-          border-color 0.25s,
-          background 0.25s;
-      }
-      .frow + .frow {
-        margin-top: calc(12 * var(--u));
-      }
-      .frow:active {
-        transform: scale(0.98);
-      }
-      .frow:focus-visible {
-        outline: calc(3 * var(--u)) solid var(--forest);
-        outline-offset: calc(3 * var(--u));
-      }
-      .frow-radio {
-        flex: 0 0 auto;
-        width: calc(40 * var(--u));
-        height: calc(40 * var(--u));
-        border-radius: 50%;
-        border: 2px solid var(--line-soft);
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-size: max(16px, var(--fs-body));
-        transition:
-          background 0.2s,
-          border-color 0.2s;
-      }
-      .frow-radio i {
-        opacity: 0;
-        transform: scale(0.5);
-        transition: all 0.25s var(--ease-spring);
-      }
-      .frow-radio.pop {
-        animation: radioPop 0.35s var(--ease-spring);
-      }
-      @keyframes radioPop {
-        0% {
-          transform: scale(0.8);
-        }
-        60% {
-          transform: scale(1.1);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-      .frow-name {
-        flex: 0 1 auto;
-        min-width: 0;
-        font-size: max(16px, var(--fs-lead));
-        font-weight: 700;
-        line-height: 1.3;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .frow-tag {
-        display: none;
-        flex: 0 0 auto;
-        padding: calc(4 * var(--u)) calc(14 * var(--u));
-        border-radius: calc(999 * var(--u));
-        background: var(--forest);
-        color: var(--on-forest);
-        font-size: max(16px, calc(var(--fs-small) - calc(4 * var(--u))));
-        font-weight: 700;
-        line-height: 1.3;
-      }
-      .frow.is-selected {
-        border-color: var(--forest);
-        background: #eef1ec;
-      }
-      .frow.is-selected .frow-radio {
-        background: var(--forest);
-        border-color: var(--forest);
-      }
-      .frow.is-selected .frow-radio i {
-        opacity: 1;
-        transform: none;
-      }
-      .frow.is-selected .frow-tag {
-        display: inline-block;
-      }
 
-      /* =========================================================
+/* =========================================================
        * 新增／編輯人員面板（與 roster.html 的新增人員面板相同）
        * ========================================================= */
       .sheet-body {
@@ -1410,73 +1178,9 @@
       <nav class="nav" id="nav"></nav>
     </div>
 
-    <!-- 切換場域：底部面板 -->
+    <!-- 切換場域：底部面板（內容由 js/field-sheet.js 產生） -->
     <div class="mask" id="fieldMask"></div>
-    <section
-      class="sheet field-sheet"
-      id="fieldSheet"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="fieldSheetTitle"
-      aria-hidden="true"
-    >
-      <div class="sheet-grab" id="fieldGrab">
-        <span class="grab-bar"></span>
-        <header class="sheet-head">
-          <div>
-            <h2 class="sheet-title serif" id="fieldSheetTitle">切換場域</h2>
-            <div class="sheet-sub">選擇要管理的場域</div>
-          </div>
-          <button
-            class="sheet-close"
-            id="fieldClose"
-            type="button"
-            aria-label="關閉"
-          >
-            <i class="ti ti-x"></i>
-          </button>
-        </header>
-      </div>
-
-      <div class="fs-body">
-        <!-- 搜尋框：固定在上方，不跟著清單捲動 -->
-        <label class="search-box">
-          <i class="ti ti-search"></i>
-          <input
-            class="search-input"
-            id="fsInput"
-            type="search"
-            placeholder="搜尋場域名稱"
-            autocomplete="off"
-            autocorrect="off"
-            spellcheck="false"
-            enterkeyhint="search"
-          />
-          <button
-            class="search-clear"
-            id="fsClear"
-            type="button"
-            aria-label="清除搜尋"
-            hidden
-          >
-            <i class="ti ti-x"></i>
-          </button>
-        </label>
-        <!-- 清單：最近使用＋全部場域，或搜尋結果 -->
-        <div
-          class="field-list"
-          id="fieldList"
-          role="radiogroup"
-          aria-label="場域"
-        ></div>
-      </div>
-
-      <footer class="sheet-foot">
-        <button class="primary-btn" id="fieldConfirm" type="button">
-          確認場域 <i class="ti ti-check"></i>
-        </button>
-      </footer>
-    </section>
+    <section class="sheet field-sheet" id="fieldSheet" role="dialog" aria-modal="true" aria-hidden="true"></section>
 
     <!-- 新增／編輯人員：底部面板 -->
     <div class="mask" id="sheetMask"></div>
@@ -1650,45 +1354,7 @@
        * 設定區
        * ========================================================= */
       const CONFIG = {
-        // 底部導航：與 home.html 相同（受測者已完成）；ready 改成 true 之後才會真的換頁
-        nav: [
-          {
-            id: "home",
-            label: "鑑測",
-            icon: "ti-scan",
-            href: "home.html",
-            ready: true,
-          },
-          {
-            id: "report",
-            label: "紀錄",
-            icon: "ti-history",
-            href: "report.html",
-            ready: true,
-          },
-          {
-            id: "subjects",
-            label: "受測者",
-            icon: "ti-users",
-            href: "subjects.html",
-            ready: true,
-          },
-          {
-            id: "settings",
-            label: "設定",
-            icon: "ti-settings",
-            href: "settings.html",
-            ready: false,
-          },
-        ],
 
-        // 鑑測場域、受測人員：與 roster.html 重複，之後改成共用設定或 API
-        fields: [
-          { id: "tpe-01", name: "大安社區關懷據點" },
-          { id: "tpe-02", name: "信義長照中心" },
-          { id: "tpe-03", name: "中正區活動中心" },
-          { id: "tpe-04", name: "北投社區關懷據點" },
-        ],
 
         // 受測人員（假資料）
         // TODO：之後改成依 field 從 API 取得名單，例如 fetch(`/api/fields/${field.id}/subjects`)
@@ -1771,33 +1437,7 @@
         toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
       }
 
-      // 底部導航：依目前頁面標出選中項目，點其他項目時膠囊先展開再換頁
-      function renderNav() {
-        const nav = $("#nav");
-        if (!nav) return;
-        const current = location.pathname.split("/").pop() || "home.html";
-
-        nav.innerHTML = CONFIG.nav
-          .map(
-            (n) => `
-      <button class="nav-item ${n.href === current ? "is-active" : ""}" data-href="${n.href}" data-ready="${n.ready}" aria-label="${n.label}">
-        <i class="ti ${n.icon}"></i><span>${n.label}</span>
-      </button>`,
-          )
-          .join("");
-
-        nav.addEventListener("click", (e) => {
-          const btn = e.target.closest(".nav-item");
-          if (!btn || btn.classList.contains("is-active")) return;
-          if (btn.dataset.ready !== "true") {
-            showToast(`「${btn.getAttribute("aria-label")}」頁面製作中`);
-            return;
-          }
-          nav.querySelector(".is-active")?.classList.remove("is-active");
-          btn.classList.add("is-active");
-          setTimeout(() => (location.href = btn.dataset.href), 380);
-        });
-      }
+      // 底部導覽：共用的 js/nav.js（renderNav、setNavBadge、setUploadPending）
 
       // 搜尋：不分大小寫，「臺」視同「台」，空白分隔的多個關鍵字都要符合
       const norm = (s) => String(s).toLowerCase().replace(/臺/g, "台");
@@ -1869,12 +1509,6 @@
        *   { added: [現場新增的人員], done: {...}, edits: { 人員 id: { name, gender, birth, updatedAt } } }
        *   後台匯入的人被編輯 → 存在 edits；現場新增的人被編輯 → 直接更新 added 裡那一筆
        * ========================================================= */
-      const FIELD_KEYS = {
-        current: "kf.currentField",
-        recent: "kf.recentFields",
-      };
-      const RECENT_MAX = 20;
-      const fieldById = new Map(CONFIG.fields.map((f) => [f.id, f]));
 
       function readJSON(key, fallback) {
         try {
@@ -1895,39 +1529,6 @@
         return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
       }
 
-      const fieldStore = {
-        getCurrent() {
-          const v = readJSON(FIELD_KEYS.current, null);
-          if (!v || v.date !== todayStr()) return null;
-          return fieldById.get(v.id) || null;
-        },
-        setCurrent(id) {
-          writeJSON(FIELD_KEYS.current, { id, date: todayStr() });
-          const rest = this.getRecent().filter((r) => r.id !== id);
-          writeJSON(
-            FIELD_KEYS.recent,
-            [{ id, usedAt: Date.now() }, ...rest].slice(0, RECENT_MAX),
-          );
-        },
-        // 最近使用：最新在前；舊格式（純 id 陣列）依原順序換算成時間戳
-        getRecent() {
-          const raw = readJSON(FIELD_KEYS.recent, []);
-          if (!Array.isArray(raw)) return [];
-          const now = Date.now();
-          const seen = new Set();
-          return raw
-            .map((r, i) =>
-              typeof r === "string"
-                ? { id: r, usedAt: now - (i + 1) }
-                : { id: r?.id, usedAt: Number(r?.usedAt) || 0 },
-            )
-            .filter(
-              (r) => fieldById.has(r.id) && !seen.has(r.id) && seen.add(r.id),
-            )
-            .sort((a, b) => b.usedAt - a.usedAt)
-            .slice(0, RECENT_MAX);
-        },
-      };
 
       const subjectKey = (fieldId) => `kf.subjects.${fieldId}`;
       function loadLocal(fieldId) {
@@ -1954,14 +1555,13 @@
        * b. 否則用 kf.recentFields 第一筆（最近使用，不論日期）
        * c. 再否則 kf.currentField 有值但不是今天 → 也用它
        * d. 都沒有 → 沒有場域
-       * id 不在 CONFIG.fields 裡的視為沒有，繼續往下一條找 */
+       * 不存在的場域 id（js/fields.js 找不到）視為沒有，繼續往下一條找 */
       function resolveField() {
-        const cur = readJSON(FIELD_KEYS.current, null);
-        const curField = (cur && fieldById.get(cur.id)) || null;
-        if (curField && cur.date === todayStr()) return curField; // a
-        const recent = fieldStore.getRecent(); // 已排除不存在的 id
-        if (recent.length) return fieldById.get(recent[0].id); // b
-        return curField; // c；沒有就是 null（d）
+        const today = KFFields.getCurrent();
+        if (today) return today; // a
+        const recent = KFFields.getRecent(); // 已排除不存在的 id
+        if (recent.length) return KFFields.byId(recent[0].id); // b
+        return KFFields.getCurrentAnyDay(); // c；沒有就是 null（d）
       }
 
       let field = resolveField();
@@ -2141,213 +1741,53 @@
       }
 
       /* =========================================================
-       * 切換場域：底部面板（與 home.html 的選擇場域面板相同）
+       * 切換場域：共用面板（js/field-sheet.js；場域資料 js/fields.js）
+       * 確認場域（或新增場域成功）→ 寫入目前場域與最近使用，切換到這個場域
+       * 自訂場域改名 → 場域卡即時顯示新名稱（不改變目前的選取）
        * ========================================================= */
-      const fieldSheet = $("#fieldSheet");
-      const fieldList = $("#fieldList");
-      const fsInput = $("#fsInput");
-      const fsClear = $("#fsClear");
-      const S = { open: false, selectedId: null, query: "", lastFocus: null };
+      const fieldSheet = FieldSheet.create({
+        sheet: $("#fieldSheet"),
+        mask: $("#fieldMask"),
+        app: $("#app"),
+        bodyClasses: ["sheet-open", "field-open"],
+        title: "切換場域",
+        confirmLabel: "確認場域",
+        confirmIcon: "ti-check",
+        toast: showToast,
+        onConfirm(next) {
+          // 確認場域：照原本規則寫入 kf.currentField 和 kf.recentFields
+          KFFields.setCurrent(next.id);
+          // 與目前場域相同：直接關閉，不顯示 toast
+          if (field && next.id === field.id) return fieldSheet.close();
 
-      // 排序：用過的依最近使用時間在前，沒用過的在後，沒用過的依名稱排序
-      function sortFields(items, recent) {
-        const rank = new Map(recent.map((r, i) => [r.id, i]));
-        return [...items].sort((a, b) => {
-          const ra = rank.get(a.id);
-          const rb = rank.get(b.id);
-          if (ra !== undefined && rb !== undefined) return ra - rb;
-          if (ra !== undefined) return -1;
-          if (rb !== undefined) return 1;
-          return a.name.localeCompare(b.name, "zh-Hant");
-        });
-      }
-
-      function fieldRowHTML(f, terms) {
-        const sel = f.id === S.selectedId;
-        return `
-      <div class="frow ${sel ? "is-selected" : ""}" role="radio" aria-checked="${sel}" tabindex="0" data-id="${f.id}">
-        <span class="frow-radio"><i class="ti ti-check"></i></span>
-        <span class="frow-name">${highlight(f.name, terms)}</span>
-        <span class="frow-tag">已選取</span>
-      </div>`;
-      }
-
-      // 只比對場域名稱
-      function renderFieldList() {
-        const terms = termsOf(S.query);
-        const recent = fieldStore.getRecent();
-        let html = "";
-
-        if (!terms.length) {
-          // 最近使用：最多 3 個，目前場域排第一
-          const cur = fieldStore.getCurrent();
-          let ids = recent.map((r) => r.id);
-          if (cur && ids.includes(cur.id))
-            ids = [cur.id, ...ids.filter((id) => id !== cur.id)];
-          const recentFields = ids.slice(0, 3).map((id) => fieldById.get(id));
-          if (recentFields.length) {
-            html += `<h3 class="sheet-section">最近使用</h3>${recentFields.map((f) => fieldRowHTML(f, terms)).join("")}`;
+          const wasEmpty = !field;
+          field = next;
+          local = loadLocal(field.id);
+          fieldSheet.close();
+          clearSearch();
+          if (wasEmpty) {
+            enterFieldView(); // 大卡片 → 場域卡、搜尋列、名單
+          } else {
+            renderFieldCard();
+            renderList();
           }
-          const all = sortFields(CONFIG.fields, recent);
-          html += `<h3 class="sheet-section">全部場域（${all.length}）</h3>${all.map((f) => fieldRowHTML(f, terms)).join("")}`;
-        } else {
-          const matched = sortFields(
-            CONFIG.fields.filter((f) => {
-              const n = norm(f.name);
-              return terms.every((t) => n.includes(t));
-            }),
-            recent,
-          );
-          if (!matched.length) {
-            fieldList.innerHTML = `
-      <div class="list-empty">
-        <i class="ti ti-map-search"></i>
-        <div class="list-empty-title">找不到符合的場域</div>
-        <div class="list-empty-sub">試試其他關鍵字</div>
-      </div>`;
-            return;
+          showToast(`已切換至 ${field.name}`);
+        },
+        onRename(f) {
+          if (field && f.id === field.id) {
+            field = KFFields.byId(f.id);
+            renderFieldCard();
           }
-          html += `<h3 class="sheet-section">搜尋結果（${matched.length}）</h3>${matched.map((f) => fieldRowHTML(f, terms)).join("")}`;
-        }
-        fieldList.innerHTML = html;
-      }
-
+        },
+      });
       function openFieldSheet() {
-        S.open = true;
-        S.query = "";
-        S.lastFocus = document.activeElement;
-        fsInput.value = "";
-        fsClear.hidden = true;
-        S.selectedId = field ? field.id : null; // 目前場域自動選取
-        renderFieldList();
-        fieldList.scrollTop = 0;
-
-        fieldSheet.style.transform = "";
-        fieldSheet.classList.add("is-open");
-        fieldSheet.setAttribute("aria-hidden", "false");
-        $("#fieldMask").classList.add("is-open");
-        document.body.classList.add("sheet-open", "field-open");
-        $("#app").inert = true;
+        fieldSheet.open({ sub: "選擇要管理的場域", selectedId: field ? field.id : null }); // 目前場域自動選取
       }
-
       function closeFieldSheet() {
-        if (!S.open) return;
-        S.open = false;
-        fsInput.blur();
-        fieldSheet.style.transform = "";
-        fieldSheet.classList.remove("is-open");
-        fieldSheet.setAttribute("aria-hidden", "true");
-        $("#fieldMask").classList.remove("is-open");
-        document.body.classList.remove("sheet-open", "field-open");
-        $("#app").inert = false;
-        S.lastFocus?.focus?.({ preventScroll: true });
+        fieldSheet.close();
       }
-
-      function selectField(id) {
-        if (S.selectedId === id) return;
-        S.selectedId = id;
-        fieldList.querySelectorAll(".frow").forEach((row) => {
-          const on = row.dataset.id === id;
-          row.classList.toggle("is-selected", on);
-          row.setAttribute("aria-checked", on);
-          // 單選鈕小彈跳
-          const radio = row.querySelector(".frow-radio");
-          radio.classList.remove("pop");
-          if (on) {
-            void radio.offsetWidth;
-            radio.classList.add("pop");
-          }
-        });
-      }
-
-      function confirmField() {
-        const next = fieldById.get(S.selectedId);
-        if (!next) {
-          fieldList.classList.remove("shake");
-          void fieldList.offsetWidth; // 重新觸發動畫
-          fieldList.classList.add("shake");
-          showToast("請先選擇場域");
-          return;
-        }
-        // 確認場域：照原本規則寫入 kf.currentField 和 kf.recentFields
-        fieldStore.setCurrent(next.id);
-        // 與目前場域相同：直接關閉，不顯示 toast
-        if (field && next.id === field.id) return closeFieldSheet();
-
-        const wasEmpty = !field;
-        field = next;
-        local = loadLocal(field.id);
-        closeFieldSheet();
-        clearSearch();
-        if (wasEmpty) {
-          enterFieldView(); // 大卡片 → 場域卡、搜尋列、名單
-        } else {
-          renderFieldCard();
-          renderList();
-        }
-        showToast(`已切換至 ${field.name}`);
-      }
-
       function initFieldSheet() {
         $("#fieldCard").addEventListener("click", openFieldSheet);
-        $("#fieldClose").addEventListener("click", closeFieldSheet);
-        $("#fieldMask").addEventListener("click", closeFieldSheet);
-        $("#fieldConfirm").addEventListener("click", confirmField);
-        fieldList.addEventListener("animationend", (e) => {
-          if (e.target === fieldList) fieldList.classList.remove("shake");
-        });
-
-        // 點整列 = 選取
-        fieldList.addEventListener("click", (e) => {
-          const row = e.target.closest(".frow");
-          if (row) selectField(row.dataset.id);
-        });
-        fieldList.addEventListener("keydown", (e) => {
-          const row = e.target.closest?.(".frow");
-          if (row && e.target === row && (e.key === "Enter" || e.key === " ")) {
-            e.preventDefault();
-            selectField(row.dataset.id);
-          }
-        });
-
-        // 搜尋：即時篩選
-        fsInput.addEventListener("input", () => {
-          S.query = fsInput.value;
-          fsClear.hidden = !S.query;
-          renderFieldList();
-          fieldList.scrollTop = 0;
-        });
-        fsClear.addEventListener("click", (e) => {
-          e.preventDefault();
-          fsInput.value = "";
-          fsInput.dispatchEvent(new Event("input"));
-          fsInput.focus({ preventScroll: true });
-        });
-
-        // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉，否則彈回
-        const grab = $("#fieldGrab");
-        let drag = null;
-        grab.addEventListener("pointerdown", (e) => {
-          if (!S.open || e.target.closest("button")) return;
-          drag = { y: e.clientY, dy: 0 };
-          grab.setPointerCapture(e.pointerId);
-          fieldSheet.classList.add("is-dragging");
-        });
-        grab.addEventListener("pointermove", (e) => {
-          if (!drag) return;
-          drag.dy = Math.max(0, e.clientY - drag.y);
-          fieldSheet.style.transform = `translateY(${drag.dy}px)`;
-        });
-        const endDrag = () => {
-          if (!drag) return;
-          const { dy } = drag;
-          drag = null;
-          fieldSheet.classList.remove("is-dragging");
-          fieldSheet.style.transform = "";
-          if (dy > 120 * unitPx()) closeFieldSheet();
-        };
-        grab.addEventListener("pointerup", endDrag);
-        grab.addEventListener("pointercancel", endDrag);
       }
 
       /* =========================================================
@@ -2891,7 +2331,7 @@
           if (dialogResolve) closeDialog(false);
           else if (P.open) closePicker(false);
           else if (A.open) requestCloseSheet();
-          else if (S.open) closeFieldSheet();
+          else fieldSheet.escape();
         });
       }
       init();

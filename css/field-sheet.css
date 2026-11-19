@@ -1,0 +1,541 @@
+/* =========================================================
+ * 共用「選擇場域」面板內容（js/field-sheet.js）：首頁、鑑測紀錄、受測者頁
+ * 面板外框（.sheet 的位置、滑出動畫、遮罩）由各頁提供；這裡只管面板裡面的東西，class 一律以 fsh- 開頭
+ * 兩個畫面在同一個面板內切換：場域列表 ⇄ 新增／編輯表單（左右滑動＋淡入 .3s）
+ * 尺寸用 --u 縮放；文字至少 16px、按鈕文字至少 18px
+ * ========================================================= */
+.fsh-grab {
+  flex: 0 0 auto;
+  padding: calc(16 * var(--u)) calc(56 * var(--u)) calc(8 * var(--u));
+  touch-action: none;
+  cursor: grab;
+}
+.fsh-bar {
+  display: block;
+  width: calc(64 * var(--u));
+  height: calc(8 * var(--u));
+  margin: 0 auto;
+  border-radius: calc(4 * var(--u));
+  background: var(--line-soft);
+}
+
+/* 兩個畫面疊在一起，切換時左右滑動 */
+.fsh-views {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.fsh-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.3s var(--ease-out),
+    opacity 0.3s var(--ease-out),
+    visibility 0s;
+}
+.fsh-view.is-off-left,
+.fsh-view.is-off-right {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.3s var(--ease-out),
+    opacity 0.3s var(--ease-out),
+    visibility 0s 0.3s;
+}
+.fsh-view.is-off-left {
+  transform: translateX(calc(-80 * var(--u)));
+}
+.fsh-view.is-off-right {
+  transform: translateX(calc(80 * var(--u)));
+}
+.fsh-view.no-anim {
+  transition: none !important;
+}
+
+/* 標題列 */
+.fsh-head {
+  flex: 0 0 auto;
+  padding: calc(8 * var(--u)) calc(56 * var(--u)) 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(24 * var(--u));
+  touch-action: none;
+}
+.fsh-head-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(16 * var(--u));
+}
+.fsh-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: max(16px, calc(var(--fs-title) + calc(12 * var(--u))));
+  line-height: 1.2;
+  font-weight: 600;
+}
+.fsh-sub {
+  margin-top: calc(4 * var(--u));
+  font-size: max(16px, var(--fs-body));
+  color: var(--muted);
+  font-weight: 500;
+}
+.fsh-sub:empty {
+  display: none;
+}
+.fsh-close,
+.fsh-back {
+  flex: 0 0 auto;
+  width: max(44px, calc(72 * var(--u)));
+  height: max(44px, calc(72 * var(--u)));
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: max(16px, calc(var(--fs-lead) * 1.125));
+  color: var(--ink);
+  transition: transform 0.2s var(--ease-out);
+}
+.fsh-close:active,
+.fsh-back:active {
+  transform: scale(0.92);
+}
+
+/* 搜尋列：搜尋框＋右邊固定的「＋ 新增」 */
+.fsh-search-row {
+  flex: 0 0 auto;
+  margin: calc(16 * var(--u)) calc(56 * var(--u)) 0;
+  display: flex;
+  gap: calc(16 * var(--u));
+}
+.fsh-search {
+  flex: 1;
+  min-width: 0;
+  height: max(48px, calc(96 * var(--u)));
+  display: flex;
+  align-items: center;
+  border-radius: calc(28 * var(--u));
+  background: var(--card);
+  border: 2px solid var(--line);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.fsh-search:focus-within {
+  border-color: var(--forest);
+  box-shadow: 0 0 0 calc(6 * var(--u)) rgba(31, 59, 51, 0.12);
+}
+.fsh-search > .ti-search {
+  margin-left: calc(28 * var(--u));
+  font-size: max(16px, calc((var(--fs-body) + calc(4 * var(--u))) * 1.2));
+  color: var(--brass-text);
+}
+.fsh-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 calc(20 * var(--u));
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: max(16px, calc(var(--fs-body) + calc(4 * var(--u))));
+  user-select: text;
+  -webkit-user-select: text;
+}
+.fsh-search-input::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+.fsh-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+.fsh-search-clear {
+  width: max(44px, calc(72 * var(--u)));
+  height: max(44px, calc(72 * var(--u)));
+  margin-right: calc(10 * var(--u));
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: max(16px, var(--fs-lead));
+  color: var(--muted);
+}
+.fsh-search-clear[hidden] {
+  display: none;
+}
+.fsh-search-clear:active {
+  background: var(--card-deep);
+}
+.fsh-add {
+  flex: 0 0 auto;
+  min-width: max(44px, calc(160 * var(--u)));
+  height: max(48px, calc(96 * var(--u)));
+  padding: 0 calc(28 * var(--u));
+  border-radius: calc(28 * var(--u));
+  background: var(--forest);
+  color: var(--on-forest);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8 * var(--u));
+  font-size: max(18px, var(--fs-button));
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.2s var(--ease-out);
+}
+.fsh-add i {
+  font-size: 1.1em;
+}
+.fsh-add:active {
+  transform: scale(0.96);
+}
+
+/* 清單 */
+.fsh-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 calc(56 * var(--u)) calc(32 * var(--u));
+}
+.fsh-list.shake {
+  animation: fshShake 0.4s var(--ease-out);
+}
+@keyframes fshShake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(calc(-14 * var(--u)));
+  }
+  40% {
+    transform: translateX(calc(12 * var(--u)));
+  }
+  60% {
+    transform: translateX(calc(-8 * var(--u)));
+  }
+  80% {
+    transform: translateX(calc(4 * var(--u)));
+  }
+}
+.fsh-section {
+  margin: calc(32 * var(--u)) 0 calc(16 * var(--u));
+  font-size: max(16px, var(--fs-small));
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* 搜尋沒有結果：灰字＋虛線「新增為場域」按鈕 */
+.fsh-empty {
+  padding: calc(72 * var(--u)) 0 calc(24 * var(--u));
+  text-align: center;
+}
+.fsh-empty > i {
+  font-size: max(16px, calc(var(--fs-lead) * 2));
+  color: var(--line-soft);
+}
+.fsh-empty-text {
+  margin-top: calc(12 * var(--u));
+  font-size: max(16px, calc(var(--fs-body) + calc(4 * var(--u))));
+  font-weight: 500;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.fsh-empty-add {
+  width: 100%;
+  min-height: max(56px, calc(112 * var(--u)));
+  margin-top: calc(32 * var(--u));
+  padding: calc(16 * var(--u)) calc(28 * var(--u));
+  border-radius: calc(28 * var(--u));
+  border: max(2px, calc(3 * var(--u))) dashed #b08d57;
+  background: rgba(176, 141, 87, 0.1);
+  color: var(--brass-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--u));
+  font-size: max(18px, var(--fs-button));
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  transition:
+    transform 0.2s var(--ease-out),
+    background 0.2s;
+}
+.fsh-empty-add:active {
+  transform: scale(0.98);
+  background: rgba(176, 141, 87, 0.18);
+}
+
+/* 場域列：單選鈕、名稱、「自訂」、「已選取」；自訂場域最右邊有鉛筆 */
+.fsh-row {
+  min-height: max(44px, calc(104 * var(--u)));
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: calc(28 * var(--u));
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--ease-out),
+    border-color 0.25s,
+    background 0.25s;
+}
+.fsh-row + .fsh-row {
+  margin-top: calc(12 * var(--u));
+}
+.fsh-row:active:not(:has(.fsh-edit:active)) {
+  transform: scale(0.98);
+}
+.fsh-pick {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  padding: 0 calc(28 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(20 * var(--u));
+  border-radius: inherit;
+  outline: none;
+}
+.fsh-pick:focus-visible {
+  outline: calc(3 * var(--u)) solid var(--forest);
+  outline-offset: calc(3 * var(--u));
+}
+.fsh-radio {
+  flex: 0 0 auto;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--line-soft);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: max(16px, var(--fs-body));
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.fsh-radio i {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.25s var(--ease-spring);
+}
+.fsh-radio.pop {
+  animation: fshPop 0.35s var(--ease-spring);
+}
+@keyframes fshPop {
+  0% {
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/* 名稱可使用剩下的寬度，標籤緊接在名稱後；太長時名稱以 … 截斷 */
+.fsh-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: max(16px, var(--fs-lead));
+  font-weight: 700;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fsh-name mark {
+  background: rgba(176, 141, 87, 0.22);
+  color: var(--brass-text);
+  border-radius: calc(6 * var(--u));
+  padding: 0;
+}
+.fsh-custom,
+.fsh-picked {
+  flex: 0 0 auto;
+  padding: calc(4 * var(--u)) calc(14 * var(--u));
+  border-radius: calc(999 * var(--u));
+  font-size: max(16px, calc(var(--fs-small) - calc(4 * var(--u))));
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.fsh-custom {
+  background: rgba(176, 141, 87, 0.16);
+  color: var(--brass-text);
+}
+.fsh-picked {
+  display: none;
+  background: var(--forest);
+  color: var(--on-forest);
+}
+.fsh-edit {
+  flex: 0 0 auto;
+  width: max(44px, calc(88 * var(--u)));
+  height: max(44px, calc(88 * var(--u)));
+  margin-right: calc(8 * var(--u));
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: max(20px, calc(var(--fs-lead) * 1.125));
+  color: var(--muted);
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s var(--ease-out);
+}
+.fsh-edit:hover {
+  color: var(--forest);
+}
+.fsh-edit:active {
+  transform: scale(0.9);
+  background: var(--card-deep);
+}
+.fsh-edit:focus-visible {
+  outline: calc(3 * var(--u)) solid var(--forest);
+  outline-offset: 0;
+}
+.fsh-row.is-selected {
+  border-color: var(--forest);
+  background: #eef1ec;
+}
+.fsh-row.is-selected .fsh-radio {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.fsh-row.is-selected .fsh-radio i {
+  opacity: 1;
+  transform: none;
+}
+.fsh-row.is-selected .fsh-picked {
+  display: inline-block;
+}
+
+/* 新增／編輯表單 */
+.fsh-form {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: calc(40 * var(--u)) calc(56 * var(--u)) calc(32 * var(--u));
+}
+.fsh-label {
+  display: block;
+  font-size: max(16px, var(--fs-body));
+  font-weight: 700;
+  color: var(--ink);
+}
+.fsh-input {
+  display: block;
+  width: 100%;
+  height: max(52px, calc(104 * var(--u)));
+  margin-top: calc(14 * var(--u));
+  padding: 0 calc(28 * var(--u));
+  border-radius: calc(28 * var(--u));
+  border: 2px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: max(16px, calc(var(--fs-lead) + calc(2 * var(--u))));
+  font-weight: 700;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.fsh-input::placeholder {
+  color: var(--muted);
+  font-weight: 500;
+  opacity: 0.7;
+}
+.fsh-input:focus {
+  border-color: var(--forest);
+  box-shadow: 0 0 0 calc(6 * var(--u)) rgba(31, 59, 51, 0.12);
+}
+.fsh-input.is-error {
+  border-color: #b5473a;
+  box-shadow: 0 0 0 calc(6 * var(--u)) rgba(181, 71, 58, 0.14);
+}
+.fsh-hint-row {
+  margin-top: calc(12 * var(--u));
+  display: flex;
+  justify-content: space-between;
+  gap: calc(16 * var(--u));
+  font-size: max(16px, var(--fs-small));
+  line-height: 1.4;
+  color: var(--muted);
+}
+.fsh-count {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+.fsh-count.is-over {
+  color: #b5473a;
+  font-weight: 700;
+}
+.fsh-error {
+  margin-top: calc(12 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  font-size: max(16px, var(--fs-body));
+  font-weight: 700;
+  color: #b5473a;
+}
+.fsh-error[hidden] {
+  display: none;
+}
+
+/* 底部固定按鈕 */
+.fsh-foot {
+  flex: 0 0 auto;
+  padding: calc(24 * var(--u)) calc(56 * var(--u)) calc(calc(24 * var(--u)) + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+.fsh-primary {
+  width: 100%;
+  height: max(48px, calc(112 * var(--u)));
+  border-radius: calc(999 * var(--u));
+  background: var(--forest);
+  color: var(--on-forest);
+  font-family: var(--font-sans);
+  font-size: max(18px, calc(var(--fs-button) + calc(6 * var(--u))));
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(14 * var(--u));
+  transition:
+    transform 0.2s var(--ease-out),
+    background 0.2s,
+    color 0.2s;
+}
+.fsh-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.fsh-primary:disabled {
+  background: var(--card-deep);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fsh-view,
+  .fsh-view.is-off-left,
+  .fsh-view.is-off-right {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - 訪客模式</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+    <!-- 共用滾輪（出生年月日） -->
+    <link rel="stylesheet" href="../css/wheel.css" />
+    <script src="../js/wheel.js"></script>
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 一體機訪客頁（直式平板專用，基準 1032 × 1376）
+       * 一體機機身不高：要看、要操作的內容集中在畫面上方約 60%，下半部只留背景
+       * 整頁固定一個畫面高度、不可捲動
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6;
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-light: #d6b67f;
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420;
+        --muted: #6f6656;
+        --on-forest: #f6f1e8;
+
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 縮放單位：1032 × 1376 時 1 --u = 1px；依「寬度」與「高度 × 0.75」中較小者等比縮放 */
+        --u: calc(min(100vw, 100dvh * 0.75) / 1032);
+        --pad: calc(48 * var(--u)); /* 左右外距 */
+
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        -webkit-font-smoothing: antialiased;
+        /* 一體機：防止長按選字與系統選單 */
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 3px solid var(--brass);
+        outline-offset: 4px;
+      }
+      .serif {
+        font-family: var(--font-serif);
+        font-weight: 600;
+      }
+
+      /* ===== 版面：內容靠上，下半部留白 ===== */
+      .page {
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        /* 橫向較寬時內容置中 */
+        padding: calc(env(safe-area-inset-top) + 32 * var(--u)) max(var(--pad), calc((100vw - 1032 * var(--u)) / 2 + var(--pad))) 0;
+        overflow: hidden;
+      }
+
+      /* ===== 1. 頂部列：返回｜標題｜訪客編號 ===== */
+      .topbar {
+        flex: none;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: calc(20 * var(--u));
+      }
+      .back-pill {
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: calc(10 * var(--u));
+        height: max(44px, calc(88 * var(--u)));
+        padding: 0 calc(32 * var(--u)) 0 calc(26 * var(--u));
+        border-radius: 999px;
+        border: 2px solid var(--line-soft);
+        background: var(--card);
+        color: var(--forest);
+        font-size: max(18px, calc(32 * var(--u)));
+        font-weight: 700;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .back-pill .ti {
+        font-size: max(22px, calc(38 * var(--u)));
+      }
+      .page-title {
+        margin: 0;
+        font-size: calc(64 * var(--u));
+        line-height: 1.2;
+        color: var(--forest);
+        white-space: nowrap;
+      }
+      .serial {
+        justify-self: end;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: calc(2 * var(--u));
+        padding: calc(12 * var(--u)) calc(26 * var(--u));
+        border-radius: calc(22 * var(--u));
+        background: var(--forest);
+      }
+      .serial-label {
+        font-size: max(18px, calc(22 * var(--u)));
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        padding-left: 0.25em; /* 抵銷字距造成的偏左 */
+        line-height: 1.3;
+        color: var(--brass-light);
+      }
+      .serial-no {
+        font-size: calc(40 * var(--u));
+        line-height: 1.2;
+        color: var(--on-forest);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      /* ===== 2. 表單卡片 ===== */
+      .form {
+        flex: none;
+        margin-top: calc(28 * var(--u));
+        display: grid;
+        grid-template-columns: calc(300 * var(--u)) minmax(0, 1fr);
+        column-gap: calc(44 * var(--u));
+        row-gap: calc(24 * var(--u));
+        padding: calc(36 * var(--u)) calc(44 * var(--u));
+        border-radius: calc(40 * var(--u));
+        background: var(--card);
+        border: calc(2 * var(--u)) solid var(--brass);
+        box-shadow: 0 calc(24 * var(--u)) calc(48 * var(--u)) calc(-24 * var(--u)) rgba(31, 59, 51, 0.35);
+      }
+      .field-label {
+        display: flex;
+        align-items: center;
+        gap: calc(10 * var(--u));
+        margin: 0 0 calc(16 * var(--u));
+        font-size: max(18px, calc(32 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .field-label .ti {
+        color: var(--brass);
+        font-size: calc(40 * var(--u));
+      }
+
+      /* 性別：上下兩顆大按鈕（單選） */
+      .genders {
+        display: flex;
+        flex-direction: column;
+        gap: calc(16 * var(--u));
+      }
+      .gender {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: calc(14 * var(--u));
+        height: calc(150 * var(--u));
+        border-radius: calc(28 * var(--u));
+        border: calc(2 * var(--u)) solid var(--line-soft);
+        background: #fbf8f2;
+        color: var(--forest);
+        font-family: var(--font-serif);
+        font-weight: 600;
+        font-size: calc(54 * var(--u));
+        transition:
+          background 0.2s,
+          color 0.2s,
+          border-color 0.2s,
+          box-shadow 0.2s,
+          transform 0.2s var(--ease-out);
+      }
+      .gender .ti {
+        font-size: calc(64 * var(--u));
+        transition: color 0.2s;
+      }
+      .gender:active {
+        transform: scale(0.98);
+      }
+      .gender[aria-checked="true"] {
+        background: var(--forest);
+        color: var(--on-forest);
+        border-color: var(--brass);
+        box-shadow: 0 0 0 calc(5 * var(--u)) rgba(176, 141, 87, 0.55);
+      }
+      .gender[aria-checked="true"] .ti {
+        color: var(--brass-light);
+      }
+
+      /* 出生年月日：三個滾輪（共用 js/wheel.js），中央選取帶白底黃銅框 */
+      .wheels {
+        --wheel-item: calc(62 * var(--u));
+        --wheel-fs: max(18px, calc(30 * var(--u)));
+        --wheel-fs-center: max(20px, calc(40 * var(--u)));
+        --wheel-color: var(--muted);
+        --wheel-color-center: var(--forest);
+        --wheel-color-disabled: #cfc5b3;
+        position: relative;
+        height: calc(var(--wheel-item) * 5);
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr;
+        gap: calc(8 * var(--u));
+      }
+      .wheel-band {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(var(--wheel-item) * 2);
+        height: var(--wheel-item);
+        background: #fff;
+        border: calc(3 * var(--u)) solid var(--brass);
+        border-radius: calc(18 * var(--u));
+        pointer-events: none;
+      }
+      .wheel {
+        /* 上下兩端淡出 */
+        -webkit-mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent);
+        mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent);
+      }
+      .wheel-item.is-center {
+        font-family: var(--font-serif);
+        font-weight: 600;
+      }
+
+      /* 第二列：返回＋開始測驗（滿寬） */
+      .actions {
+        grid-column: 1 / -1;
+      }
+      .hint {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: calc(8 * var(--u));
+        margin: 0 0 calc(10 * var(--u));
+        min-height: calc(34 * var(--u));
+        font-size: max(18px, calc(26 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--brass-text);
+        transition: opacity 0.2s;
+      }
+      .hint .ti {
+        font-size: calc(32 * var(--u));
+      }
+      /* 已選性別：提示隱藏但保留高度，按鈕位置不變 */
+      .hint.is-off {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .btns {
+        display: grid;
+        grid-template-columns: 1fr 1.6fr;
+        gap: calc(20 * var(--u));
+      }
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: calc(14 * var(--u));
+        height: calc(130 * var(--u));
+        border-radius: 999px;
+        font-size: calc(46 * var(--u));
+        font-weight: 700;
+        transition:
+          transform 0.2s var(--ease-out),
+          opacity 0.2s;
+      }
+      .btn .ti {
+        font-size: calc(52 * var(--u));
+      }
+      .btn:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+      .btn-ghost {
+        border: 2px solid var(--line-soft);
+        background: var(--card);
+        color: var(--forest);
+      }
+      .btn-start {
+        border: calc(3 * var(--u)) solid var(--brass);
+        background: linear-gradient(135deg, #2e5649 0%, var(--forest) 55%, #172d27 100%);
+        color: var(--on-forest);
+        box-shadow: 0 calc(16 * var(--u)) calc(32 * var(--u)) calc(-16 * var(--u)) rgba(31, 59, 51, 0.6);
+      }
+      .btn-start .ti {
+        color: var(--brass-light);
+      }
+      .btn-start:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      /* ===== 減少動態：沒有過渡動畫 ===== */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <!-- 1. 頂部列 -->
+      <header class="topbar">
+        <button class="back-pill" type="button" data-back><i class="ti ti-arrow-left" aria-hidden="true"></i>返回</button>
+        <h1 class="page-title serif">訪客模式</h1>
+        <div class="serial" aria-label="訪客編號">
+          <span class="serial-label">訪客編號</span>
+          <span class="serial-no serif" id="serialNo"></span>
+        </div>
+      </header>
+
+      <!-- 2. 表單 -->
+      <section class="form" aria-label="訪客資料">
+        <!-- 性別 -->
+        <div>
+          <p class="field-label" id="genderLabel"><i class="ti ti-gender-bigender" aria-hidden="true"></i>性別</p>
+          <div class="genders" role="radiogroup" aria-labelledby="genderLabel">
+            <button class="gender" type="button" role="radio" aria-checked="false" data-gender="男"><i class="ti ti-man" aria-hidden="true"></i>男</button>
+            <button class="gender" type="button" role="radio" aria-checked="false" data-gender="女"><i class="ti ti-woman" aria-hidden="true"></i>女</button>
+          </div>
+        </div>
+
+        <!-- 出生年月日（民國） -->
+        <div>
+          <p class="field-label"><i class="ti ti-cake" aria-hidden="true"></i>出生年月日（民國）</p>
+          <div class="wheels">
+            <div class="wheel-band"></div>
+            <div class="wheel" id="wheelY"></div>
+            <div class="wheel" id="wheelM"></div>
+            <div class="wheel" id="wheelD"></div>
+          </div>
+        </div>
+
+        <!-- 返回＋開始測驗 -->
+        <div class="actions">
+          <p class="hint" id="hint" aria-live="polite"><i class="ti ti-info-circle" aria-hidden="true"></i>請先選擇性別</p>
+          <div class="btns">
+            <button class="btn btn-ghost" type="button" data-back><i class="ti ti-arrow-left" aria-hidden="true"></i>返回</button>
+            <button class="btn btn-start" id="startBtn" type="button" disabled aria-describedby="hint"><i class="ti ti-walk" aria-hidden="true"></i>開始測驗</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      /* =========================================================
+       * 設定
+       * ========================================================= */
+      const IDLE_MS = 90000; // 閒置（沒有點擊、滾動、按鍵）多久自動回到一體機歡迎頁
+      const DEFAULT_BIRTH = { y: 50, m: 1, d: 1 }; // 滾輪預設：民國 50 年 1 月 1 日
+      const HOME_URL = "kiosk.html";
+      const TEST_URL = "assess.html?test=gait&kiosk=1";
+
+      const $ = (s) => document.querySelector(s);
+      const pad2 = (n) => String(n).padStart(2, "0");
+
+      // 一體機：關閉長按系統選單
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      /* =========================================================
+       * 訪客編號：V-月日-三位數流水號（例如 V-1118-023）
+       * sessionStorage「kf.visitorSeq」= { date: "YYYY-MM-DD", n }：今天已開始測驗的人數；日期不同從 1 重新計算
+       * 進入頁面時只顯示下一個編號；按「開始測驗」才把 n 加 1 並保存（返回、閒置返回不消耗編號）
+       * ========================================================= */
+      const SEQ_KEY = "kf.visitorSeq";
+      const now = new Date();
+      const todayIso = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+      const seqN = (() => {
+        try {
+          const v = JSON.parse(sessionStorage.getItem(SEQ_KEY));
+          return v?.date === todayIso && Number.isInteger(v.n) && v.n >= 0 ? v.n + 1 : 1;
+        } catch {
+          return 1;
+        }
+      })();
+      const serial = `V-${pad2(now.getMonth() + 1)}${pad2(now.getDate())}-${String(seqN).padStart(3, "0")}`;
+      $("#serialNo").textContent = serial;
+
+      /* ===== 性別（預設都不選；未選時「開始測驗」停用） ===== */
+      let gender = null;
+      document.querySelectorAll(".gender").forEach((btn) =>
+        btn.addEventListener("click", () => {
+          gender = btn.dataset.gender;
+          document.querySelectorAll(".gender").forEach((b) => b.setAttribute("aria-checked", String(b === btn)));
+          $("#startBtn").disabled = false;
+          $("#hint").classList.add("is-off");
+        }),
+      );
+
+      /* =========================================================
+       * 出生年月日：民國年／月／日三個滾輪（js/wheel.js；與受測名單「新增人員」相同的規則）
+       * 年：民國 1 年～今年；日數依年月調整（2 月、閏年、30／31 日）；不可選到未來
+       * 年月改變時，超出範圍的月／日自動修正；捲到不能選的值時自動彈回
+       * ========================================================= */
+      const UNITS = { y: "年", m: "月", d: "日" };
+      const LABELS = { y: "民國年", m: "月", d: "日" };
+      const P = { ...DEFAULT_BIRTH };
+      const wheels = {};
+      ["y", "m", "d"].forEach((key) => {
+        wheels[key] = createWheel($("#wheel" + key.toUpperCase()), {
+          onSettle: () => commit(key),
+          keyboard: true,
+          label: LABELS[key],
+        });
+      });
+      function todayRoc() {
+        const t = new Date();
+        return { y: t.getFullYear() - 1911, m: t.getMonth() + 1, d: t.getDate() };
+      }
+      const daysIn = (y, m) => new Date(y + 1911, m, 0).getDate(); // 閏年依西元年計算
+      const maxMonth = (y) => (y === todayRoc().y ? todayRoc().m : 12);
+      function maxDay(y, m) {
+        const t = todayRoc();
+        return y === t.y && m === t.m ? Math.min(daysIn(y, m), t.d) : daysIn(y, m);
+      }
+      function fillWheel(key, count, maxAllowed) {
+        wheels[key].fill(Array.from({ length: count }, (_, i) => ({ label: `${i + 1} ${UNITS[key]}`, disabled: i + 1 > maxAllowed })));
+      }
+      // 年、月改變後：更新月份可選範圍、重建日數，必要時把月／日拉回可選的值
+      function applyConstraints(smooth) {
+        const mm = maxMonth(P.y);
+        wheels.m.setDisabled(mm);
+        if (P.m > mm) {
+          P.m = mm;
+          wheels.m.scrollTo(P.m, smooth);
+        }
+        const days = daysIn(P.y, P.m);
+        const md = maxDay(P.y, P.m);
+        if (P.d > md) P.d = md;
+        if (wheels.d.count !== days) {
+          fillWheel("d", days, md);
+          wheels.d.scrollTo(P.d, false);
+        } else {
+          wheels.d.setDisabled(md);
+          if (wheels.d.value() !== P.d) wheels.d.scrollTo(P.d, smooth);
+        }
+        Object.values(wheels).forEach((w) => w.markCenter());
+      }
+      function commit(key) {
+        const v = wheels[key].value();
+        if (key === "y") {
+          if (v === P.y) return;
+          P.y = v;
+          applyConstraints(true);
+        } else if (key === "m") {
+          const mm = maxMonth(P.y);
+          if (v > mm) wheels.m.scrollTo(mm, true);
+          const next = Math.min(v, mm);
+          if (next === P.m) return wheels.m.markCenter();
+          P.m = next;
+          applyConstraints(true);
+        } else {
+          const md = maxDay(P.y, P.m);
+          if (v > md) wheels.d.scrollTo(md, true);
+          P.d = Math.min(v, md);
+        }
+      }
+      function initWheels() {
+        fillWheel("y", todayRoc().y, Infinity);
+        fillWheel("m", 12, maxMonth(P.y));
+        fillWheel("d", daysIn(P.y, P.m), maxDay(P.y, P.m));
+        Object.keys(wheels).forEach((key) => {
+          wheels[key].scrollTo(P[key], false);
+          wheels[key].markCenter(P[key]);
+        });
+      }
+      // 目前選到的生日（滾輪還在捲動時，以中央的值並套用範圍限制）
+      function currentBirth() {
+        const y = wheels.y.value();
+        const m = Math.min(wheels.m.value(), maxMonth(y));
+        const d = Math.min(wheels.d.value(), maxDay(y, m));
+        return { rocYear: y, month: m, day: d };
+      }
+
+      /* ===== 開始測驗：保存訪客資料與編號，進入行走測驗 ===== */
+      function start() {
+        if (!gender) return;
+        try {
+          sessionStorage.setItem(SEQ_KEY, JSON.stringify({ date: todayIso, n: seqN }));
+          sessionStorage.setItem(
+            "kf.kioskVisitor",
+            JSON.stringify({ serial, gender, birth: currentBirth(), createdAt: new Date().toISOString() }),
+          );
+        } catch {}
+        location.href = TEST_URL;
+      }
+      $("#startBtn").addEventListener("click", start);
+      document.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => (location.href = HOME_URL)));
+
+      /* ===== 閒置 90 秒自動回到一體機歡迎頁（不消耗編號） ===== */
+      let idleTimer;
+      function resetIdle() {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => (location.href = HOME_URL), IDLE_MS);
+      }
+      ["pointerdown", "keydown", "wheel", "touchstart"].forEach((t) => document.addEventListener(t, resetIdle, { passive: true }));
+      document.addEventListener("scroll", resetIdle, { capture: true, passive: true }); // 滾輪捲動不會冒泡，用 capture
+      resetIdle();
+
+      /* =========================================================
+       * 插入健保卡：與 kiosk.html 的 onCardInserted(data) 相同的位置
+       * 之後由讀卡機服務呼叫；目前沒有任何觸發方式
+       * ========================================================= */
+      // eslint-disable-next-line no-unused-vars
+      function onCardInserted(data) {}
+
+      initWheels();
+    </script>
+  </body>
+</html>

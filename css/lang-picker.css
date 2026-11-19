@@ -1,0 +1,218 @@
+/* =========================================================
+ * 共用語系選擇（js/lang-picker.js）：Language 按鈕＋畫面正中央的滾輪對話框
+ * 尺寸都用 --lp-u 表示：詳細頁 1px；iPad 頁面在自己的 :root 設定（例如首頁 max(1px, calc(2 * var(--u)))）
+ * 顏色沿用頁面的 --forest、--on-forest、--card、--bg、--ink、--muted（沒有時用括號內的預設值）
+ * ========================================================= */
+:root {
+  --lp-u: 1px;
+  /* 對話框寬度與圓角：詳細頁 min(360px, 畫面寬 − 40px)、24px；iPad 頁面可在自己的 :root 覆寫 */
+  --lp-dialog-w: min(360px, calc(100vw - 40px));
+  --lp-dialog-r: 24px;
+}
+
+.lp-btn,
+.lp-cancel,
+.lp-ok {
+  margin: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.lp-dialog,
+.lp-dialog * {
+  box-sizing: border-box;
+}
+
+/* ===== 按鈕：膠囊、ti-world＋「Language」；觸控區至少 44 × 44px ===== */
+.lp-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6 * var(--lp-u));
+  min-width: 44px;
+  height: max(44px, calc(36 * var(--lp-u)));
+  padding: 0 calc(16 * var(--lp-u));
+  border-radius: 999px;
+  font-family: var(--font-sans, sans-serif);
+  font-size: max(16px, calc(15 * var(--lp-u)));
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out, ease-out);
+}
+.lp-btn i {
+  font-size: 1.25em;
+}
+.lp-btn:active {
+  transform: scale(0.96);
+}
+.lp-btn:focus-visible {
+  outline: 3px solid var(--brass, #b08d57);
+  outline-offset: 2px;
+}
+/* 淺底版：首頁、過期／無權限卡片上 */
+.lp-btn--light {
+  border: 2px solid #c7bba6;
+  background: #f7f4ee;
+  color: var(--forest, #1f3b33);
+}
+/* 深底版：詳細頁頂帶上 */
+.lp-btn--dark {
+  border: 1px solid rgba(217, 191, 140, 0.5);
+  background: transparent;
+  color: var(--on-forest, #f6f1e8);
+}
+
+
+/* ===== 對話框：畫面水平、垂直置中；出現 opacity 0→1、scale(.94)→1（.35s 彈性），關閉反向（.2s） ===== */
+html.lp-lock {
+  overflow: hidden;
+}
+.lp-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(20, 30, 26, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.lp-root.is-open .lp-mask {
+  opacity: 1;
+  pointer-events: auto;
+}
+.lp-dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 1001;
+  width: var(--lp-dialog-w);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: calc(24 * var(--lp-u));
+  background: var(--card, #f7f4ee);
+  color: var(--ink, #1a2420);
+  font-family: var(--font-sans, sans-serif);
+  border-radius: var(--lp-dialog-r);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -50%) scale(0.94);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s var(--ease-out, ease-out),
+    visibility 0s 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.lp-root.is-open .lp-dialog {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+  transition:
+    opacity 0.35s var(--ease-out, ease-out),
+    transform 0.35s var(--ease-spring, cubic-bezier(0.34, 1.4, 0.64, 1)),
+    visibility 0s;
+}
+
+/* 標題：ti-world＋Language（固定英文，Serif），置中 */
+.lp-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8 * var(--lp-u));
+  font-family: var(--font-serif, serif);
+  font-size: max(20px, calc(22 * var(--lp-u)));
+  font-weight: 600;
+  line-height: 1.2;
+}
+.lp-title i {
+  font-size: 1.05em;
+  color: var(--brass, #b08d57);
+}
+
+/* 中間：單欄滾輪，可見 5 列；中央選取帶＋上下淡出 */
+.lp-wheels {
+  --wheel-item: max(44px, calc(40 * var(--lp-u)));
+  --wheel-fs: max(16px, calc(15 * var(--lp-u)));
+  --wheel-fs-center: max(19px, calc(18 * var(--lp-u)));
+  --wheel-color: var(--muted, #6f6656);
+  --wheel-color-center: var(--ink, #1a2420);
+  position: relative;
+  margin-top: calc(12 * var(--lp-u));
+  -webkit-mask-image: linear-gradient(transparent, #000 calc(var(--wheel-item) * 1.5), #000 calc(var(--wheel-item) * 3.5), transparent);
+  mask-image: linear-gradient(transparent, #000 calc(var(--wheel-item) * 1.5), #000 calc(var(--wheel-item) * 3.5), transparent);
+}
+.lp-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--wheel-item) * 2);
+  height: var(--wheel-item);
+  background: var(--card, #f7f4ee);
+  border: 2px solid #c9a46a;
+  border-radius: calc(14 * var(--lp-u));
+  pointer-events: none;
+  transition: box-shadow 0.2s;
+}
+/* 鍵盤聚焦時選取帶加一圈光暈 */
+.lp-wheels:has(.lp-wheel:focus-visible) .lp-band {
+  box-shadow: 0 0 0 3px rgba(176, 141, 87, 0.35);
+}
+.lp-wheel .wheel-item {
+  font-family: var(--font-sans, sans-serif);
+}
+
+
+/* 底部：取消、確定兩顆並排等寬 */
+.lp-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(12 * var(--lp-u));
+  margin-top: calc(20 * var(--lp-u));
+}
+.lp-cancel,
+.lp-ok {
+  min-height: max(48px, calc(44 * var(--lp-u)));
+  padding: 0 calc(12 * var(--lp-u));
+  border-radius: 999px;
+  font-family: var(--font-sans, sans-serif);
+  font-size: max(17px, calc(16 * var(--lp-u)));
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out, ease-out);
+}
+.lp-cancel {
+  background: var(--bg, #ece7df);
+  color: var(--ink, #1a2420);
+}
+.lp-ok {
+  background: var(--forest, #1f3b33);
+  color: var(--on-forest, #f6f1e8);
+}
+.lp-cancel:active,
+.lp-ok:active {
+  transform: scale(0.97);
+}
+.lp-cancel:focus-visible,
+.lp-ok:focus-visible {
+  outline: 3px solid var(--brass, #b08d57);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-dialog,
+  .lp-root.is-open .lp-dialog,
+  .lp-mask {
+    transition: none;
+  }
+}

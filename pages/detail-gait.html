@@ -11,9 +11,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
     <link rel="stylesheet" href="../css/detail.css" />
+    <!-- 共用語系選擇（Language 按鈕＋滾輪彈窗）：與首頁共用 -->
+    <link rel="stylesheet" href="../css/wheel.css" />
+    <link rel="stylesheet" href="../css/lang-picker.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- 多語系（中／日／EN）：先載入，讓 <html lang> 與日文字型在內容出現前就緒 -->
     <script src="../js/detail-i18n.js"></script>
+    <script src="../js/wheel.js"></script>
+    <script src="../js/lang-picker.js"></script>
   </head>
   <body class="page-gait">
     <!-- 儲存視窗（進入頁面時先顯示） -->
@@ -346,7 +351,7 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("bandLang").innerHTML = I18N.switchHTML();
+        document.getElementById("bandLang").innerHTML = LangPicker.buttonHTML("dark");
         I18N.apply();
         document.title = t("gait.docTitle");
         drawGauge();

@@ -18,6 +18,8 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
+    <!-- 共用場域資料（預設場域＋使用者新增的自訂場域，用 id 對應名稱） -->
+    <script src="../js/fields.js"></script>
     <style>
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
@@ -787,12 +789,6 @@
           { id: "gait", name: "行走測驗", desc: "步態分析", icon: "ti-walk" },
         ],
 
-        fields: [
-          { id: "tpe-01", name: "大安社區關懷據點" },
-          { id: "tpe-02", name: "信義長照中心" },
-          { id: "tpe-03", name: "中正區活動中心" },
-          { id: "tpe-04", name: "北投社區關懷據點" },
-        ],
 
         // 受測人員（假資料）
         // TODO：之後改成依 field 從 API 取得名單，例如 fetch(`/api/fields/${field.id}/subjects`)
@@ -890,7 +886,12 @@
        * ========================================================= */
       const params = new URLSearchParams(location.search);
       const test = CONFIG.tests.find((t) => t.id === params.get("test"));
-      const field = CONFIG.fields.find((f) => f.id === params.get("field"));
+      // 一體機（kiosk=1）：不需要場域與受測名單
+      //   訪客：受測者是 sessionStorage「kf.kioskVisitor」
+      //   健保卡（src=card）：受測者是 sessionStorage「kf.kioskCard」
+      const KIOSK = params.get("kiosk") === "1";
+      const FROM_CARD = KIOSK && params.get("src") === "card";
+      const field = KIOSK ? null : KFFields.byId(params.get("field")); // 含自訂場域；改名後顯示新名稱
       const LOCAL_KEY = field ? `kf.subjects.${field.id}` : "";
 
       function loadLocal() {
@@ -913,6 +914,43 @@
         } catch (e) {}
       }
 
+      // 一體機訪客：{ serial, gender, birth: { rocYear, month, day }, createdAt } → 受測者「訪客 V-1118-023」
+      function kioskVisitor() {
+        try {
+          const v = JSON.parse(sessionStorage.getItem("kf.kioskVisitor"));
+          if (!v?.serial || !v.birth) return null;
+          const { rocYear, month, day } = v.birth;
+          return {
+            id: v.serial,
+            name: `訪客 ${v.serial}`,
+            gender: v.gender,
+            birth: `${rocYear + 1911}-${pad2(month)}-${pad2(day)}`,
+            visitor: true,
+          };
+        } catch (e) {
+          return null;
+        }
+      }
+
+      // 一體機健保卡：{ name, gender, birth: { rocYear, month, day }, idMasked, readAt }
+      function kioskCard() {
+        try {
+          const v = JSON.parse(sessionStorage.getItem("kf.kioskCard"));
+          if (!v?.name || !v.birth) return null;
+          const { rocYear, month, day } = v.birth;
+          return {
+            id: v.idMasked || `card-${v.readAt}`,
+            name: v.name,
+            gender: v.gender,
+            birth: `${rocYear + 1911}-${pad2(month)}-${pad2(day)}`,
+            idMasked: v.idMasked || "",
+            card: true,
+          };
+        } catch (e) {
+          return null;
+        }
+      }
+
       // 受測者：後台匯入的人套用 edits；也找得到名單頁現場新增的人。缺少 subject 時用第一筆
       function findSubject() {
         const local = loadLocal();
@@ -932,7 +970,9 @@
        * ========================================================= */
       const T = { items: [], index: 0, subject: null };
 
+      // 一體機訪客（kiosk=1）：測驗頁不顯示受測者卡片（資料仍會存進紀錄、帶到結果頁）
       function renderSubject() {
+        if (KIOSK) return;
         const s = T.subject;
         $("#whoAvatar").textContent = s.name.slice(0, 1);
         $("#whoName").textContent = s.name;
@@ -1053,9 +1093,10 @@
           swap(swapTargets(), renderItem, 1);
           return;
         }
-        // 完成：寫入 kf.subjects.<fieldId>.done[人員 id][測驗 id] = "HH:MM"
         finishing = true;
         const now = new Date();
+        if (KIOSK) return finishKiosk(now);
+        // 完成：寫入 kf.subjects.<fieldId>.done[人員 id][測驗 id] = "HH:MM"
         const local = loadLocal();
         local.done[T.subject.id] = {
           ...(local.done[T.subject.id] || {}),
@@ -1086,9 +1127,32 @@
         setTimeout(() => (location.href = `${resultPage}?record=${record.id}&from=assess`), 1200);
       }
 
-      // kf.records.<fieldId>：測驗完成時新增的鑑測紀錄（陣列；紀錄頁、結果頁會一起讀取）
+      // 一體機完成：紀錄存到 kf.records.kiosk（附上訪客或讀卡資料，結果頁不必查名單；身分證只存遮罩後的值），再進入結果頁
+      // TODO：一體機版的 SPPB 結果頁之後再設計；目前只有行走測驗
+      function finishKiosk(now) {
+        const s = T.subject;
+        showToast(`已完成 ${s.name} 的 ${test.name}`);
+        const record = {
+          id: `${test.id === "gait" ? "g" : "s"}${now.getTime()}`,
+          fieldId: "kiosk",
+          subjectId: s.id,
+          ...(s.card
+            ? { card: { name: s.name, gender: s.gender, birth: s.birth, idMasked: s.idMasked } }
+            : { visitor: { name: s.name, gender: s.gender, birth: s.birth } }),
+          test: test.id,
+          date: `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`,
+          time: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
+        };
+        // 行走測驗：風險等級 0–4；TODO：之後改成分析結果，現在用隨機值方便測試
+        if (test.id === "gait") record.riskLevel = Math.floor(Math.random() * 5);
+        addRecord(record);
+        const resultPage = test.id === "gait" ? "result-gait.html" : "result.html";
+        setTimeout(() => (location.href = `${resultPage}?record=${record.id}&from=kiosk`), 1200);
+      }
+
+      // kf.records.<fieldId>：測驗完成時新增的鑑測紀錄（陣列；紀錄頁、結果頁會一起讀取）；一體機訪客為 kf.records.kiosk
       function addRecord(record) {
-        const key = `kf.records.${field.id}`;
+        const key = `kf.records.${record.fieldId}`;
         try {
           const list = JSON.parse(sessionStorage.getItem(key));
           sessionStorage.setItem(key, JSON.stringify([...(Array.isArray(list) ? list : []), record]));
@@ -1135,20 +1199,24 @@
           cancel: "繼續測驗",
           ok: "離開",
         });
-        if (leave) location.href = "home.html";
+        if (leave) location.href = KIOSK ? "kiosk.html" : "home.html";
       }
 
       /* =========================================================
        * 啟動
        * ========================================================= */
       function init() {
-        if (!test || !field || !ITEMS[test.id]) {
-          showToast("找不到測驗資料");
-          setTimeout(() => (location.href = "home.html"), 1500);
+        const visitor = KIOSK ? (FROM_CARD ? kioskCard() : kioskVisitor()) : null;
+        if (!test || (!field && !KIOSK) || !ITEMS[test.id] || (KIOSK && !visitor)) {
+          showToast(KIOSK && !visitor ? (FROM_CARD ? "找不到健保卡資料" : "找不到訪客資料") : "找不到測驗資料");
+          // 少了健保卡資料：回到一體機歡迎頁；少了訪客資料：回到訪客頁
+          setTimeout(() => (location.href = KIOSK ? (FROM_CARD ? "kiosk.html" : "kiosk-guest.html") : "home.html"), 1500);
           return;
         }
         T.items = ITEMS[test.id];
-        T.subject = findSubject();
+        T.subject = KIOSK ? visitor : findSubject();
+        // 一體機訪客：移除受測者卡片（不渲染、讀螢幕軟體也不唸）；下方按鈕以 margin-top: auto 貼齊側欄底部，位置不變
+        if (KIOSK) document.querySelector(".side.left .who")?.remove();
         // 「SPPB 測驗」；名稱已含「測驗」的不再重複（行走測驗）
         document.title = `建豐健康科技 - ${test.name.endsWith("測驗") ? test.name : test.name + " 測驗"}`;
         $("#stage").classList.toggle("is-single", T.items.length < 2);

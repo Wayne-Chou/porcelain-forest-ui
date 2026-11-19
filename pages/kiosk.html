@@ -1,0 +1,1765 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title>建豐健康科技 - 跌倒風險檢測</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 一體機歡迎頁（直式平板專用，基準 1032 × 1376）
+       * 整頁固定一個畫面高度、不可捲動；影片區吸收剩餘高度
+       * 底部兩個入口（訪客模式、插入健保卡）固定在畫面底部
+       * ========================================================= */
+      :root {
+        --bg: #ece7df; /* 暖瓷白：頁面底色 */
+        --card: #f7f4ee; /* 卡片底色 */
+        --line: #d9cfbe; /* 邊框 */
+        --line-soft: #c7bba6;
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-light: #d6b67f;
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420;
+        --muted: #6f6656;
+        --on-forest: #f6f1e8;
+
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 縮放單位：1032 × 1376 時 1 --u = 1px；依「寬度」與「高度 × 0.75」中較小者等比縮放 */
+        --u: calc(min(100vw, 100dvh * 0.75) / 1032);
+        --pad: calc(48 * var(--u)); /* 左右外距 */
+
+        /* 底部入口區 */
+        --ic-w: calc(470 * var(--u)); /* 插入健保卡指示卡：寬 */
+        --ic-h: calc(340 * var(--u)); /* 插入健保卡指示卡：高 */
+        --or-w: calc(72 * var(--u)); /* 「或」所佔寬度 */
+
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        -webkit-font-smoothing: antialiased;
+        /* 一體機：防止長按選字與系統選單 */
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+      }
+      img {
+        -webkit-user-drag: none;
+        user-select: none;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 3px solid var(--brass);
+        outline-offset: 4px;
+      }
+      .serif {
+        font-family: var(--font-serif);
+        font-weight: 600;
+      }
+
+      /* ===== 版面：一個畫面高度 =====
+       * 底部預留指示卡高度＋間距（兩張入口卡固定在畫面底部，不隨內容捲動）
+       */
+      .kiosk {
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        padding: calc(env(safe-area-inset-top) + 32 * var(--u)) var(--pad) calc(var(--ic-h) + 28 * var(--u));
+        overflow: hidden;
+      }
+
+      /* ===== 1. 頂部列 ===== */
+      .topbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: calc(24 * var(--u));
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: calc(20 * var(--u));
+        min-width: 0;
+      }
+      .logo {
+        flex: none;
+        width: calc(88 * var(--u));
+        height: calc(88 * var(--u));
+        display: grid;
+        place-items: center;
+        background: var(--card);
+        border: max(1px, calc(2 * var(--u))) solid var(--line);
+        border-radius: calc(24 * var(--u));
+        overflow: hidden;
+        touch-action: none;
+        transition: transform 0.25s var(--ease-out);
+      }
+      .logo img {
+        width: 78%;
+        height: 78%;
+        object-fit: contain;
+        pointer-events: none;
+      }
+      /* 按住 Logo：輕微縮小 */
+      .logo.is-pressing {
+        transform: scale(0.92);
+      }
+      .brand-name {
+        font-size: max(18px, calc(36 * var(--u)));
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: calc(20 * var(--u));
+        font-size: max(18px, calc(28 * var(--u)));
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .weather {
+        display: flex;
+        align-items: center;
+        gap: calc(8 * var(--u));
+      }
+      .weather .ti {
+        color: var(--brass);
+        font-size: max(24px, calc(42 * var(--u)));
+      }
+      .clock {
+        font-variant-numeric: tabular-nums;
+      }
+      /* 專家模式：膠囊按鈕，點一下直接前往 home.html */
+      .expert {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        gap: calc(8 * var(--u));
+        height: max(44px, calc(76 * var(--u)));
+        padding: 0 calc(24 * var(--u));
+        border-radius: 999px;
+        border: 2px solid #c7bba6;
+        background: #f7f4ee;
+        color: var(--forest);
+        font-size: max(18px, calc(28 * var(--u)));
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .expert .ti {
+        font-size: max(22px, calc(38 * var(--u)));
+      }
+      .expert:active {
+        transform: scale(0.96);
+      }
+
+      /* ===== 版本切換：A 影片版／B 輪播版（html[data-layout]，沒有設定時為 A）=====
+       * 兩版共用頂部列、標題、三步驟、底部入口；差別只在步驟下方的區域
+       */
+      .carousel,
+      html[data-layout="b"] .marquee,
+      html[data-layout="b"] .video {
+        display: none;
+      }
+      html[data-layout="b"] .carousel {
+        display: flex;
+      }
+
+      /* 實心圖示：tabler-icons-filled 的樣式表和一般版共用 .ti 與同名 class，不能整份載入；
+       * 只載入字型檔，自訂需要的兩個（ti-arrow-big-right-filled、ti-arrow-big-down-filled） */
+      @font-face {
+        font-family: "tabler-icons-filled";
+        font-style: normal;
+        font-weight: 400;
+        font-display: block;
+        src: url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.52.0/dist/fonts/tabler-icons-filled.rest.woff2") format("woff2");
+      }
+      .ti.ti-arrow-big-right-filled::before,
+      .ti.ti-arrow-big-down-filled::before {
+        font-family: "tabler-icons-filled" !important;
+      }
+      .ti-arrow-big-right-filled::before {
+        content: "\f6cc";
+      }
+      .ti-arrow-big-down-filled::before {
+        content: "\f6c6";
+      }
+
+      /* ===== A 版：跑馬燈（頂部列正下方，左右延伸到螢幕邊緣） ===== */
+      .marquee {
+        flex: none;
+        position: relative;
+        margin: calc(24 * var(--u)) calc(-1 * var(--pad)) 0;
+        height: calc(84 * var(--u));
+        background: var(--forest);
+        border-top: calc(2 * var(--u)) solid var(--brass);
+        border-bottom: calc(2 * var(--u)) solid var(--brass);
+        color: var(--brass-light);
+        overflow: hidden;
+        font-size: max(18px, calc(34 * var(--u)));
+        font-weight: 700;
+        letter-spacing: 0.3em;
+      }
+      .mq-track {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        width: max-content;
+        animation: mq var(--mq-dur, 20s) linear infinite;
+      }
+      .mq-group {
+        display: flex;
+        align-items: center;
+        flex: none;
+      }
+      .mq-item {
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        line-height: 1;
+      }
+      .mq-item::after {
+        content: "";
+        width: calc(10 * var(--u));
+        height: calc(10 * var(--u));
+        margin: 0 calc(64 * var(--u)) 0 calc(64 * var(--u) - 0.3em);
+        border-radius: 50%;
+        background: var(--brass);
+      }
+      @keyframes mq {
+        to {
+          transform: translateX(-50%);
+        }
+      }
+      .mq-static {
+        display: none;
+        position: absolute;
+        inset: 0;
+        align-items: center;
+        justify-content: center;
+        padding-left: 0.3em; /* 抵銷字距造成的偏右 */
+        white-space: nowrap;
+      }
+
+      /* ===== 2. 標題 ===== */
+      .title {
+        flex: none;
+        margin: calc(28 * var(--u)) 0 0;
+        font-size: calc(96 * var(--u));
+        line-height: 1.15;
+        color: var(--forest);
+        letter-spacing: 0.02em;
+      }
+      html:not([data-layout="b"]) .title {
+        margin-top: calc(24 * var(--u));
+      }
+
+      /* ===== 3. 三步驟 ===== */
+      .steps {
+        flex: none;
+        margin: calc(24 * var(--u)) 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr;
+        align-items: start;
+      }
+      .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: calc(12 * var(--u));
+      }
+      .step-circle {
+        position: relative;
+        width: calc(160 * var(--u));
+        height: calc(160 * var(--u));
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--card);
+        border: calc(4 * var(--u)) solid var(--brass);
+        color: var(--forest);
+        font-size: calc(84 * var(--u));
+      }
+      /* 左上角數字圓：外圈 5 單位頁面底色當間隔 */
+      .step-num {
+        position: absolute;
+        left: calc(-22 * var(--u));
+        top: calc(-22 * var(--u));
+        width: calc(76 * var(--u));
+        height: calc(76 * var(--u));
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--forest);
+        box-shadow: 0 0 0 calc(5 * var(--u)) var(--bg);
+        color: var(--brass-light);
+        font-family: var(--font-serif);
+        font-weight: 600;
+        font-size: max(18px, calc(42 * var(--u)));
+        line-height: 1;
+      }
+      .step-label {
+        font-size: max(18px, calc(36 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+      /* 實心粗箭頭：與步驟圓的垂直中心對齊（圓高 160、箭頭 76 → 往下 42） */
+      .step-arrow {
+        display: flex;
+        margin-top: calc(42 * var(--u));
+        height: calc(76 * var(--u));
+        align-items: center;
+        color: #b08d57;
+        font-size: calc(76 * var(--u));
+        line-height: 1;
+      }
+
+      /* ===== 4. A 版：影片區，吸收剩餘高度 ===== */
+      .video {
+        flex: 1 1 0;
+        min-height: 0;
+        position: relative;
+        margin-top: calc(28 * var(--u));
+        border-radius: calc(40 * var(--u));
+        border: calc(3 * var(--u)) solid var(--brass);
+        overflow: hidden;
+        background: radial-gradient(120% 140% at 30% 20%, #2d5348 0%, var(--forest) 55%, #142821 100%);
+      }
+      .video video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .video-ph {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+      .video-ph span {
+        width: calc(140 * var(--u));
+        height: calc(140 * var(--u));
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        border: calc(3 * var(--u)) solid rgba(214, 182, 127, 0.7);
+        background: rgba(246, 241, 232, 0.08);
+        color: var(--brass-light);
+        font-size: calc(64 * var(--u));
+      }
+      .video.has-video .video-ph {
+        display: none;
+      }
+
+      /* ===== 4. B 版：輪播區塊，吸收剩餘高度 ===== */
+      .carousel {
+        flex: 1 1 0;
+        min-height: 0;
+        position: relative;
+        flex-direction: column;
+        margin-top: calc(28 * var(--u));
+        background: var(--card);
+        border: calc(3 * var(--u)) solid var(--brass);
+        border-radius: calc(40 * var(--u));
+        box-shadow: 0 calc(24 * var(--u)) calc(48 * var(--u)) calc(-24 * var(--u)) rgba(31, 59, 51, 0.35);
+        overflow: hidden;
+      }
+      /* 進度條＋標籤：純顯示（不可點擊），每頁 12 秒自動填滿、自動換頁 */
+      .cs-tabs {
+        flex: none;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: calc(18 * var(--u));
+        padding: calc(14 * var(--u)) calc(36 * var(--u)) 0;
+      }
+      .cs-tab {
+        display: flex;
+        flex-direction: column;
+        gap: calc(8 * var(--u));
+        min-height: max(44px, calc(58 * var(--u)));
+        padding-top: calc(6 * var(--u));
+        text-align: left;
+        color: #9a8f7c;
+        transition: color 0.3s;
+      }
+      .cs-tab.is-current {
+        color: var(--forest);
+      }
+      .cs-bar {
+        display: block;
+        height: calc(8 * var(--u));
+        border-radius: 999px;
+        background: #ece4d6;
+        overflow: hidden;
+      }
+      .cs-fill {
+        display: block;
+        height: 100%;
+        background: var(--forest);
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      .cs-label {
+        font-size: max(18px, calc(24 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+      /* 換頁：舊頁往左淡出、新頁從右淡入（.7 秒） */
+      .cs-view {
+        flex: 1 1 0;
+        min-height: 0;
+        position: relative;
+      }
+      .cs-slide {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(8%);
+        transition:
+          opacity 0.7s var(--ease-out),
+          transform 0.7s var(--ease-out),
+          visibility 0s 0.7s;
+      }
+      .cs-slide.is-active {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition:
+          opacity 0.7s var(--ease-out),
+          transform 0.7s var(--ease-out),
+          visibility 0s;
+      }
+      .cs-slide.is-out {
+        transform: translateX(-8%);
+      }
+      .cs-h {
+        flex: none;
+        margin: 0;
+        padding: calc(14 * var(--u)) calc(36 * var(--u)) 0;
+        font-family: var(--font-serif);
+        font-weight: 600;
+        font-size: max(20px, calc(48 * var(--u)));
+        line-height: 1.2;
+        color: var(--forest);
+      }
+
+      /* 第 1 頁：自我檢查 */
+      .q-list {
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        margin: calc(6 * var(--u)) 0 0;
+        padding: 0 calc(36 * var(--u));
+        list-style: none;
+      }
+      .q-list li {
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+      }
+      .q-list li + li {
+        border-top: calc(2 * var(--u)) solid #ece4d6;
+      }
+      /* 三列純文字，不可點擊 */
+      .q {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: calc(22 * var(--u));
+      }
+      .q-icon {
+        flex: none;
+        width: calc(76 * var(--u));
+        height: calc(76 * var(--u));
+        display: grid;
+        place-items: center;
+        border-radius: calc(20 * var(--u));
+        background: #f1ebe0;
+        color: var(--forest);
+        font-size: calc(44 * var(--u));
+      }
+      .q-text {
+        flex: 1;
+        font-size: max(18px, calc(36 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .q-cta {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: calc(16 * var(--u));
+        min-height: calc(76 * var(--u));
+        padding: 0 calc(36 * var(--u));
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: max(18px, calc(30 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .q-cta span {
+        flex: 1;
+      }
+      .q-cta .ti {
+        flex: none;
+        color: var(--brass-light);
+        font-size: calc(44 * var(--u));
+      }
+
+      /* 第 2 頁：檢測怎麼做（每趟約 5 秒） */
+      .walk {
+        flex: 1 1 0;
+        min-height: 0;
+        padding: calc(8 * var(--u)) calc(36 * var(--u)) calc(20 * var(--u));
+      }
+      .walk svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .walk text {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        font-size: 32px;
+      }
+      .wk-man {
+        transform: translateX(190px);
+      }
+      .wk-leg,
+      .wk-arm {
+        transform-box: view-box;
+        transform-origin: 0 0;
+      }
+      .wk-done {
+        opacity: 0;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+      .is-play .wk-man {
+        animation: wk-move 5s linear infinite;
+      }
+      .is-play .wk-leg.wk-a,
+      .is-play .wk-arm.wk-b {
+        animation: wk-swing 5s linear infinite;
+      }
+      .is-play .wk-leg.wk-b,
+      .is-play .wk-arm.wk-a {
+        animation: wk-swing-r 5s linear infinite;
+      }
+      .is-play .wk-done {
+        animation: wk-done 5s var(--ease-out) infinite;
+      }
+      @keyframes wk-move {
+        0%,
+        8% {
+          transform: translateX(190px);
+        }
+        78%,
+        100% {
+          transform: translateX(650px);
+        }
+      }
+      @keyframes wk-swing {
+        0%,
+        8%,
+        78%,
+        100% {
+          transform: rotate(0deg);
+        }
+        11.5%,
+        25.5%,
+        39.5%,
+        53.5%,
+        67.5% {
+          transform: rotate(24deg);
+        }
+        18.5%,
+        32.5%,
+        46.5%,
+        60.5%,
+        74.5% {
+          transform: rotate(-24deg);
+        }
+      }
+      @keyframes wk-swing-r {
+        0%,
+        8%,
+        78%,
+        100% {
+          transform: rotate(0deg);
+        }
+        11.5%,
+        25.5%,
+        39.5%,
+        53.5%,
+        67.5% {
+          transform: rotate(-24deg);
+        }
+        18.5%,
+        32.5%,
+        46.5%,
+        60.5%,
+        74.5% {
+          transform: rotate(24deg);
+        }
+      }
+      @keyframes wk-done {
+        0%,
+        79% {
+          opacity: 0;
+          transform: scale(0.4);
+        }
+        85% {
+          opacity: 1;
+          transform: scale(1.12);
+        }
+        89%,
+        95% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(1);
+        }
+      }
+
+      /* 第 3 頁：報告搶先看 */
+      .rp {
+        flex: 1 1 0;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: calc(330 * var(--u)) minmax(0, 1fr);
+        gap: calc(44 * var(--u));
+        align-items: center;
+        padding: calc(10 * var(--u)) calc(36 * var(--u)) calc(24 * var(--u)) calc(52 * var(--u));
+      }
+      .rp-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: calc(30 * var(--u)) calc(26 * var(--u)) calc(28 * var(--u));
+        border-radius: calc(28 * var(--u));
+        background: #f6f1e8;
+        border: calc(2 * var(--u)) solid var(--line);
+        box-shadow: 0 calc(18 * var(--u)) calc(36 * var(--u)) calc(-18 * var(--u)) rgba(31, 59, 51, 0.4);
+        transform: rotate(-4deg);
+      }
+      .rp-tag {
+        position: absolute;
+        top: calc(-14 * var(--u));
+        right: calc(20 * var(--u));
+        padding: calc(4 * var(--u)) calc(18 * var(--u));
+        border-radius: 999px;
+        background: var(--brass);
+        color: #fff;
+        font-size: max(18px, calc(22 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .rp-label {
+        align-self: flex-start;
+        font-size: max(18px, calc(24 * var(--u)));
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .rp-gauge {
+        display: block;
+        width: 100%;
+        margin-top: calc(14 * var(--u));
+      }
+      .rp-needle {
+        transform-box: view-box;
+        transform-origin: 100px 100px;
+        transform: rotate(-54deg);
+      }
+      .is-play .rp-needle {
+        animation: rp-needle 4s var(--ease-out) infinite;
+      }
+      @keyframes rp-needle {
+        0%,
+        8% {
+          transform: rotate(-90deg);
+        }
+        45%,
+        80% {
+          transform: rotate(-54deg);
+        }
+        100% {
+          transform: rotate(-90deg);
+        }
+      }
+      .rp-level {
+        margin-top: calc(6 * var(--u));
+        font-size: max(18px, calc(34 * var(--u)));
+        font-weight: 700;
+        color: #3f6212;
+      }
+      .rp-h {
+        padding: 0;
+        font-size: max(20px, calc(44 * var(--u)));
+      }
+      .rp-list {
+        margin: calc(26 * var(--u)) 0 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: calc(18 * var(--u));
+      }
+      .rp-list li {
+        display: flex;
+        align-items: center;
+        gap: calc(14 * var(--u));
+        font-size: max(18px, calc(30 * var(--u)));
+        font-weight: 700;
+        line-height: 1.35;
+      }
+      .rp-list .ti {
+        flex: none;
+        color: var(--brass);
+        font-size: calc(42 * var(--u));
+      }
+
+      /* ===== 6. 底部兩個入口（固定在畫面底部） ===== */
+      .dock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--ic-h);
+        pointer-events: none;
+      }
+      .dock > * {
+        pointer-events: auto;
+      }
+      /* 訪客模式：與指示卡垂直置中對齊 */
+      .guest {
+        position: absolute;
+        left: var(--pad);
+        right: calc(var(--ic-w) + var(--or-w));
+        top: 50%;
+        height: calc(228 * var(--u));
+        margin-top: calc(-114 * var(--u));
+        display: flex;
+        align-items: center;
+        gap: calc(18 * var(--u));
+        padding: 0 calc(28 * var(--u));
+        border-radius: calc(40 * var(--u));
+        border: calc(3 * var(--u)) solid var(--brass);
+        background: linear-gradient(135deg, #2e5649 0%, var(--forest) 55%, #172d27 100%);
+        color: var(--on-forest);
+        text-align: left;
+        text-decoration: none;
+        -webkit-user-drag: none;
+        box-shadow: 0 calc(20 * var(--u)) calc(40 * var(--u)) calc(-20 * var(--u)) rgba(31, 59, 51, 0.55);
+        animation: breathe 3.2s ease-in-out infinite;
+        overflow: hidden;
+      }
+      .guest:active {
+        animation-play-state: paused;
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.03);
+        }
+      }
+      .guest-icon {
+        flex: none;
+        color: var(--brass-light);
+        font-size: calc(84 * var(--u));
+        line-height: 1;
+      }
+      .guest-text {
+        display: flex;
+        flex-direction: column;
+        gap: calc(6 * var(--u));
+        min-width: 0;
+      }
+      .guest-title {
+        font-size: calc(52 * var(--u));
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .guest-sub {
+        font-size: max(18px, calc(26 * var(--u)));
+        line-height: 1.35;
+        white-space: nowrap;
+        color: rgba(246, 241, 232, 0.82);
+      }
+      /* 右下角手指點按示範 */
+      .tap {
+        position: absolute;
+        right: calc(14 * var(--u));
+        bottom: calc(10 * var(--u));
+        width: calc(64 * var(--u));
+        height: calc(64 * var(--u));
+        pointer-events: none;
+      }
+      .tap-ring {
+        position: absolute;
+        left: calc(6 * var(--u));
+        top: calc(-2 * var(--u));
+        width: calc(28 * var(--u));
+        height: calc(28 * var(--u));
+        border-radius: 50%;
+        border: calc(3 * var(--u)) solid var(--brass-light);
+        opacity: 0;
+        animation: tap-ring 2.4s ease-out infinite;
+      }
+      .tap .ti {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        color: var(--on-forest);
+        font-size: calc(56 * var(--u));
+        line-height: 1;
+        transform-origin: 30% 10%;
+        animation: tap-finger 2.4s var(--ease-out) infinite;
+      }
+      @keyframes tap-finger {
+        0%,
+        100% {
+          transform: translate(calc(10 * var(--u)), calc(10 * var(--u)));
+        }
+        30% {
+          transform: translate(0, 0);
+        }
+        38% {
+          transform: translate(0, 0) scale(0.88);
+        }
+        50% {
+          transform: translate(0, 0);
+        }
+      }
+      @keyframes tap-ring {
+        0%,
+        34% {
+          opacity: 0;
+          transform: scale(0.4);
+        }
+        40% {
+          opacity: 1;
+        }
+        75%,
+        100% {
+          opacity: 0;
+          transform: scale(1.8);
+        }
+      }
+
+      /* 「或」 */
+      .or {
+        position: absolute;
+        right: var(--ic-w);
+        width: var(--or-w);
+        top: 50%;
+        transform: translateY(-50%);
+        text-align: center;
+        color: var(--muted);
+        font-size: max(18px, calc(32 * var(--u)));
+        font-weight: 700;
+        opacity: 0.75;
+        pointer-events: none;
+      }
+
+      /* 插入健保卡：貼齊右下角（右、下不留外距），只有左上角是大圓角，對齊機器下方的讀卡機
+       * 上白下綠：上段說明（吸收剩餘高度）＋下段深綠箭頭帶（緊貼螢幕底邊）
+       * 不是按鈕；點擊時三個箭頭同時加速閃動兩次 */
+      .insert {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: var(--ic-w);
+        height: var(--ic-h);
+        display: flex;
+        flex-direction: column;
+        border-radius: calc(56 * var(--u)) 0 0 0;
+        border-top: calc(3 * var(--u)) solid #b08d57;
+        border-left: calc(3 * var(--u)) solid #b08d57;
+        overflow: hidden;
+        cursor: default; /* 可點擊（模擬插卡），但不做成明顯的按鈕樣式 */
+        box-shadow: -10px -10px 40px rgba(60, 45, 25, 0.18);
+      }
+      .ic-top {
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #fffdf9;
+        text-align: center;
+      }
+      .ic-title {
+        font-size: calc(64 * var(--u));
+        line-height: 1.15;
+        color: var(--forest);
+        white-space: nowrap;
+      }
+      .ic-sub {
+        margin-top: calc(6 * var(--u));
+        font-size: max(18px, calc(28 * var(--u)));
+        font-weight: 700;
+        line-height: 1.35;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .ic-band {
+        flex: none;
+        height: calc(150 * var(--u));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: calc(30 * var(--u));
+        background: var(--forest);
+      }
+      /* 向下箭頭：用同色描邊加粗線條；左→中→右依序往下流動（每個間隔 .2s，循環 1.5s） */
+      .ic-chev {
+        display: block;
+        font-size: calc(110 * var(--u));
+        line-height: 1;
+        color: #e6cd9c;
+        -webkit-text-stroke: calc(2.5 * var(--u)) #e6cd9c;
+        opacity: 0.25;
+        animation: chev-flow 1.5s ease-in-out infinite;
+        animation-delay: calc(var(--i) * 0.2s);
+      }
+      @keyframes chev-flow {
+        0% {
+          opacity: 0.25;
+          transform: translateY(calc(-6 * var(--u)));
+        }
+        50% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0.25;
+          transform: translateY(calc(6 * var(--u)));
+        }
+      }
+      /* 點擊：三個同時加速閃動兩次（提示往下插） */
+      .insert.is-hint .ic-chev {
+        animation: chev-blink 0.32s ease-in-out 2;
+      }
+      @keyframes chev-blink {
+        0%,
+        100% {
+          opacity: 0.25;
+          transform: none;
+        }
+        50% {
+          opacity: 1;
+          transform: translateY(calc(8 * var(--u)));
+        }
+      }
+
+      /* ===== 進入待機：確認視窗 ===== */
+      .mask {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: var(--pad);
+        background: rgba(26, 36, 32, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.25s,
+          visibility 0s 0.25s;
+      }
+      .mask.is-open {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.25s;
+      }
+      .dialog {
+        width: min(100%, calc(720 * var(--u)));
+        padding: calc(56 * var(--u)) calc(52 * var(--u)) calc(48 * var(--u));
+        border-radius: calc(40 * var(--u));
+        background: var(--card);
+        border: max(1px, calc(2 * var(--u))) solid var(--line);
+        box-shadow: 0 calc(30 * var(--u)) calc(80 * var(--u)) calc(-30 * var(--u)) rgba(0, 0, 0, 0.45);
+        transform: scale(0.94);
+        transition: transform 0.3s var(--ease-out);
+      }
+      .mask.is-open .dialog {
+        transform: none;
+      }
+      .dlg-icon {
+        width: calc(96 * var(--u));
+        height: calc(96 * var(--u));
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--forest);
+        color: var(--brass-light);
+        font-size: calc(52 * var(--u));
+      }
+      .dlg-title {
+        margin: calc(28 * var(--u)) 0 0;
+        font-size: max(22px, calc(48 * var(--u)));
+        line-height: 1.25;
+        color: var(--forest);
+      }
+      .dlg-body {
+        margin: calc(16 * var(--u)) 0 0;
+        font-size: max(18px, calc(28 * var(--u)));
+        line-height: 1.55;
+        color: var(--muted);
+      }
+      .dlg-hint {
+        display: flex;
+        align-items: center;
+        gap: calc(14 * var(--u));
+        margin-top: calc(28 * var(--u));
+        padding: calc(20 * var(--u)) calc(24 * var(--u));
+        border-radius: calc(24 * var(--u));
+        background: rgba(176, 141, 87, 0.14);
+        border: max(1px, calc(2 * var(--u))) solid rgba(176, 141, 87, 0.35);
+        color: var(--brass-text);
+        font-size: max(18px, calc(28 * var(--u)));
+        font-weight: 700;
+        line-height: 1.45;
+      }
+      .dlg-hint .ti {
+        flex: none;
+        font-size: calc(44 * var(--u));
+      }
+      .dlg-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: calc(20 * var(--u));
+        margin-top: calc(40 * var(--u));
+      }
+      .btn {
+        min-height: max(48px, calc(96 * var(--u)));
+        border-radius: 999px;
+        font-size: max(18px, calc(32 * var(--u)));
+        font-weight: 700;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-ghost {
+        border: max(1px, calc(2 * var(--u))) solid var(--line-soft);
+        color: var(--forest);
+        background: transparent;
+      }
+      .btn-primary {
+        background: var(--forest);
+        color: var(--on-forest);
+      }
+
+      /* ===== 待機畫面 ===== */
+      .standby {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: calc(20 * var(--u));
+        background: #000;
+        color: rgba(255, 255, 255, 0.2);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.5s,
+          visibility 0s 0.5s;
+        touch-action: manipulation;
+      }
+      .standby.is-on {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.5s;
+      }
+      .standby-title {
+        font-size: max(22px, calc(56 * var(--u)));
+        letter-spacing: 0.2em;
+      }
+      .standby-sub {
+        font-size: max(18px, calc(28 * var(--u)));
+        letter-spacing: 0.1em;
+      }
+      /* 待機時暫停所有動畫（省電）；輪播計時另由 JS 暫停 */
+      body.is-standby .guest,
+      body.is-standby .tap *,
+      body.is-standby .ic-chev,
+      body.is-standby .mq-track,
+      body.is-standby .cs-slide * {
+        animation-play-state: paused;
+      }
+
+      /* ===== 減少動態 =====
+       * 關閉呼吸、手指、跑馬燈、健保卡箭頭；輪播直接切換（仍每 12 秒換頁）
+       * 小人停在終點並顯示打勾、指針停在「稍低」
+       */
+      @media (prefers-reduced-motion: reduce) {
+        .guest,
+        .tap .ti,
+        .tap-ring,
+        .mq-track {
+          animation: none;
+        }
+        /* 健保卡箭頭：全部靜止、完全不透明（點擊也不閃動） */
+        .ic-chev,
+        .insert.is-hint .ic-chev {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+        .tap-ring {
+          opacity: 0;
+        }
+        .mq-track {
+          display: none;
+        }
+        .mq-static {
+          display: flex;
+        }
+        .cs-slide,
+        .cs-slide.is-active,
+        .cs-slide.is-out {
+          transform: none;
+          transition: none;
+        }
+        .wk-man,
+        .wk-leg,
+        .wk-arm,
+        .wk-done,
+        .rp-needle {
+          animation: none !important;
+        }
+        .wk-man {
+          transform: translateX(650px);
+        }
+        .wk-done {
+          opacity: 1;
+          transform: none;
+        }
+        .rp-needle {
+          transform: rotate(-54deg);
+        }
+        .dialog,
+        .logo {
+          transition-duration: 0.01ms;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="kiosk" id="app">
+      <!-- 1. 頂部列 -->
+      <header class="topbar">
+        <div class="brand">
+          <!-- 長按 2 秒：進入待機（DEMO_MODE 時點一下） -->
+          <div class="logo" id="logo"><img src="../img/logo.png" alt="建豐健康科技" draggable="false" /></div>
+          <span class="brand-name serif">建豐健康科技</span>
+        </div>
+        <div class="status">
+          <span class="weather" id="weather"><i class="ti ti-cloud-sun" aria-hidden="true"></i><span id="temp"></span></span>
+          <span class="clock" id="clock"></span>
+          <!-- 專家模式：直接前往專家首頁 -->
+          <a class="expert" href="home.html"><i class="ti ti-user-cog" aria-hidden="true"></i>專家模式</a>
+        </div>
+      </header>
+
+      <!-- A 版：跑馬燈（頂部列正下方，滿版） -->
+      <div class="marquee" id="marquee" role="marquee">
+        <div class="mq-track" id="mqTrack" aria-hidden="true"></div>
+        <span class="mq-static" id="mqStatic"></span>
+      </div>
+
+      <!-- 2. 標題 -->
+      <h1 class="title serif">跌倒風險檢測</h1>
+
+      <!-- 3. 三步驟 -->
+      <ol class="steps" aria-label="檢測步驟">
+        <li class="step">
+          <span class="step-circle"><i class="ti ti-id" aria-hidden="true"></i><span class="step-num">1</span></span>
+          <span class="step-label">插入健保卡</span>
+        </li>
+        <li class="step-arrow" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+        <li class="step">
+          <span class="step-circle"><i class="ti ti-walk" aria-hidden="true"></i><span class="step-num">2</span></span>
+          <span class="step-label">走一段路</span>
+        </li>
+        <li class="step-arrow" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+        <li class="step">
+          <span class="step-circle"><i class="ti ti-report-medical" aria-hidden="true"></i><span class="step-num">3</span></span>
+          <span class="step-label">看結果</span>
+        </li>
+      </ol>
+
+      <!-- A 版：影片區（沒有影片時顯示佔位） -->
+      <section class="video" id="video" aria-label="衛教影片">
+        <div class="video-ph" aria-hidden="true"><span><i class="ti ti-player-play"></i></span></div>
+      </section>
+
+      <!-- B 版：輪播區塊（三頁，每頁 12 秒，依序循環） -->
+      <section class="carousel" id="carousel" aria-roledescription="輪播" aria-label="檢測介紹">
+        <!-- 進度條＋標籤：純顯示 -->
+        <div class="cs-tabs" aria-hidden="true">
+          <div class="cs-tab is-current"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">自我檢查</span></div>
+          <div class="cs-tab"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">檢測怎麼做</span></div>
+          <div class="cs-tab"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">報告搶先看</span></div>
+        </div>
+        <div class="cs-view">
+          <!-- 第 1 頁：自我檢查 -->
+          <div class="cs-slide is-active is-play" role="group" aria-roledescription="頁" aria-label="自我檢查">
+            <h2 class="cs-h">問問自己</h2>
+            <ul class="q-list">
+              <li>
+                <div class="q">
+                  <span class="q-icon" aria-hidden="true"><i class="ti ti-history"></i></span>
+                  <span class="q-text">過去一年曾經跌倒過嗎？</span>
+                </div>
+              </li>
+              <li>
+                <div class="q">
+                  <span class="q-icon" aria-hidden="true"><i class="ti ti-hand-stop"></i></span>
+                  <span class="q-text">走路或起身需要扶東西嗎？</span>
+                </div>
+              </li>
+              <li>
+                <div class="q">
+                  <span class="q-icon" aria-hidden="true"><i class="ti ti-mood-nervous"></i></span>
+                  <span class="q-text">會擔心自己跌倒嗎？</span>
+                </div>
+              </li>
+            </ul>
+            <div class="q-cta" id="qCta">
+              <i class="ti ti-alert-circle" aria-hidden="true"></i>
+              <span>只要有一項，就建議您做一次檢測</span>
+              <i class="ti ti-arrow-big-down-filled" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <!-- 第 2 頁：檢測怎麼做 -->
+          <div class="cs-slide" role="group" aria-roledescription="頁" aria-label="檢測怎麼做" aria-hidden="true" inert>
+            <h2 class="cs-h">照平常的速度<br />從起點走到終點就完成</h2>
+            <div class="walk" aria-hidden="true">
+              <svg viewBox="0 0 800 260" preserveAspectRatio="xMidYMid meet">
+                <!-- 步道與黃銅虛線 -->
+                <rect x="40" y="200" width="720" height="36" rx="18" fill="#ece4d6" />
+                <line x1="90" y1="218" x2="710" y2="218" stroke="#b08d57" stroke-width="4" stroke-dasharray="14 12" stroke-linecap="round" />
+                <!-- 起點：深綠旗 -->
+                <line x1="90" y1="218" x2="90" y2="70" stroke="#1f3b33" stroke-width="6" stroke-linecap="round" />
+                <path d="M93 72 L156 92 L93 112 Z" fill="#1f3b33" />
+                <text x="100" y="152" fill="#1f3b33">起點</text>
+                <!-- 終點：黃銅旗 -->
+                <line x1="710" y1="218" x2="710" y2="70" stroke="#8f6e3c" stroke-width="6" stroke-linecap="round" />
+                <path d="M713 72 L776 92 L713 112 Z" fill="#b08d57" />
+                <text x="720" y="152" fill="#8f6e3c">終點</text>
+                <!-- 線條小人：髖部為原點，雙腳、雙手交替擺動 -->
+                <g transform="translate(0 165)">
+                  <g class="wk-man" stroke="#1f3b33" stroke-width="7" stroke-linecap="round" fill="none">
+                    <line class="wk-leg wk-a" x1="0" y1="0" x2="0" y2="47" />
+                    <line class="wk-leg wk-b" x1="0" y1="0" x2="0" y2="47" />
+                    <line x1="0" y1="0" x2="0" y2="-38" />
+                    <g transform="translate(0 -32)">
+                      <line class="wk-arm wk-a" x1="0" y1="0" x2="0" y2="32" />
+                      <line class="wk-arm wk-b" x1="0" y1="0" x2="0" y2="32" />
+                    </g>
+                    <circle cx="0" cy="-54" r="13" fill="#1f3b33" stroke="none" />
+                  </g>
+                </g>
+                <!-- 抵達：終點上方綠色圓形打勾 -->
+                <g class="wk-done">
+                  <circle cx="710" cy="38" r="27" fill="#2f6b4f" />
+                  <path d="M697 38 l9 9 l16 -17" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 第 3 頁：報告搶先看 -->
+          <div class="cs-slide" role="group" aria-roledescription="頁" aria-label="報告搶先看" aria-hidden="true" inert>
+            <div class="rp">
+              <div class="rp-card" aria-hidden="true">
+                <span class="rp-tag">示意</span>
+                <span class="rp-label">跌倒風險等級</span>
+                <!-- 五色半圓儀表（顏色與結果頁相同）；指針從左轉到「稍低」再回來 -->
+                <svg class="rp-gauge" viewBox="0 0 200 112">
+                  <g id="rpArcs"></g>
+                  <g class="rp-needle">
+                    <line x1="100" y1="100" x2="100" y2="38" stroke="#1a2420" stroke-width="6" stroke-linecap="round" />
+                    <circle cx="100" cy="100" r="9" fill="#1a2420" />
+                  </g>
+                </svg>
+                <span class="rp-level">稍低風險</span>
+              </div>
+              <div class="rp-text">
+                <h2 class="cs-h rp-h">做完就能拿到<br />您的跌倒風險報告</h2>
+                <ul class="rp-list">
+                  <li><i class="ti ti-gauge" aria-hidden="true"></i>一眼看懂風險等級</li>
+                  <li><i class="ti ti-device-mobile" aria-hidden="true"></i>掃 QR Code 用手機帶走</li>
+                  <li><i class="ti ti-list-check" aria-hidden="true"></i>附上專屬的改善建議</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 6. 底部兩個入口（固定在畫面底部） -->
+    <div class="dock">
+      <!-- 訪客模式：前往訪客頁（不用插卡） -->
+      <a class="guest" id="guest" href="kiosk-guest.html" draggable="false">
+        <i class="ti ti-user-circle guest-icon" aria-hidden="true"></i>
+        <span class="guest-text">
+          <span class="guest-title serif">訪客模式</span>
+          <span class="guest-sub">不用插卡，直接開始</span>
+        </span>
+        <span class="tap" aria-hidden="true"><span class="tap-ring"></span><i class="ti ti-hand-finger"></i></span>
+      </a>
+
+      <span class="or" aria-hidden="true">或</span>
+
+      <!-- 插入健保卡：不是按鈕、不可聚焦；點擊（模擬插卡）時箭頭加速閃動兩次，再前往健保卡流程頁 -->
+      <div class="insert" id="insert" role="img" aria-label="請將健保卡插入螢幕下方讀卡機">
+        <div class="ic-top">
+          <div class="ic-title serif">插入健保卡</div>
+          <div class="ic-sub">插入螢幕下方讀卡機</div>
+        </div>
+        <!-- 箭頭帶：指向螢幕外的讀卡機 -->
+        <div class="ic-band">
+          <i class="ti ti-chevron-down ic-chev" style="--i: 0"></i>
+          <i class="ti ti-chevron-down ic-chev" style="--i: 1"></i>
+          <i class="ti ti-chevron-down ic-chev" style="--i: 2"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 進入待機：確認視窗 -->
+    <div class="mask" id="sbMask" aria-hidden="true">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sbTitle" aria-describedby="sbBody">
+        <div class="dlg-icon" aria-hidden="true"><i class="ti ti-moon"></i></div>
+        <h2 class="dlg-title serif" id="sbTitle">進入待機</h2>
+        <p class="dlg-body" id="sbBody">畫面會關閉，影片暫停播放。</p>
+        <div class="dlg-hint"><i class="ti ti-hand-click" aria-hidden="true"></i>要喚醒時，請在螢幕上連續點兩下</div>
+        <div class="dlg-actions">
+          <button class="btn btn-ghost" id="sbCancel" type="button">取消</button>
+          <button class="btn btn-primary" id="sbOk" type="button">進入待機</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 待機畫面 -->
+    <div class="standby" id="standby" aria-hidden="true">
+      <div class="standby-title serif">待機中</div>
+      <div class="standby-sub">點兩下螢幕喚醒</div>
+    </div>
+
+
+    <script>
+      /* =========================================================
+       * 設定
+       * ========================================================= */
+      // 版本：'a' 影片版／'b' 輪播版。網址 ?layout=a｜b 可覆寫，並記在 sessionStorage「kf.kioskLayout」
+      // 沒有網址參數時：先用 sessionStorage 記住的版本（專家首頁「回到一體機」會回到上次的版本），沒有才用這個設定
+      const LAYOUT = "a";
+      // 展示用：true 時點一下 Logo 就開啟「進入待機」視窗（正式為長按 2 秒）
+      const DEMO_MODE = false;
+      // A 版：衛教影片網址；空字串時顯示佔位畫面
+      const VIDEO_SRC = "";
+      // A 版：跑馬燈文字
+      const MARQUEE_TEXT = "跌倒風險檢測";
+      // 天氣（之後改接天氣資料）
+      const WEATHER = { temp: 26, icon: "ti-cloud-sun" };
+
+      const LONG_PRESS_MS = 2000; // 長按 Logo 開啟待機視窗
+      const DOUBLE_TAP_MS = 400; // 待機時連點兩下的間隔
+      const MQ_SPEED = 110; // 跑馬燈速度（--u／秒）
+      const SLIDE_MS = 12000; // B 版：每頁播放時間
+
+      const $ = (s) => document.querySelector(s);
+      const unit = () => Math.min(innerWidth, innerHeight * 0.75) / 1032;
+
+      /* ===== 版本 ===== */
+      const LAYOUT_KEY = "kf.kioskLayout";
+      const layout = (() => {
+        const ok = (v) => v === "a" || v === "b";
+        const fromUrl = new URLSearchParams(location.search).get("layout");
+        if (ok(fromUrl)) {
+          try {
+            sessionStorage.setItem(LAYOUT_KEY, fromUrl);
+          } catch {}
+          return fromUrl;
+        }
+        try {
+          const saved = sessionStorage.getItem(LAYOUT_KEY);
+          if (ok(saved)) return saved;
+        } catch {}
+        return ok(LAYOUT) ? LAYOUT : "a";
+      })();
+      document.documentElement.dataset.layout = layout;
+
+      // 一體機：關閉長按系統選單
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      /* ===== 天氣 ===== */
+      function renderWeather(w) {
+        $("#weather .ti").className = "ti " + w.icon;
+        $("#temp").textContent = `${w.temp}°C`;
+        $("#weather").setAttribute("aria-label", `氣溫 ${w.temp} 度`);
+      }
+
+      /* ===== 日期時間：「11/18 週三 14:32」，每秒更新 ===== */
+      function renderClock() {
+        const d = new Date();
+        const p = (n) => String(n).padStart(2, "0");
+        const text = `${d.getMonth() + 1}/${d.getDate()} 週${"日一二三四五六"[d.getDay()]} ${p(d.getHours())}:${p(d.getMinutes())}`;
+        const el = $("#clock");
+        if (el.textContent !== text) el.textContent = text;
+      }
+
+      /* ===== A 版：影片 ===== */
+      let videoEl = null;
+      function initVideo() {
+        if (!VIDEO_SRC) return;
+        videoEl = document.createElement("video");
+        Object.assign(videoEl, { src: VIDEO_SRC, autoplay: true, muted: true, loop: true, playsInline: true });
+        videoEl.setAttribute("playsinline", "");
+        videoEl.setAttribute("muted", "");
+        videoEl.addEventListener("loadeddata", () => $("#video").classList.add("has-video"));
+        videoEl.addEventListener("error", () => {
+          $("#video").classList.remove("has-video");
+          videoEl.remove();
+          videoEl = null;
+        });
+        $("#video").prepend(videoEl);
+      }
+
+      /* ===== A 版：跑馬燈：複製文字直到超過寬度，兩組接續，往左移一組的寬度後無縫循環 ===== */
+      function buildMarquee() {
+        const box = $("#marquee");
+        const track = $("#mqTrack");
+        box.setAttribute("aria-label", MARQUEE_TEXT);
+        $("#mqStatic").textContent = MARQUEE_TEXT;
+        const group = document.createElement("span");
+        group.className = "mq-group";
+        track.replaceChildren(group);
+        const add = () => {
+          const it = document.createElement("span");
+          it.className = "mq-item";
+          it.textContent = MARQUEE_TEXT;
+          group.append(it);
+        };
+        add();
+        for (let i = 0; i < 40 && group.offsetWidth < box.clientWidth; i++) add();
+        track.append(group.cloneNode(true));
+        track.style.setProperty("--mq-dur", (group.offsetWidth / (MQ_SPEED * unit())).toFixed(2) + "s");
+      }
+
+      /* =========================================================
+       * B 版：輪播（三頁、每頁 12 秒、依序循環）
+       * 進度條：已播過的滿格、正在播放的由左往右填滿、未播的空白；標籤與題目都是純顯示，不可點擊
+       * 待機時暫停計時，喚醒後繼續
+       * ========================================================= */
+      const Carousel = (() => {
+        const tabs = [...document.querySelectorAll(".cs-tab")];
+        const slides = [...document.querySelectorAll(".cs-slide")];
+        const fills = tabs.map((t) => t.querySelector(".cs-fill"));
+        let idx = 0;
+        let elapsed = 0; // 目前這頁已播放的毫秒（暫停時不累計）
+        let last = 0;
+        let started = false;
+
+        function restartAnim(slide) {
+          slide.classList.remove("is-play");
+          void slide.offsetWidth;
+          slide.classList.add("is-play");
+        }
+        function paint() {
+          tabs.forEach((t, j) => {
+            const v = j < idx ? 1 : j === idx ? Math.min(1, elapsed / SLIDE_MS) : 0;
+            fills[j].style.transform = `scaleX(${v})`;
+            t.classList.toggle("is-current", j === idx);
+          });
+        }
+        function show(i) {
+          elapsed = 0;
+          if (i !== idx) {
+            const old = slides[idx];
+            old.classList.remove("is-active");
+            old.classList.add("is-out");
+            old.setAttribute("aria-hidden", "true");
+            old.inert = true;
+            setTimeout(() => {
+              if (!old.classList.contains("is-active")) old.classList.remove("is-out");
+            }, 750);
+            idx = i;
+            const cur = slides[i];
+            cur.classList.remove("is-out");
+            cur.classList.add("is-active");
+            cur.removeAttribute("aria-hidden");
+            cur.inert = false;
+          }
+          restartAnim(slides[idx]);
+          paint();
+        }
+        function tick(ts) {
+          const dt = last ? Math.min(ts - last, 100) : 0;
+          last = ts;
+          if (!isStandby) elapsed += dt;
+          if (elapsed >= SLIDE_MS) show((idx + 1) % slides.length);
+          else paint();
+          requestAnimationFrame(tick);
+        }
+        function start() {
+          if (started) return;
+          started = true;
+          paint();
+          requestAnimationFrame(tick);
+        }
+        return {
+          start,
+          // 測試、除錯用
+          get index() {
+            return idx;
+          },
+          get elapsed() {
+            return elapsed;
+          },
+        };
+      })();
+      window.KioskCarousel = Carousel;
+
+      /* B 版第 3 頁：五色半圓儀表（低、稍低、中、高、危險；顏色與結果頁相同） */
+      function buildGauge() {
+        const colors = ["#4ffa00", "#8cff00", "#ffd039", "#ffa203", "#ff5757"];
+        const r = 78;
+        const gap = 1.2; // 色段之間的間隔（度）
+        const pt = (deg) => {
+          const a = (deg * Math.PI) / 180;
+          return `${(100 + r * Math.cos(a)).toFixed(2)} ${(100 - r * Math.sin(a)).toFixed(2)}`;
+        };
+        $("#rpArcs").innerHTML = colors
+          .map((c, i) => {
+            const a0 = 180 - i * 36 - (i ? gap : 0);
+            const a1 = 180 - (i + 1) * 36 + (i < colors.length - 1 ? gap : 0);
+            return `<path d="M${pt(a0)} A${r} ${r} 0 0 1 ${pt(a1)}" stroke="${c}" stroke-width="22" fill="none" />`;
+          })
+          .join("");
+      }
+
+      /* ===== 長按 Logo 2 秒：開啟「進入待機」確認視窗 ===== */
+      function initLogo() {
+        const logo = $("#logo");
+        let timer = null;
+        const cancel = () => {
+          clearTimeout(timer);
+          timer = null;
+          logo.classList.remove("is-pressing");
+        };
+        logo.addEventListener("pointerdown", (e) => {
+          if (DEMO_MODE) return;
+          logo.setPointerCapture?.(e.pointerId);
+          logo.classList.add("is-pressing");
+          timer = setTimeout(() => {
+            cancel();
+            openStandbyDialog();
+          }, LONG_PRESS_MS);
+        });
+        ["pointerup", "pointercancel", "lostpointercapture"].forEach((t) => logo.addEventListener(t, cancel));
+        logo.addEventListener("click", () => {
+          if (DEMO_MODE) openStandbyDialog();
+        });
+      }
+
+      /* ===== 進入待機：確認視窗 ===== */
+      const mask = $("#sbMask");
+      let lastFocus = null;
+      function setBackgroundInert(v) {
+        $("#app").inert = v;
+        document.querySelector(".dock").inert = v;
+      }
+      function openStandbyDialog() {
+        lastFocus = document.activeElement;
+        mask.classList.add("is-open");
+        mask.setAttribute("aria-hidden", "false");
+        setBackgroundInert(true);
+        setTimeout(() => $("#sbCancel").focus(), 50);
+      }
+      function closeStandbyDialog() {
+        mask.classList.remove("is-open");
+        mask.setAttribute("aria-hidden", "true");
+        setBackgroundInert(false);
+        lastFocus?.focus?.();
+      }
+      function initDialog() {
+        $("#sbCancel").addEventListener("click", closeStandbyDialog);
+        $("#sbOk").addEventListener("click", () => {
+          closeStandbyDialog();
+          enterStandby();
+        });
+        mask.addEventListener("click", (e) => {
+          if (e.target === mask) closeStandbyDialog();
+        });
+        // Tab 只在兩顆按鈕之間切換
+        mask.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") closeStandbyDialog();
+          if (e.key === "Tab") {
+            e.preventDefault();
+            ($("#sbCancel") === document.activeElement ? $("#sbOk") : $("#sbCancel")).focus();
+          }
+        });
+      }
+
+      /* ===== 待機：全黑；400ms 內連點兩下喚醒 ===== */
+      const standby = $("#standby");
+      let isStandby = false;
+      let videoWasPlaying = false;
+      function enterStandby() {
+        isStandby = true;
+        standby.classList.add("is-on");
+        standby.setAttribute("aria-hidden", "false");
+        standby.style.pointerEvents = "";
+        document.body.classList.add("is-standby");
+        if (videoEl) {
+          videoWasPlaying = !videoEl.paused;
+          videoEl.pause();
+        }
+      }
+      function wake() {
+        if (!isStandby) return;
+        isStandby = false;
+        standby.classList.remove("is-on");
+        standby.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("is-standby");
+        if (videoEl && videoWasPlaying) videoEl.play().catch(() => {});
+        // 喚醒後短暫攔截點擊，避免第二下穿透到下方按鈕
+        standby.style.pointerEvents = "auto";
+        setTimeout(() => {
+          if (!isStandby) standby.style.pointerEvents = "";
+        }, 500);
+      }
+      function initStandby() {
+        let last = 0;
+        standby.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          if (!isStandby) return;
+          const now = performance.now();
+          if (now - last <= DOUBLE_TAP_MS) {
+            last = 0;
+            wake();
+          } else last = now;
+        });
+      }
+
+      /* ===== 插入健保卡指示卡：點擊時三個箭頭同時加速閃動兩次，結束後恢復往下流動 ===== */
+      function initInsert() {
+        const card = $("#insert");
+        let going = false;
+        card.addEventListener("click", () => {
+          if (going) return;
+          going = true;
+          card.classList.remove("is-hint");
+          void card.offsetWidth; // 重新開始動畫
+          card.classList.add("is-hint");
+          // 閃動兩次（約 0.64 秒）後前往；reduced-motion 沒有動畫，稍等一下就前往
+          const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          setTimeout(() => onCardInserted({ simulated: true }), reduce ? 150 : 700);
+        });
+        card.querySelector(".ic-chev").addEventListener("animationend", (e) => {
+          if (e.animationName === "chev-blink") card.classList.remove("is-hint");
+        });
+        // 從瀏覽器返回（頁面快取）時可以再點一次
+        addEventListener("pageshow", (e) => {
+          if (e.persisted) going = false;
+        });
+      }
+
+      /* =========================================================
+       * 插入健保卡：前往健保卡流程頁（讀取中 → 成功／失敗）
+       * 目前由點擊指示卡模擬；之後讀卡機服務偵測到插卡時呼叫同一個入口
+       * data：讀卡機回傳的資料（目前未使用，讀卡由 kiosk-card.html 處理）
+       * 版本（A／B）記在 sessionStorage「kf.kioskLayout」，回到 kiosk.html 時維持原本的版本
+       * ========================================================= */
+      // eslint-disable-next-line no-unused-vars
+      function onCardInserted(data) {
+        location.href = "kiosk-card.html";
+      }
+
+      /* ===== 啟動 ===== */
+      renderWeather(WEATHER);
+      renderClock();
+      setInterval(renderClock, 1000);
+      initLogo();
+      initDialog();
+      initStandby();
+      initInsert();
+      if (layout === "a") {
+        initVideo();
+        buildMarquee();
+        document.fonts.ready.then(buildMarquee);
+        let rz;
+        addEventListener("resize", () => {
+          clearTimeout(rz);
+          rz = setTimeout(buildMarquee, 150);
+        });
+      } else {
+        buildGauge();
+        Carousel.start();
+      }
+    </script>
+  </body>
+</html>

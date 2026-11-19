@@ -243,31 +243,6 @@ button {
   color: var(--band-text);
 }
 
-/* 語系切換：膠囊外框，選中為 --on-forest 底、--forest 字 */
-.lang-switch {
-  flex-shrink: 0;
-  display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 999px;
-  border: 1px solid rgba(217, 191, 140, 0.5);
-}
-.lang-btn {
-  min-width: 44px;
-  height: 36px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--on-forest);
-}
-.lang-btn.is-on {
-  background: var(--on-forest);
-  color: var(--forest);
-}
-
 /* =========================================================
  * 結果卡（往上疊入頂帶 92px）
  * ========================================================= */
@@ -487,7 +462,7 @@ button {
 .is-capturing .pv-pages {
   display: none !important;
 }
-.is-capturing .lang-switch {
+.is-capturing .lp-btn {
   visibility: hidden;
 }
 
@@ -705,18 +680,6 @@ button {
   line-height: 1.7;
   color: var(--muted);
 }
-/* 卡片右上角的語系切換：淺色卡片上改用森林綠字 */
-.expired-card .lang-switch {
-  border-color: rgba(176, 141, 87, 0.5);
-}
-.expired-card .lang-btn {
-  color: var(--forest);
-}
-.expired-card .lang-btn.is-on {
-  background: var(--forest);
-  color: var(--on-forest);
-}
-
 /* ===== 右下角 build version（開發用小字，不列入字級規範） ===== */
 .build-version {
   position: fixed;

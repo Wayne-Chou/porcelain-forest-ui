@@ -148,7 +148,7 @@
         flex: 0 0 auto;
         padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
         display: flex;
-        align-items: center;
+        align-items: flex-start; /* 首頁按鈕、姓名區塊、QR Code 小卡都靠上對齊 */
         gap: calc(24 * var(--u));
         animation: fadeIn 0.6s var(--ease-out) both;
       }
@@ -206,65 +206,50 @@
         white-space: nowrap;
       }
       .who-date b {
-        margin-left: 0.5em;
+        margin-left: 0.25em; /* 加上前面的空白約 0.5em；窄螢幕時這個空白也是換行點 */
         font-weight: 700;
         color: var(--ink);
         font-variant-numeric: tabular-nums;
       }
-      /* VIVIFRAIL 等級 */
-      .vivi {
-        flex: 0 0 auto;
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: calc(20 * var(--u));
-        padding: calc(14 * var(--u)) calc(14 * var(--u))
-          calc(14 * var(--u)) calc(30 * var(--u));
-        border-radius: calc(32 * var(--u));
-        background: var(--chip);
-        border: calc(4 * var(--u)) solid var(--level);
-      }
-      .vivi-k {
-        font-size: max(var(--fmin), calc(20 * var(--u)));
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: var(--muted);
-      }
-      .vivi-v {
-        font-size: max(var(--fmin), calc(30 * var(--u)));
-        font-weight: 700;
-        line-height: 1.3;
-        white-space: nowrap;
-      }
-      .vivi-letter {
-        flex: 0 0 auto;
-        width: calc(84 * var(--u));
-        height: calc(84 * var(--u));
-        border-radius: calc(22 * var(--u));
-        background: var(--level);
-        color: var(--letter, #fff);
-        display: grid;
-        place-items: center;
-        font-size: max(var(--fmin), calc(50 * var(--u)));
-        font-weight: 700;
-        line-height: 1;
-      }
-      /* 窄螢幕：頁首改成兩列，第二列是撐滿寬度的 VIVIFRAIL 等級卡 */
+      /* 頁首右邊：報告 QR Code 小卡（樣式見下方 .qr-card）；首頁按鈕、姓名區塊和小卡靠上對齊 */
+      /* 窄螢幕：小卡仍在頁首右側；姓名放不下時換行，不和小卡重疊 */
       @media (max-width: 599px) {
         /* 手機：只有卡片內（依卡片寬度縮放）不強制最小字級；頁首和底部仍維持 16px／18px */
         .stage {
           --fmin: 0px;
           --bmin: 0px;
         }
-        .header {
-          flex-wrap: wrap;
-          row-gap: calc(10 * var(--u));
+        .who-name {
+          white-space: normal;
+          overflow-wrap: anywhere;
         }
-        .vivi {
-          order: 3;
-          flex: 1 0 100%;
+        /* 檢測日期放不下時，日期換到下一行（不跑到小卡底下） */
+        .who-date {
+          white-space: normal;
+        }
+        .who-date b {
+          display: inline-block;
           margin-left: 0;
-          justify-content: space-between;
+          white-space: nowrap;
+        }
+        /* 從測驗完成進入（左邊是較寬的「‹ 受測名單」）：膠囊在第一列、姓名與日期在第二列，小卡跨兩列靠右 */
+        .header.has-back {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: start;
+          row-gap: calc(12 * var(--u));
+        }
+        .header.has-back .back-pill {
+          grid-row: 1;
+          justify-self: start;
+        }
+        .header.has-back .who {
+          grid-row: 2;
+        }
+        .header.has-back .qr-card {
+          grid-column: 2;
+          grid-row: 1 / span 2;
+          align-self: start;
         }
       }
 
@@ -327,6 +312,54 @@
         margin: 0;
         font-size: max(var(--fmin), calc(46 * var(--cu)));
         line-height: 1.2;
+      }
+      /* 「結果總覽」標題列：標題靠左、VIVIFRAIL 等級靠右，垂直置中；放不下時 JS 加 .is-stacked，改放在標題下方一行、靠左 */
+      .card-head--vivi {
+        align-items: center;
+        justify-content: space-between;
+        gap: calc(16 * var(--cu));
+      }
+      .card-head--vivi.is-stacked {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: calc(10 * var(--cu));
+      }
+      /* VIVIFRAIL 等級（沿用原本頁首標籤的設計，縮小到和標題列協調）：等級色外框、字母方塊、等級名稱 */
+      .vivi {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: calc(14 * var(--u));
+        padding: calc(4 * var(--u)) calc(4 * var(--u)) calc(4 * var(--u)) calc(18 * var(--u));
+        border-radius: calc(22 * var(--u));
+        background: var(--chip);
+        border: max(2px, calc(3 * var(--u))) solid var(--level);
+        white-space: nowrap;
+      }
+      .vivi-k {
+        font-size: max(12px, var(--fmin), calc(18 * var(--u))); /* 手機卡片內不強制 16px，但至少 12px 才讀得到 */
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .vivi-v {
+        font-size: max(16px, calc(32 * var(--u)));
+        font-weight: 700;
+        line-height: 1.25;
+      }
+      .vivi-letter {
+        flex: 0 0 auto;
+        width: max(32px, calc(64 * var(--u)));
+        height: max(32px, calc(64 * var(--u)));
+        border-radius: calc(16 * var(--u));
+        background: var(--level);
+        color: var(--letter, #fff);
+        display: grid;
+        place-items: center;
+        font-size: max(16px, calc(38 * var(--u)));
+        font-weight: 700;
+        line-height: 1;
       }
       .card-kind {
         font-size: max(var(--fmin), calc(28 * var(--cu)));
@@ -513,10 +546,7 @@
       }
 
       /* =========================================================
-       * 底部列：中間是頁數圓點＋滑動提示膠囊，右邊是報告 QR Code 小卡
-       * 三欄 1fr｜auto｜1fr：放得下時圓點和膠囊在畫面正中央；右邊小卡較寬時，
-       * 中間這組自動往左移，和小卡至少保留 calc(24 * var(--u))。
-       * 底部列的高度至少等於小卡高度，舞台（flex: 1）相應變矮，結果卡片不會被小卡壓到
+       * 底部列：頁數圓點＋滑動提示膠囊，水平置中；高度只容納這兩者
        * ========================================================= */
       .foot {
         position: relative;
@@ -524,28 +554,24 @@
         flex: 0 0 auto;
         margin-top: var(--gap-foot);
         padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center; /* 小卡和圓點＋膠囊垂直置中對齊 */
-        column-gap: calc(24 * var(--u));
+        display: flex;
+        justify-content: center;
         animation: fadeIn 0.6s 0.2s var(--ease-out) both;
       }
       .pager {
-        grid-column: 2;
-        grid-row: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: calc(12 * var(--u));
       }
-      /* 報告 QR Code 小卡：可點擊的連結（前往詳細報告）；只有「點一下」才開啟，拖曳不開啟、也不會切換卡片
-       * 外觀維持原樣（只有 QR Code 和「報告」兩字），按下時縮到 0.97 */
+      /* 報告 QR Code 小卡（頁首最右邊）：可點擊的連結（前往詳細報告）；只有「點一下」才開啟，拖曳不開啟
+       * 外觀維持原樣（只有 QR Code 和「報告」兩字），按下時縮到 0.97
+       * QR Code 固定正方形 140～150px（13 吋 150px；較小的畫面不低於 140px，才掃得到）；內距與白色留白依 --u 縮小 */
       .qr-card {
-        grid-column: 3;
-        grid-row: 1;
-        justify-self: end;
-        margin: 0;
-        padding: calc(18 * var(--u));
+        --qr: clamp(140px, calc(150 * var(--u)), 150px);
+        flex: 0 0 auto;
+        margin: 0 0 0 auto;
+        padding: calc(14 * var(--u)); /* 原本 18，跟著 QR 200 → 150 縮小 */
         border-radius: calc(32 * var(--u));
         background: #fffdf9;
         box-shadow:
@@ -554,7 +580,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: calc(10 * var(--u));
+        gap: calc(8 * var(--u)); /* 原本 10 */
         color: inherit;
         text-decoration: none;
         cursor: pointer;
@@ -572,9 +598,10 @@
       .qr-card img {
         display: block;
         box-sizing: content-box;
-        width: max(140px, calc(200 * var(--u)));
-        height: max(140px, calc(200 * var(--u)));
-        padding: max(8px, calc(12 * var(--u))); /* 白色 quiet zone */
+        width: var(--qr);
+        height: var(--qr);
+        aspect-ratio: 1;
+        padding: max(6px, calc(9 * var(--u))); /* 白色 quiet zone（原本 12） */
         background: #fff;
         image-rendering: pixelated;
         -webkit-user-drag: none;
@@ -587,22 +614,6 @@
         font-weight: 700;
         line-height: 1.3;
         color: var(--ink);
-      }
-      /* 窄螢幕：右下角放不下，小卡改放在圓點＋滑動提示的正上方置中 */
-      @media (max-width: 599px) {
-        .foot {
-          grid-template-columns: 1fr;
-          row-gap: max(8px, calc(16 * var(--u)));
-        }
-        .pager {
-          grid-column: 1;
-          grid-row: 2;
-        }
-        .qr-card {
-          grid-column: 1;
-          grid-row: 1;
-          justify-self: center;
-        }
       }
       .dots {
         height: max(44px, calc(44 * var(--u)));
@@ -740,7 +751,7 @@
   </head>
   <body>
     <div class="page" id="page" hidden>
-      <!-- 頁首：返回、受測者、VIVIFRAIL 等級 -->
+      <!-- 頁首：返回、受測者（檢測日期在姓名下方）、右上角報告 QR Code 小卡 -->
       <header class="header">
         <button class="home-btn press" id="homeBtn" type="button" aria-label="回首頁">
           <i class="ti ti-home"></i>
@@ -750,23 +761,27 @@
         </button>
         <div class="who">
           <h1 class="who-name serif" id="whoName"></h1>
-          <div class="who-date">檢測日期<b id="whoDate"></b></div>
+          <div class="who-date">檢測日期 <b id="whoDate"></b></div>
         </div>
-        <div class="vivi" id="vivi">
-          <div>
-            <div class="vivi-k">VIVIFRAIL 等級</div>
-            <div class="vivi-v" id="viviText"></div>
-          </div>
-          <div class="vivi-letter" id="viviLetter"></div>
-        </div>
+        <a class="qr-card" id="qrCard" href="detail-sppb.html?preview=1&amp;from=result" aria-label="開啟 SPPB 詳細報告" draggable="false">
+          <img id="reportQr" alt="" draggable="false" />
+          <span class="qr-cap">報告</span>
+        </a>
       </header>
 
       <!-- 卡片舞台：三張排成一圈 -->
       <main class="stage" id="stage" aria-roledescription="輪播">
         <!-- 卡片 1：結果總覽 -->
         <section class="card" data-i="0" aria-label="結果總覽">
-          <div class="card-head">
+          <div class="card-head card-head--vivi" id="viviHead">
             <h2 class="card-title serif">結果總覽</h2>
+            <div class="vivi" id="vivi">
+              <div>
+                <div class="vivi-k">VIVIFRAIL 等級</div>
+                <div class="vivi-v" id="viviText"></div>
+              </div>
+              <div class="vivi-letter" id="viviLetter"></div>
+            </div>
           </div>
           <div class="sub">跌倒風險評估</div>
           <svg class="gauge" id="gauge" viewBox="0 0 760 420" role="img" aria-label="跌倒風險半圓圖"></svg>
@@ -816,7 +831,7 @@
         </section>
       </main>
 
-      <!-- 底部列：頁數圓點＋滑動提示、右下角報告 QR Code -->
+      <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
       <footer class="foot">
         <nav class="pager" aria-label="頁面切換">
           <div class="dots" id="dots" role="tablist"></div>
@@ -825,10 +840,6 @@
             <i class="ti ti-chevrons-left chev to-left"></i>左右滑動查看<i class="ti ti-chevrons-right chev to-right"></i>
           </div>
         </nav>
-        <a class="qr-card" id="qrCard" href="detail-sppb.html?preview=1&amp;from=result" aria-label="開啟 SPPB 詳細報告" draggable="false">
-          <img id="reportQr" alt="" draggable="false" />
-          <span class="qr-cap">報告</span>
-        </a>
       </footer>
     </div>
 
@@ -1151,6 +1162,14 @@
         C.W = cw;
         stage.style.setProperty("--card-w", `${cw}px`);
         stage.style.setProperty("--card-h", `${ch}px`);
+        fitVivi();
+      }
+
+      // 「結果總覽」標題列：標題＋VIVIFRAIL 放不下（標題會被擠壓）時，VIVIFRAIL 改放在標題下方一行、靠左
+      function fitVivi() {
+        const head = $("#viviHead");
+        head.classList.remove("is-stacked");
+        if (head.scrollWidth > head.clientWidth + 1) head.classList.add("is-stacked");
       }
 
       function placeCard(card, d) {
@@ -1282,7 +1301,6 @@
         let drag = null;
         let suppressClick = false;
         stage.addEventListener("pointerdown", (e) => {
-          if (e.target.closest("#qrCard")) return; // 報告 QR Code 小卡上的觸控／拖曳不切換卡片
           drag = { x: e.clientX, dx: 0, moved: false, id: e.pointerId };
         });
         stage.addEventListener("pointermove", (e) => {
@@ -1408,6 +1426,7 @@
         const fromAssess = params.get("from") === "assess";
         $("#homeBtn").hidden = fromAssess;
         $("#backBtn").hidden = !fromAssess;
+        document.querySelector(".header").classList.toggle("has-back", fromAssess);
         $("#homeBtn").addEventListener("click", () => (location.href = "home.html"));
         $("#backBtn").addEventListener("click", () => {
           const fid = record?.fieldId || currentFieldId() || "";
@@ -1419,7 +1438,10 @@
         $("#page").hidden = false;
         renderResult(subject, date);
         fitName();
-        document.fonts?.ready.then(fitName); // 字型載入後寬度會變，再量一次
+        document.fonts?.ready.then(() => {
+          fitName();
+          fitVivi();
+        }); // 字型載入後寬度會變，再量一次
         measure();
         initCarousel();
         enter();

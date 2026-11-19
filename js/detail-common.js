@@ -89,14 +89,14 @@ function startCountdown(examDateMs) {
   updateCountdown();
 }
 
-/* ── 過期頁／無權限頁：隱藏報告與儲存視窗，顯示狀態卡（卡片右上角同樣有語系切換） ── */
+/* ── 過期頁／無權限頁：隱藏報告與儲存視窗，顯示狀態卡（卡片右上角同樣有 Language 按鈕） ── */
 let statusKind = null;
 function showStatusPage(kind) {
   statusKind = kind;
   const view = document.getElementById("statusView");
   view.innerHTML = `
     <div class="expired-card">
-      <div class="expired-top" data-html2canvas-ignore>${I18N.switchHTML()}</div>
+      <div class="expired-top" data-html2canvas-ignore>${LangPicker.buttonHTML("light")}</div>
       <div class="expired-icon"><i class="ti ${kind === "expired" ? "ti-clock-x" : "ti-lock"}"></i></div>
       <div class="expired-title" data-i18n="${kind}.title"></div>
       <div class="expired-desc" data-i18n="${kind}.desc"></div>

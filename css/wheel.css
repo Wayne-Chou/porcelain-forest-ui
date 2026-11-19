@@ -1,0 +1,48 @@
+/* =========================================================
+ * 共用滾輪（js/wheel.js）：受測名單「新增人員」生日、語系選擇彈窗
+ * 可調的 CSS 變數（在外層設定）：
+ *   --wheel-item           每個選項的高度（觸控至少 44px）
+ *   --wheel-fs             一般選項字級
+ *   --wheel-fs-center      中央選項字級
+ *   --wheel-color / --wheel-color-center / --wheel-color-disabled
+ * 可見 5 個選項：上下各留 2 個選項高的空白，第 1、最後一個選項才能捲到中央
+ * ========================================================= */
+.wheel {
+  position: relative;
+  height: calc(var(--wheel-item, 44px) * 5);
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  outline: none;
+}
+.wheel::-webkit-scrollbar {
+  display: none;
+}
+.wheel-pad {
+  height: calc(var(--wheel-item, 44px) * 2);
+}
+.wheel-item {
+  height: var(--wheel-item, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  font-size: var(--wheel-fs, 17px);
+  color: var(--wheel-color, var(--muted));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    font-size 0.15s,
+    color 0.15s;
+}
+.wheel-item.is-center {
+  font-size: var(--wheel-fs-center, 20px);
+  font-weight: 700;
+  color: var(--wheel-color-center, var(--ink));
+}
+.wheel-item.is-disabled {
+  color: var(--wheel-color-disabled, var(--line-soft));
+}

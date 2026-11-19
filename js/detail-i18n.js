@@ -7,7 +7,7 @@
  *   I18N.apply(root)      套用 data-i18n（文字）、data-i18n-html（含 <br>／<strong>）、
  *                         data-i18n-alt、data-i18n-aria
  *   I18N.set(lang)        切換語系：更新 <html lang>、網址參數、sessionStorage，觸發 document 的 "langchange"
- *   I18N.switchHTML()     語系切換按鈕（中／日／EN），存圖時忽略
+ * 語系選擇：共用的 Language 按鈕＋滾輪彈窗（js/lang-picker.js），按確定後觸發 "kf:langchange"，這裡接手呼叫 set()
  * 不翻譯：API 給的最新消息標題與內容、姓名
  * ========================================================= */
 (function () {
@@ -46,7 +46,6 @@
       "This report is based on the Short Physical Performance Battery (SPPB) and is for health reference only. It is not a medical diagnosis. If you have any questions, please consult a healthcare professional. Wishing you good health!",
     ],
 
-    "lang.label": ["語言", "言語", "Language"],
     "save.btn": ["儲存此報告", "このレポートを保存", "Save this report"],
     "save.sub": ["點擊儲存圖片至相簿", "タップして画像を写真に保存", "Tap to save it as an image"],
     "save.left": ["儲存時效剩餘", "保存できる残り時間", "Time left to save:"],
@@ -672,11 +671,6 @@
       [...el.childNodes].forEach((n) => n.nodeType === 3 && n.remove());
       el.append(t(el.dataset.i18nPill));
     });
-    root.querySelectorAll(".lang-btn").forEach((b) => {
-      const on = b.dataset.lang === lang;
-      b.classList.toggle("is-on", on);
-      b.setAttribute("aria-pressed", String(on));
-    });
   }
 
   // 切換語系：不重新載入、不重新呼叫 API；網址保留 token、preview 等其他參數
@@ -696,17 +690,8 @@
     document.dispatchEvent(new CustomEvent("langchange", { detail: { lang } }));
   }
 
-  function switchHTML() {
-    return `<div class="lang-switch" role="group" data-i18n-aria="lang.label" aria-label="${t("lang.label")}" data-html2canvas-ignore>
-      <button type="button" class="lang-btn${lang === "zh-TW" ? " is-on" : ""}" data-lang="zh-TW" lang="zh-TW">中</button>
-      <button type="button" class="lang-btn${lang === "ja" ? " is-on" : ""}" data-lang="ja" lang="ja">日</button>
-      <button type="button" class="lang-btn${lang === "en" ? " is-on" : ""}" data-lang="en" lang="en">EN</button>
-    </div>`;
-  }
-  document.addEventListener("click", (e) => {
-    const b = e.target.closest(".lang-btn");
-    if (b) set(b.dataset.lang);
-  });
+  // 語系選擇彈窗按「確定」：不重新整理、不重新呼叫 API
+  document.addEventListener("kf:langchange", (e) => set(e.detail.lang));
 
   window.t = t;
   window.I18N = {
@@ -714,7 +699,6 @@
     actions,
     apply,
     set,
-    switchHTML,
     get lang() {
       return lang;
     },

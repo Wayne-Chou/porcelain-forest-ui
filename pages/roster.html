@@ -18,6 +18,11 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
+    <!-- 共用場域資料（預設場域＋使用者新增的自訂場域，用 id 對應名稱） -->
+    <script src="../js/fields.js"></script>
+    <!-- 共用滾輪（生日選擇）：與語系選擇彈窗共用 -->
+    <link rel="stylesheet" href="../css/wheel.css" />
+    <script src="../js/wheel.js"></script>
     <style>
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
@@ -1075,6 +1080,9 @@
 
       /* 三欄滾輪：年:月:日 = 1.3:1:1；可見 5 個選項，每個選項高 --wheel-item（最小 44px） */
       .wheels {
+        /* 共用滾輪（css/wheel.css）的尺寸與字級 */
+        --wheel-fs: max(16px, calc(var(--fs-lead) - 2px));
+        --wheel-fs-center: max(16px, calc(var(--fs-lead) + calc(4 * var(--u))));
         position: relative;
         margin-top: calc(32 * var(--u));
         height: calc(var(--wheel-item) * 5);
@@ -1105,43 +1113,6 @@
         border-top: 2px solid var(--line);
         border-bottom: 2px solid var(--line);
         pointer-events: none;
-      }
-      .wheel {
-        position: relative;
-        height: calc(var(--wheel-item) * 5);
-        overflow-y: auto;
-        scroll-snap-type: y mandatory;
-        overscroll-behavior: contain;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-      }
-      .wheel::-webkit-scrollbar {
-        display: none;
-      }
-      .wheel-pad {
-        height: calc(var(--wheel-item) * 2);
-      }
-      .wheel-item {
-        height: var(--wheel-item);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        scroll-snap-align: center;
-        font-size: max(16px, calc(var(--fs-lead) - 2px));
-        color: var(--muted);
-        font-variant-numeric: tabular-nums;
-        cursor: pointer;
-        transition:
-          font-size 0.15s,
-          color 0.15s;
-      }
-      .wheel-item.is-center {
-        font-size: max(16px, calc(var(--fs-lead) + calc(4 * var(--u))));
-        font-weight: 700;
-        color: var(--ink);
-      }
-      .wheel-item.is-disabled {
-        color: var(--line-soft);
       }
       .picker-actions {
         margin-top: calc(40 * var(--u));
@@ -1507,12 +1478,6 @@
           { id: "gait", name: "行走測驗", desc: "步態分析", icon: "ti-walk" },
         ],
 
-        fields: [
-          { id: "tpe-01", name: "大安社區關懷據點" },
-          { id: "tpe-02", name: "信義長照中心" },
-          { id: "tpe-03", name: "中正區活動中心" },
-          { id: "tpe-04", name: "北投社區關懷據點" },
-        ],
 
         // 受測人員（假資料）
         // TODO：之後改成依 field 從 API 取得名單，例如 fetch(`/api/fields/${field.id}/subjects`)
@@ -1668,7 +1633,7 @@
        * ========================================================= */
       const params = new URLSearchParams(location.search);
       const test = CONFIG.tests.find((t) => t.id === params.get("test"));
-      const field = CONFIG.fields.find((f) => f.id === params.get("field"));
+      const field = KFFields.byId(params.get("field")); // 含自訂場域；改名後顯示新名稱
 
       /* =========================================================
        * sessionStorage（關閉分頁即清除）：kf.subjects.<fieldId>
@@ -2151,14 +2116,15 @@
        * 出生日期選擇視窗（民國年滾輪）
        * 每欄選項值 = 索引 + 1（年：民國 1 年起；月：1 月起；日：1 日起）
        * ========================================================= */
-      // 每個選項的實際高度（依 --wheel-item 縮放，視窗大小改變時也會跟著變）
-      // 用 CSS 計算出的精確小數高度（不受打開時縮放動畫影響），捲動位置才不會累積誤差
-      const itemH = () => {
-        const el = wheels.y.querySelector(".wheel-item");
-        return (el && parseFloat(getComputedStyle(el).height)) || 80;
-      };
       const picker = $("#picker");
-      const wheels = { y: $("#wheelY"), m: $("#wheelM"), d: $("#wheelD") };
+      // 三欄共用滾輪（js/wheel.js）：捲動中即時預覽，停止後確定該欄的值
+      const wheels = {};
+      ["y", "m", "d"].forEach((key) => {
+        wheels[key] = createWheel($("#wheel" + key.toUpperCase()), {
+          onScroll: updatePreview,
+          onSettle: () => commit(key),
+        });
+      });
       const UNITS = { y: "年", m: "月", d: "日" };
       const P = { open: false, y: 40, m: 1, d: 1 };
 
@@ -2198,39 +2164,21 @@
       }
 
       function fillWheel(key, count, maxAllowed) {
-        let html = '<div class="wheel-pad"></div>';
-        for (let v = 1; v <= count; v++) {
-          html += `<div class="wheel-item${v > maxAllowed ? " is-disabled" : ""}" data-v="${v}">${v} ${UNITS[key]}</div>`;
-        }
-        wheels[key].innerHTML = html + '<div class="wheel-pad"></div>';
-        wheels[key].dataset.count = count;
+        wheels[key].fill(
+          Array.from({ length: count }, (_, i) => ({
+            label: `${i + 1} ${UNITS[key]}`,
+            disabled: i + 1 > maxAllowed,
+          })),
+        );
       }
-      function centerValue(key) {
-        const w = wheels[key];
-        const i = Math.round(w.scrollTop / itemH());
-        return Math.max(1, Math.min(Number(w.dataset.count), i + 1));
-      }
-      function scrollToValue(key, v, smooth) {
-        wheels[key].scrollTo({
-          top: (v - 1) * itemH(),
-          behavior: smooth ? "smooth" : "auto",
-        });
-      }
-      // 依捲動位置即時標出中間的選項
-      function markCenter(key) {
-        const v = centerValue(key);
-        wheels[key].querySelectorAll(".wheel-item").forEach((el) => {
-          el.classList.toggle("is-center", Number(el.dataset.v) === v);
-        });
-      }
-      function setDisabled(key, maxAllowed) {
-        wheels[key].querySelectorAll(".wheel-item").forEach((el) => {
-          el.classList.toggle("is-disabled", Number(el.dataset.v) > maxAllowed);
-        });
-      }
+      const centerValue = (key) => wheels[key].value();
+      const scrollToValue = (key, v, smooth) => wheels[key].scrollTo(v, smooth);
+      const markCenter = (key) => wheels[key].markCenter();
+      const setDisabled = (key, maxAllowed) => wheels[key].setDisabled(maxAllowed);
 
       // 即時預覽：滾動中也依目前中間的選項更新（超出範圍的先以可選的最大值顯示）
       function updatePreview() {
+        if (!P.open) return;
         const y = centerValue("y");
         const m = Math.min(centerValue("m"), maxMonth(y));
         const d = Math.min(centerValue("d"), maxDay(y, m));
@@ -2248,7 +2196,7 @@
         const days = daysIn(P.y, P.m);
         const md = maxDay(P.y, P.m);
         if (P.d > md) P.d = md; // 日數變少或超過今天：改成最後一個可選的日
-        if (Number(wheels.d.dataset.count) !== days) {
+        if (wheels.d.count !== days) {
           fillWheel("d", days, md);
           scrollToValue("d", P.d, false);
         } else {
@@ -2320,32 +2268,6 @@
         $("#pickerMask").addEventListener("click", () => closePicker(false));
         $("#pickerOk").addEventListener("click", () => closePicker(true));
 
-        const hasScrollEnd = "onscrollend" in window;
-        Object.entries(wheels).forEach(([key, wheel]) => {
-          let raf;
-          let timer;
-          wheel.addEventListener("scroll", () => {
-            cancelAnimationFrame(raf);
-            raf = requestAnimationFrame(() => {
-              markCenter(key);
-              updatePreview();
-            });
-            // 不支援 scrollend 時，用 120ms 防抖判斷捲動停止
-            if (!hasScrollEnd) {
-              clearTimeout(timer);
-              timer = setTimeout(() => commit(key), 120);
-            }
-          });
-          if (hasScrollEnd)
-            wheel.addEventListener("scrollend", () => commit(key));
-          // 點擊非中間的選項：平滑捲動到該選項
-          wheel.addEventListener("click", (e) => {
-            const item = e.target.closest(".wheel-item");
-            if (item && Number(item.dataset.v) !== centerValue(key)) {
-              scrollToValue(key, Number(item.dataset.v), true);
-            }
-          });
-        });
       }
 
       /* =========================================================

@@ -531,6 +531,9 @@
         return list;
       }
       function findSubject(record) {
+        // 一體機（kf.records.kiosk）：紀錄裡直接附上訪客資料或讀卡資料；健保卡姓名遮罩中間字（王*明）
+        if (record?.visitor) return { ...record.visitor, visitor: true };
+        if (record?.card) return { ...record.card, name: maskName(record.card.name) };
         const fid = record?.fieldId || currentFieldId();
         const local = fid ? readJSON(`kf.subjects.${fid}`) : null;
         const id = record?.subjectId;
@@ -541,7 +544,14 @@
         const e = local?.edits?.[base.id];
         return e ? { ...base, name: e.name ?? base.name, gender: e.gender ?? base.gender, birth: e.birth ?? base.birth } : base;
       }
-      const honorific = (s) => `${s.name} ${s.gender === "女" ? "女士" : "先生"}`;
+      function maskName(name) {
+        const c = [...String(name || "")];
+        if (c.length <= 1) return c.join("");
+        if (c.length === 2) return c[0] + "*";
+        return c[0] + "*".repeat(c.length - 2) + c[c.length - 1];
+      }
+      // 訪客（「訪客 V-1118-023」）不加先生／女士
+      const honorific = (s) => (s.visitor ? s.name : `${s.name} ${s.gender === "女" ? "女士" : "先生"}`);
       // riskLevel：0–4 的整數才採用，其他（沒有、格式不對）一律預設 1
       function riskLevelOf(record) {
         const v = Number(record?.riskLevel);
@@ -687,7 +697,10 @@
         const fromAssess = params.get("from") === "assess";
         $("#homeBtn").hidden = fromAssess;
         $("#backBtn").hidden = !fromAssess;
-        $("#homeBtn").addEventListener("click", () => (location.href = "home.html"));
+        // 從一體機測驗（訪客或健保卡）進入（from=kiosk）：首頁按鈕回到一體機歡迎頁
+        const fromKiosk = params.get("from") === "kiosk";
+        if (fromKiosk) $("#homeBtn").setAttribute("aria-label", "回到一體機");
+        $("#homeBtn").addEventListener("click", () => (location.href = fromKiosk ? "kiosk.html" : "home.html"));
         $("#backBtn").addEventListener("click", () => {
           const fid = record?.fieldId || currentFieldId() || "";
           location.href = `roster.html?test=gait&field=${fid}`;
