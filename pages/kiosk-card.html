@@ -15,7 +15,7 @@
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 一體機健保卡流程頁（直式平板專用，基準 1032 × 1376）
        * 讀取中 → 讀取成功／讀取失敗，三個狀態在同一頁切換
-       * 內容集中在畫面上方約 60%；右下角保留與 kiosk.html 相同位置的深綠箭頭帶（指向讀卡機）
+       * 內容集中在畫面上方約 60%
        * ========================================================= */
       :root {
         --bg: #ece7df; /* 暖瓷白：頁面底色 */
@@ -35,7 +35,6 @@
         /* 縮放單位：1032 × 1376 時 1 --u = 1px；依「寬度」與「高度 × 0.75」中較小者等比縮放 */
         --u: calc(min(100vw, 100dvh * 0.75) / 1032);
         --pad: calc(48 * var(--u)); /* 左右外距 */
-        --ic-w: calc(470 * var(--u)); /* 箭頭帶寬：與 kiosk.html 的健保卡指示卡相同 */
 
         --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
       }
@@ -86,7 +85,7 @@
       }
 
       /* 實心圖示：tabler-icons-filled 的樣式表和一般版共用 .ti 與同名 class，不能整份載入；
-       * 只載入字型檔，自訂需要的兩個（ti-circle-check-filled、ti-alert-circle-filled，都在 core 檔） */
+       * 只載入字型檔，自訂需要的 ti-circle-check-filled（在 core 檔） */
       @font-face {
         font-family: "tabler-icons-filled";
         font-style: normal;
@@ -94,15 +93,11 @@
         font-display: block;
         src: url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.52.0/dist/fonts/tabler-icons-filled.core.woff2") format("woff2");
       }
-      .ti.ti-circle-check-filled::before,
-      .ti.ti-alert-circle-filled::before {
+      .ti.ti-circle-check-filled::before {
         font-family: "tabler-icons-filled" !important;
       }
       .ti-circle-check-filled::before {
         content: "\f704";
-      }
-      .ti-alert-circle-filled::before {
-        content: "\f6ee";
       }
 
       /* ===== 版面：內容靠上，下半部留白 ===== */
@@ -295,7 +290,7 @@
         font-size: calc(40 * var(--u));
       }
 
-      /* ----- 狀態 2、3 共用：圖示＋文字橫排的標頭 ----- */
+      /* ----- 狀態 2：圖示＋文字橫排的標頭 ----- */
       .head {
         display: flex;
         align-items: center;
@@ -315,10 +310,6 @@
       .ok .head-icon {
         background: #e6f0ea;
         color: #2f7a52;
-      }
-      .fail .head-icon {
-        background: #fbe7e4;
-        color: #a33a2c;
       }
       .ok-label {
         font-size: max(18px, calc(32 * var(--u)));
@@ -342,13 +333,6 @@
         font-size: max(18px, calc(40 * var(--u)));
         font-weight: 700;
         color: var(--muted);
-      }
-      .fail .state-title {
-        font-size: calc(64 * var(--u));
-      }
-      .fail .state-sub {
-        margin-top: calc(6 * var(--u));
-        font-size: max(18px, calc(30 * var(--u)));
       }
 
       /* 請取回健保卡：滿寬深綠條，外框發光脈衝 */
@@ -393,32 +377,49 @@
         color: var(--brass-light);
       }
 
-      /* 讀取失敗：提示框 */
-      .tips {
-        align-self: stretch;
-        margin: calc(28 * var(--u)) 0 0;
-        padding: calc(22 * var(--u)) calc(36 * var(--u));
-        border-radius: calc(28 * var(--u));
-        background: #f7f4ee;
-        border: calc(2 * var(--u)) solid var(--line);
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: calc(12 * var(--u));
-        text-align: left;
+      /* ----- 狀態 3：讀取失敗（與讀取中相同，內容置中） ----- */
+      .fail-icon {
+        width: calc(180 * var(--u));
+        height: calc(180 * var(--u));
+        display: grid;
+        place-items: center;
+        margin-top: calc(12 * var(--u));
+        border-radius: 50%;
+        background: #fbe7e4;
+        color: #a33a2c;
+        font-size: calc(110 * var(--u));
       }
-      .tips li {
-        display: flex;
-        align-items: center;
-        gap: calc(16 * var(--u));
-        font-size: max(18px, calc(32 * var(--u)));
+      .fail .state-title {
+        margin-top: calc(36 * var(--u));
+      }
+      .fail-desc {
+        margin: calc(12 * var(--u)) 0 0;
+        font-size: max(18px, calc(38 * var(--u)));
         font-weight: 700;
-        line-height: 1.35;
+        line-height: 1.4;
+        color: var(--muted);
       }
-      .tips .ti {
-        flex: none;
-        color: var(--brass);
-        font-size: calc(44 * var(--u));
+      /* 按鈕區：第一列「重新讀取」滿寬；第二列「返回」「改用訪客模式」等寬 */
+      .fail-btns {
+        align-self: stretch;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: calc(20 * var(--u));
+        margin-top: calc(44 * var(--u));
+      }
+      .fail-btns .btn-retry {
+        grid-column: 1 / -1;
+        height: calc(150 * var(--u));
+        font-size: calc(50 * var(--u));
+      }
+      .fail-btns .btn-retry .ti {
+        font-size: calc(56 * var(--u));
+      }
+      .fail-btns .btn-ghost {
+        font-size: calc(42 * var(--u));
+      }
+      .fail-btns .btn-ghost .ti {
+        font-size: calc(46 * var(--u));
       }
 
       /* 按鈕列 */
@@ -430,9 +431,6 @@
       }
       .ok .btns {
         grid-template-columns: 1fr 1.6fr;
-      }
-      .fail .btns {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
       .btn {
         display: flex;
@@ -446,14 +444,8 @@
         white-space: nowrap;
         transition: transform 0.2s var(--ease-out);
       }
-      .fail .btn {
-        font-size: calc(40 * var(--u));
-      }
       .btn .ti {
         font-size: calc(52 * var(--u));
-      }
-      .fail .btn .ti {
-        font-size: calc(44 * var(--u));
       }
       .btn:active {
         transform: scale(0.98);
@@ -473,90 +465,14 @@
         color: var(--brass-light);
       }
 
-      /* ===== 右下角：深綠箭頭帶（與 kiosk.html 指示卡同位置、同寬），上方一行小字標籤 ===== */
-      .dock {
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        width: var(--ic-w);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        pointer-events: none;
-        transition:
-          opacity 0.35s,
-          visibility 0s;
-      }
-      /* 讀取成功：不顯示箭頭帶（提醒只保留卡片內的「請取回您的健保卡」） */
-      .dock.is-hidden {
-        opacity: 0;
-        visibility: hidden;
-        transition:
-          opacity 0.35s,
-          visibility 0s 0.35s;
-      }
-      .dock-label {
-        margin-bottom: calc(12 * var(--u));
-        padding: calc(4 * var(--u)) calc(22 * var(--u));
-        border-radius: 999px;
-        background: rgba(31, 59, 51, 0.08);
-        color: var(--forest);
-        font-size: max(18px, calc(28 * var(--u)));
-        font-weight: 700;
-        line-height: 1.35;
-      }
-      .band {
-        align-self: stretch;
-        height: calc(150 * var(--u));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: calc(30 * var(--u));
-        background: var(--forest);
-        border-radius: calc(56 * var(--u)) 0 0 0;
-        border-top: calc(3 * var(--u)) solid #b08d57;
-        border-left: calc(3 * var(--u)) solid #b08d57;
-        box-shadow: -10px -10px 40px rgba(60, 45, 25, 0.18);
-      }
-      .chev {
-        display: block;
-        font-size: calc(110 * var(--u));
-        line-height: 1;
-        color: #e6cd9c;
-        -webkit-text-stroke: calc(2.5 * var(--u)) #e6cd9c;
-        opacity: 0.25;
-        animation: flow-down 1.5s ease-in-out infinite;
-        animation-delay: calc(var(--i) * 0.2s);
-      }
-      @keyframes flow-down {
-        0% {
-          opacity: 0.25;
-          transform: translateY(calc(-6 * var(--u)));
-        }
-        50% {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        100% {
-          opacity: 0.25;
-          transform: translateY(calc(6 * var(--u)));
-        }
-      }
-
-      /* ===== 減少動態：直接切換；箭頭帶直接顯示／隱藏；箭頭、發光、進度環、圓點都靜止 ===== */
+      /* ===== 減少動態：直接切換；發光、進度環、圓點都靜止 ===== */
       @media (prefers-reduced-motion: reduce) {
         .state.is-on,
         .reading-icon::after,
         .dots span,
-        .take,
-        .chev {
+        .take {
           animation: none;
         }
-        .dock,
-        .dock.is-hidden {
-          transition: none;
-        }
-        .chev,
         .dots span {
           opacity: 1;
         }
@@ -613,32 +529,17 @@
 
         <!-- 狀態 3：讀取失敗 -->
         <div class="state fail" id="stFail">
-          <div class="head">
-            <div class="head-icon" aria-hidden="true"><i class="ti ti-alert-circle-filled"></i></div>
-            <div>
-              <h1 class="state-title serif">讀取失敗</h1>
-              <p class="state-sub">請取出健保卡，確認後重新插入</p>
-            </div>
-          </div>
-          <ul class="tips" id="tips"></ul>
-          <div class="btns">
+          <div class="fail-icon" aria-hidden="true"><i class="ti ti-alert-circle"></i></div>
+          <h1 class="state-title serif">讀取失敗</h1>
+          <p class="fail-desc">請取出健保卡，再重新插入一次</p>
+          <div class="fail-btns">
+            <button class="btn btn-primary btn-retry" type="button" data-act="retry"><i class="ti ti-refresh" aria-hidden="true"></i>重新讀取</button>
             <button class="btn btn-ghost" type="button" data-act="back"><i class="ti ti-arrow-left" aria-hidden="true"></i>返回</button>
-            <button class="btn btn-ghost" type="button" data-act="guest"><i class="ti ti-user-circle" aria-hidden="true"></i>訪客模式</button>
-            <button class="btn btn-primary" type="button" data-act="retry"><i class="ti ti-refresh" aria-hidden="true"></i>重新讀取</button>
+            <button class="btn btn-ghost" type="button" data-act="guest"><i class="ti ti-user-circle" aria-hidden="true"></i>改用訪客模式</button>
           </div>
         </div>
       </section>
     </main>
-
-    <!-- 右下角箭頭帶：指向螢幕下方的讀卡機（讀取中、讀取失敗顯示；讀取成功隱藏） -->
-    <div class="dock" id="dock" aria-hidden="true">
-      <div class="dock-label" id="dockLabel">讀卡機</div>
-      <div class="band" id="band">
-        <i class="ti ti-chevron-down chev" style="--i: 0"></i>
-        <i class="ti ti-chevron-down chev" style="--i: 1"></i>
-        <i class="ti ti-chevron-down chev" style="--i: 2"></i>
-      </div>
-    </div>
 
     <script>
       /* =========================================================
@@ -648,12 +549,6 @@
       const DEMO_TOOLS = true;
       // 模擬讀卡資料（之後改成讀卡機服務回傳的資料）
       const DEMO_CARD = { name: "王小明", gender: "男", birth: { rocYear: 50, month: 3, day: 15 }, id: "A123456789" };
-      // 讀取失敗的提示（之後依實際讀卡機型號修改）
-      const CARD_TIPS = [
-        { icon: "ti-arrow-big-down", text: "晶片那一端先插入" },
-        { icon: "ti-cpu", text: "晶片朝上，不要插反" },
-        { icon: "ti-sparkles", text: "晶片髒污請擦拭後再試" },
-      ];
       const SIM_READ_MS = 2500; // 模擬：讀取需要的時間
       const READ_TIMEOUT_MS = 15000; // 讀取逾時：15 秒都沒有結果就當作讀取失敗
       const IDLE_MS = 90000; // 成功、失敗畫面閒置多久自動回到 kiosk.html（讀取中不計）
@@ -692,11 +587,6 @@
       const maskId = (id) => (id && id.length > 6 ? id.slice(0, 3) + "*".repeat(id.length - 6) + id.slice(-3) : "");
       const honorific = (g) => (g === "女" ? "女士" : "先生");
 
-      /* ===== 箭頭帶：讀取中、讀取失敗顯示（向下、「讀卡機」）；讀取成功隱藏 ===== */
-      function setDock(visible) {
-        $("#dock").classList.toggle("is-hidden", !visible);
-      }
-
       /* ===== 狀態切換 ===== */
       let state = "";
       let card = null; // 讀到的卡片資料
@@ -704,7 +594,6 @@
         state = next;
         const id = { reading: "#stReading", ok: "#stOk", fail: "#stFail" }[next];
         document.querySelectorAll(".state").forEach((el) => el.classList.toggle("is-on", el === $(id)));
-        setDock(next !== "ok");
         // 展示用按鈕：讀取中停用，避免連點
         document.querySelectorAll("[data-demo]").forEach((b) => (b.disabled = next === "reading"));
         document.title = `建豐健康科技 - ${{ reading: "讀取健保卡", ok: "讀取成功", fail: "讀取失敗" }[next]}`;
@@ -747,9 +636,6 @@
       function renderOk(data) {
         $("#okName").textContent = maskName(data.name);
         $("#okTitle").textContent = honorific(data.gender);
-      }
-      function renderTips() {
-        $("#tips").innerHTML = CARD_TIPS.map((t) => `<li><i class="ti ${t.icon}" aria-hidden="true"></i>${t.text}</li>`).join("");
       }
 
       /* ===== 按鈕 ===== */
@@ -795,7 +681,6 @@
       ["pointerdown", "keydown", "wheel", "touchstart"].forEach((t) => document.addEventListener(t, resetIdle, { passive: true }));
 
       if (!DEMO_TOOLS) $("#demo").remove(); // 正式上線：展示用按鈕完全不顯示
-      renderTips();
       startRead();
     </script>
   </body>

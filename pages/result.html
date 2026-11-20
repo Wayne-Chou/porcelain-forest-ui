@@ -148,7 +148,7 @@
         flex: 0 0 auto;
         padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
         display: flex;
-        align-items: flex-start; /* 首頁按鈕、姓名區塊、QR Code 小卡都靠上對齊 */
+        align-items: center; /* 首頁按鈕（或「‹ 受測名單」）在左、「報告」說明＋QR Code 小卡在右，垂直置中 */
         gap: calc(24 * var(--u));
         animation: fadeIn 0.6s var(--ease-out) both;
       }
@@ -232,7 +232,8 @@
           margin-left: 0;
           white-space: nowrap;
         }
-        /* 從測驗完成進入（左邊是較寬的「‹ 受測名單」）：膠囊在第一列、姓名與日期在第二列，小卡跨兩列靠右 */
+        /* 從測驗完成進入（左邊是較寬的「‹ 受測名單」）：膠囊在第一列、姓名與日期在第二列，小卡跨兩列靠右
+         * 姓名與檢測日期暫時隱藏，這段兩列排法先註解（之後打開姓名時再恢復）
         .header.has-back {
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
@@ -250,6 +251,15 @@
           grid-column: 2;
           grid-row: 1 / span 2;
           align-self: start;
+        }
+        */
+        /* 「報告」說明：隱藏第二行小字、箭頭縮短為 56 × 32 */
+        .report-sub {
+          display: none;
+        }
+        .report-arrow {
+          width: calc(56 * var(--u));
+          height: calc(32 * var(--u));
         }
       }
 
@@ -564,13 +574,83 @@
         align-items: center;
         gap: calc(12 * var(--u));
       }
-      /* 報告 QR Code 小卡（頁首最右邊）：可點擊的連結（前往詳細報告）；只有「點一下」才開啟，拖曳不開啟
-       * 外觀維持原樣（只有 QR Code 和「報告」兩字），按下時縮到 0.97
+      /* 頁首右邊：「報告」說明＋黃銅箭頭＋QR Code 小卡，整組是同一個連結（前往詳細報告；讀螢幕只朗讀一次）
+       * 只有「點一下」才開啟，拖曳不開啟（initQrLink）；說明與箭頭沒有動畫 */
+      .report {
+        flex: 0 0 auto;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: calc(12 * var(--u)); /* 箭頭尖端與小卡的間距 */
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+        touch-action: none;
+        -webkit-user-drag: none;
+        -webkit-touch-callout: none;
+      }
+      .report:focus-visible {
+        outline: 3px solid var(--forest);
+        outline-offset: 6px;
+        border-radius: calc(32 * var(--u));
+      }
+      .report-hint {
+        display: flex;
+        align-items: center;
+        gap: calc(16 * var(--u));
+      }
+      .report-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        text-align: right;
+      }
+      .report-title {
+        font-size: max(var(--fmin), calc(48 * var(--u)));
+        line-height: 1.1;
+        color: var(--forest);
+        white-space: nowrap;
+      }
+      .report-sub {
+        margin-top: calc(6 * var(--u));
+        font-size: max(16px, calc(24 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      /* 黃銅直線箭頭：水平線＋右端箭頭頭（座標用百分比，窄螢幕縮短時線條粗細不變） */
+      .report-arrow {
+        flex: none;
+        display: block;
+        width: calc(90 * var(--u));
+        height: calc(40 * var(--u));
+        overflow: visible;
+        stroke: #b08d57;
+        stroke-width: max(2px, calc(5 * var(--u)));
+        stroke-linecap: round;
+        fill: none;
+      }
+      /* 放不下時（JS 加上 is-below）：「報告」＋箭頭改放在 QR 小卡正下方置中，箭頭改為向上 */
+      .report.is-below {
+        flex-direction: column-reverse;
+        gap: calc(8 * var(--u));
+      }
+      .report.is-below .report-hint {
+        flex-direction: row-reverse;
+        gap: calc(8 * var(--u));
+      }
+      .report.is-below .report-arrow {
+        width: max(22px, calc(32 * var(--u)));
+        height: max(22px, calc(32 * var(--u)));
+        transform: rotate(-90deg);
+      }
+
+      /* 報告 QR Code 小卡：只剩 QR Code，按下時縮到 0.97
        * QR Code 固定正方形 140～150px（13 吋 150px；較小的畫面不低於 140px，才掃得到）；內距與白色留白依 --u 縮小 */
       .qr-card {
         --qr: clamp(140px, calc(150 * var(--u)), 150px);
         flex: 0 0 auto;
-        margin: 0 0 0 auto;
         padding: calc(14 * var(--u)); /* 原本 18，跟著 QR 200 → 150 縮小 */
         border-radius: calc(32 * var(--u));
         background: #fffdf9;
@@ -580,20 +660,10 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: calc(8 * var(--u)); /* 原本 10 */
-        color: inherit;
-        text-decoration: none;
-        cursor: pointer;
-        touch-action: none;
-        -webkit-user-drag: none;
         transition: transform 0.25s var(--ease-spring);
       }
       .qr-card:active {
         transform: scale(0.97);
-      }
-      .qr-card:focus-visible {
-        outline: 3px solid var(--forest);
-        outline-offset: 4px;
       }
       .qr-card img {
         display: block;
@@ -607,13 +677,6 @@
         -webkit-user-drag: none;
         -webkit-touch-callout: none;
         pointer-events: none;
-      }
-      .qr-card .qr-cap {
-        font-family: var(--font-sans);
-        font-size: var(--fs-body); /* 頁面層級：max(16px, …) */
-        font-weight: 700;
-        line-height: 1.3;
-        color: var(--ink);
       }
       .dots {
         height: max(44px, calc(44 * var(--u)));
@@ -751,7 +814,7 @@
   </head>
   <body>
     <div class="page" id="page" hidden>
-      <!-- 頁首：返回、受測者（檢測日期在姓名下方）、右上角報告 QR Code 小卡 -->
+      <!-- 頁首：返回（左）、「報告」說明＋箭頭＋QR Code 小卡（右） -->
       <header class="header">
         <button class="home-btn press" id="homeBtn" type="button" aria-label="回首頁">
           <i class="ti ti-home"></i>
@@ -759,13 +822,25 @@
         <button class="back-pill press" id="backBtn" type="button" hidden>
           <i class="ti ti-chevron-left"></i>受測名單
         </button>
+        <!-- 姓名（含稱謂）與檢測日期：暫時隱藏，保留原始碼，之後可能再打開
         <div class="who">
           <h1 class="who-name serif" id="whoName"></h1>
           <div class="who-date">檢測日期 <b id="whoDate"></b></div>
         </div>
-        <a class="qr-card" id="qrCard" href="detail-sppb.html?preview=1&amp;from=result" aria-label="開啟 SPPB 詳細報告" draggable="false">
-          <img id="reportQr" alt="" draggable="false" />
-          <span class="qr-cap">報告</span>
+        -->
+        <a class="report" id="qrCard" href="detail-sppb.html?preview=1&amp;from=result" aria-label="開啟 SPPB 詳細報告" draggable="false">
+          <span class="report-hint" aria-hidden="true">
+            <span class="report-text">
+              <span class="report-title serif">報告</span>
+              <span class="report-sub">手機掃描看詳細內容</span>
+            </span>
+            <svg class="report-arrow" focusable="false">
+              <line x1="4%" y1="50%" x2="94%" y2="50%" />
+              <line x1="94%" y1="50%" x2="76%" y2="18%" />
+              <line x1="94%" y1="50%" x2="76%" y2="82%" />
+            </svg>
+          </span>
+          <span class="qr-card"><img id="reportQr" alt="" draggable="false" /></span>
         </a>
       </header>
 
@@ -1082,8 +1157,11 @@
        * ========================================================= */
       function renderResult(subject, date) {
         const { score } = RESULT;
-        $("#whoName").textContent = honorific(subject);
-        $("#whoDate").textContent = date;
+        // 姓名與檢測日期目前隱藏（HTML 已註解）：找不到元素就略過
+        const nameEl = $("#whoName");
+        const dateEl = $("#whoDate");
+        if (nameEl) nameEl.textContent = honorific(subject);
+        if (dateEl) dateEl.textContent = date;
 
         const v = viviOf(score);
         const vivi = $("#vivi");
@@ -1349,6 +1427,7 @@
           stage.classList.add("no-anim");
           layout(C.pos);
           fitName();
+          fitReport();
           requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.remove("no-anim")));
         }).observe(stage);
       }
@@ -1373,6 +1452,34 @@
         });
       }
 
+      /* 頁首右邊「報告」說明：和左邊的首頁鍵（或「‹ 受測名單」）至少保留 24 單位；放不下時改放在 QR 小卡正下方 */
+      function fitReport() {
+        const report = $("#qrCard");
+        const left = [$("#homeBtn"), $("#backBtn")].find((b) => b && !b.hidden);
+        if (!report || !left) return;
+        report.classList.remove("is-below");
+        const back = $("#backBtn");
+        if (back) {
+          back.style.alignSelf = "";
+          back.style.marginTop = "";
+        }
+        const u = Math.min(innerWidth, innerHeight * 0.75) / 1032;
+        const header = report.parentElement;
+        const r = report.getBoundingClientRect();
+        const gap = r.left - left.getBoundingClientRect().right;
+        // 頁首內容的右邊界（扣掉右側內距）：整組被擠出去也算放不下
+        const rightEdge = header.getBoundingClientRect().right - parseFloat(getComputedStyle(header).paddingRight);
+        if (gap < 24 * u - 0.5 || r.right > rightEdge + 0.5) report.classList.add("is-below");
+        // 「‹ 受測名單」：和 QR 小卡的垂直中心對齊（「報告」放到小卡下方時，頁首變高，置中會偏低）
+        // 首頁鍵維持原本的置中
+        if (back && !back.hidden) {
+          const qr = report.querySelector(".qr-card").getBoundingClientRect();
+          const top = header.getBoundingClientRect().top + parseFloat(getComputedStyle(header).paddingTop);
+          back.style.alignSelf = "flex-start";
+          back.style.marginTop = `${qr.top + qr.height / 2 - top - back.offsetHeight / 2}px`;
+        }
+      }
+
       /* 報告 QR Code 小卡：只有「點一下」（按下到放開移動不超過 8px）才開啟詳細報告；拖曳時取消這次點擊 */
       function initQrLink() {
         const a = $("#qrCard");
@@ -1389,6 +1496,7 @@
       // 姓名放不下時（例如左上角是較寬的「‹ 受測名單」），以 2px 為單位縮小字級，最多縮到原本的 80%
       function fitName() {
         const el = $("#whoName");
+        if (!el) return; // 姓名目前隱藏
         el.style.fontSize = "";
         let size = parseFloat(getComputedStyle(el).fontSize);
         const min = size * 0.8;
@@ -1438,9 +1546,11 @@
         $("#page").hidden = false;
         renderResult(subject, date);
         fitName();
+        fitReport();
         document.fonts?.ready.then(() => {
           fitName();
-          fitVivi();
+          fitReport();
+          fitVivi(); // 頁首高度若改變，舞台的 ResizeObserver 會重算卡片大小
         }); // 字型載入後寬度會變，再量一次
         measure();
         initCarousel();
