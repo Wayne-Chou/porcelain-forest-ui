@@ -1,18 +1,25 @@
 /* =========================================================
  * 共用底部導覽（js/nav.js）：首頁、鑑測紀錄、受測者管理
- * 鑑測｜紀錄｜上傳｜受測者｜設定：五欄等寬，每項「圖示在上、文字在下」
- * 中間的上傳是黃銅圓鈕，往上凸出約半個直徑；導覽列水平置中，所以圓鈕中心＝畫面中線
+ * 鑑測｜紀錄｜上傳｜受測者｜設定：五欄等寬、樣式相同，每項「圖示在上、文字在下」
+ * 選中項目的圖示浮起成深綠大圓，導覽列上緣在它的位置挖出凹槽（.nav-bg 的 mask，位置 --notch-x 由 js/nav.js 設定）
  *
  * 尺寸：導覽列與頁面內容同寬（13 吋 904 = 1032 − 左右 --pad 64），設為 container-type: inline-size，
- * 裡面的文字、圖示、圓鈕都依導覽列自己的寬度（cqi）計算，寬度夠就放到上限（13 吋文字 40px、圖示 64px）
+ * 裡面的文字、圖示、大圓都依導覽列自己的寬度（cqi）計算，寬度夠就放到上限（13 吋文字 40px、圖示 64px）
  *
  * 寫法：所有尺寸公式只寫一次，用 --nav-q（＝導覽列內容寬的 1%）表示，同時宣告在 :root 與 .nav 上：
  *   - .nav 上 --nav-q = 1cqi：導覽列裡的元素依導覽列寬度計算（容器查詢）
  *   - :root 上 --nav-q = 用畫面寬換算的同一個值：給 --nav-clear（頁面底部留白）用，頁面不必等導覽列量測
  * 不支援容器查詢的瀏覽器（舊版 Safari）：改用 --u 計算的固定值（見最下方 @supports not）
  *
- * --nav-clear：畫面底部到上傳圓鈕（含外圈）頂端的距離；首頁卡片置中、鑑測紀錄與受測者頁的底部留白都用它
+ * --nav-clear：畫面底部到浮起大圓（含外圈）頂端的距離；首頁卡片置中、鑑測紀錄與受測者頁的底部留白都用它
  * ========================================================= */
+/* 凹槽中心的水平位置（佔導覽列寬度的百分比）；註冊成 <percentage> 才能平滑移動 */
+@property --notch-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 10%;
+}
+
 :root {
   --nav-bottom: calc(calc(36 * var(--u)) + env(safe-area-inset-bottom)); /* 導覽列離畫面底部 */
   --nav-border: 2px;
@@ -26,18 +33,17 @@
 /* 尺寸公式（:root 與 .nav 各自用自己的 --nav-q 計算） */
 :root,
 .nav {
-  --nav-mx: calc(0.6 * var(--nav-q)); /* 項目左右留白（選中的深綠底不碰到相鄰項目） */
+  --nav-mx: calc(0.6 * var(--nav-q)); /* 項目左右留白 */
   --nav-ip: calc(1.2 * var(--nav-q)); /* 項目上下內距 */
   --nav-g: calc(0.8 * var(--nav-q)); /* 圖示與文字的間距 */
-  --nav-r: calc(3 * var(--nav-q)); /* 選中底色圓角 */
+  --nav-r: calc(3 * var(--nav-q)); /* 項目圓角（鍵盤焦點框） */
   /* 文字：最多 40px；「受測者」三個字必須放進欄寬（欄寬 20% 扣掉左右留白，再留一點餘裕），放不下就以欄寬為準 */
   --nav-fs: clamp(15px, min(calc(6 * var(--nav-q)), calc((20 * var(--nav-q) - 2 * var(--nav-mx)) / 3.3)), 40px);
   --nav-icon: clamp(24px, calc(9 * var(--nav-q)), 64px);
-  --nav-up-size: clamp(64px, calc(18 * var(--nav-q)), 150px); /* 上傳圓鈕直徑 */
-  --nav-up-icon: clamp(30px, calc(10 * var(--nav-q)), 72px);
-  --nav-up-ring: clamp(4px, var(--nav-q), 10px); /* 圓鈕外圈（頁面底色） */
-  --nav-badge: clamp(24px, calc(7 * var(--nav-q)), 52px);
-  --nav-badge-fs: clamp(14px, calc(3.6 * var(--nav-q)), 26px);
+  --nav-d: clamp(64px, calc(16 * var(--nav-q)), 132px); /* 選中大圓直徑 */
+  --nav-d-icon: clamp(30px, calc(8 * var(--nav-q)), 64px); /* 大圓裡的圖示 */
+  --nav-badge: clamp(20px, calc(4.4 * var(--nav-q)), 38px);
+  --nav-badge-fs: clamp(13px, calc(2.6 * var(--nav-q)), 22px);
 }
 @supports (width: 1cqi) {
   .nav {
@@ -54,18 +60,25 @@
     --nav-r: calc(26 * var(--u));
     --nav-fs: max(15px, calc(40 * var(--u)));
     --nav-icon: max(24px, calc(64 * var(--u)));
-    --nav-up-size: max(64px, calc(150 * var(--u)));
-    --nav-up-icon: max(30px, calc(72 * var(--u)));
-    --nav-up-ring: max(4px, calc(9 * var(--u)));
-    --nav-badge: max(24px, calc(52 * var(--u)));
-    --nav-badge-fs: max(14px, calc(26 * var(--u)));
+    --nav-d: max(64px, calc(132 * var(--u)));
+    --nav-d-icon: max(30px, calc(64 * var(--u)));
+    --nav-badge: max(20px, calc(38 * var(--u)));
+    --nav-badge-fs: max(13px, calc(22 * var(--u)));
   }
+}
+:root,
+.nav {
+  --nav-ring: max(3px, calc(6 * var(--u))); /* 大圓外圈（頁面底色） */
+  --nav-lift: calc(0.45 * var(--nav-d)); /* 選中時往上浮的距離：直徑的 45% */
+  /* 大圓圓心到導覽列上緣（外框）的距離：原本圖示的中心往上移 --nav-lift（約在上緣） */
+  --nav-cy: calc(var(--nav-border) + var(--nav-pad) + var(--nav-ip) + var(--nav-icon) / 2 - var(--nav-lift));
+  --nav-notch: calc(var(--nav-d) / 2 + var(--nav-ring) + max(2px, calc(4 * var(--u)))); /* 凹槽半徑：略大於大圓＋外圈 */
 }
 :root {
   /* 導覽列高度＝框＋內距＋項目（上下內距＋圖示＋間距＋文字 1.1 行高） */
   --nav-h: calc(2 * var(--nav-border) + 2 * var(--nav-pad) + 2 * var(--nav-ip) + var(--nav-icon) + var(--nav-g) + 1.1 * var(--nav-fs));
-  /* 圓鈕中心在導覽列上緣，往上凸出半個直徑，再加外圈 */
-  --nav-clear: calc(var(--nav-bottom) + var(--nav-h) + var(--nav-up-size) / 2 + var(--nav-up-ring));
+  /* 導覽列上緣再加上大圓凸出的高度（半徑 − 圓心位置）和外圈 */
+  --nav-clear: calc(var(--nav-bottom) + var(--nav-h) + var(--nav-d) / 2 - var(--nav-cy) + var(--nav-ring));
 }
 
 .nav {
@@ -78,11 +91,9 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: var(--nav-pad);
-  background: var(--card);
-  border: var(--nav-border) solid var(--line);
-  /* 與選中底色同心的圓角：選中圓角＋項目到外框的距離（用 :root 的值，.nav 自己不能用 cqi） */
-  border-radius: calc(3.6 * var(--nav-qr) + var(--nav-pad));
-  box-shadow: 0 calc(12 * var(--u)) calc(40 * var(--u)) rgba(31, 59, 51, 0.1);
+  border: var(--nav-border) solid transparent; /* 底色與框線在 .nav-bg */
+  --nav-speed: 0.45s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transition: --notch-x var(--nav-speed);
   transform: translateX(-50%);
   animation: navIn 1s 0.5s var(--ease-spring, ease-out) both;
 }
@@ -95,11 +106,54 @@
   }
 }
 
-/* 每一項：圖示在上、文字在下，置中 */
-.nav-item,
-.nav-up {
+/* 剛載入、視窗改變大小：直接定位；從其他頁換過來（is-resume）：不重播進場，只滑動大圓 */
+.nav.no-anim,
+.nav.no-anim * {
+  transition: none !important;
+}
+.nav.is-resume {
+  animation: none;
+}
+
+/* 底板：外層是框線色、內層是卡片色，兩層用同一個凹槽圓心，框線會沿著凹槽走；陰影用 drop-shadow 才會跟著形狀 */
+.nav-bg {
+  position: absolute;
+  inset: calc(-1 * var(--nav-border));
+  z-index: -1;
+  filter: drop-shadow(0 calc(12 * var(--u)) calc(16 * var(--u)) rgba(31, 59, 51, 0.12));
+  pointer-events: none;
+}
+.nav-bg::before,
+.nav-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: var(--nav-border) solid transparent;
+  border-radius: calc(3.6 * var(--nav-qr) + var(--nav-pad));
+  background: var(--line) border-box;
+  --hole: var(--nav-notch);
+  -webkit-mask: radial-gradient(circle at var(--notch-x) var(--nav-cy), transparent calc(var(--hole) - 0.5px), #000 calc(var(--hole) + 0.5px)) border-box;
+  mask: radial-gradient(circle at var(--notch-x) var(--nav-cy), transparent calc(var(--hole) - 0.5px), #000 calc(var(--hole) + 0.5px)) border-box;
+}
+.nav-bg::after {
+  background: var(--card) padding-box;
+  --hole: calc(var(--nav-notch) + var(--nav-border));
+}
+/* 不支援 @property（凹槽無法平滑移動）或 mask：不挖洞，改用頁面底色的圓疊在導覽列上 */
+.nav.no-notch .nav-bg::before,
+.nav.no-notch .nav-bg::after {
+  -webkit-mask: none;
+  mask: none;
+}
+.nav.no-notch .nav-bub {
+  --nav-ring: calc(var(--nav-notch) - var(--nav-d) / 2);
+}
+
+/* 每一項（上傳也相同）：圖示在上、文字在下，置中 */
+.nav-item {
   position: relative;
   min-width: 0;
+  min-height: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -112,17 +166,60 @@
   color: var(--muted);
   font: inherit;
   cursor: pointer;
-  transition:
-    background 0.3s var(--ease-out, ease-out),
-    color 0.3s;
+  transition: color 0.3s;
   -webkit-tap-highlight-color: transparent;
 }
-.nav-icon {
-  display: block;
+/* 圖示＋大圓：選中時整組往上浮 */
+.nav-float {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--nav-icon);
   height: var(--nav-icon);
+  transition: transform var(--nav-speed);
+}
+.nav-bub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--nav-d);
+  height: var(--nav-d);
+  margin: calc(var(--nav-d) / -2) 0 0 calc(var(--nav-d) / -2);
+  border-radius: 50%;
+  background: var(--forest);
+  box-shadow:
+    0 0 0 var(--nav-ring) var(--bg),
+    0 10px 20px rgba(20, 30, 26, 0.3);
+  transform: scale(0);
+  opacity: 0;
+  transition:
+    transform var(--nav-speed),
+    opacity 0.25s;
+}
+.nav-item.is-active .nav-float {
+  transform: translateY(calc(-1 * var(--nav-lift)));
+}
+.nav-item.is-active .nav-bub {
+  transform: none;
+  opacity: 1;
+}
+.nav-item.is-active .nav-icon {
+  font-size: var(--nav-d-icon);
+  color: #e6cd9c;
+}
+.nav-item.is-active .nav-label {
+  color: var(--forest);
+  transform: translateY(calc(-0.6 * var(--nav-q))); /* 略往上靠近大圓 */
+}
+.nav-icon {
+  position: relative;
+  display: block;
   font-size: var(--nav-icon);
   line-height: 1;
-  transition: transform 0.3s var(--ease-spring, ease-out);
+  transition:
+    transform 0.3s var(--ease-spring, ease-out),
+    font-size var(--nav-speed),
+    color 0.3s;
 }
 .nav-item:active .nav-icon {
   transform: scale(0.88);
@@ -134,52 +231,20 @@
   line-height: 1.1;
   font-weight: 700;
   white-space: nowrap;
+  transition:
+    transform var(--nav-speed),
+    color 0.3s;
 }
-/* 選中：整個項目（圖示＋文字）後方一塊森林綠圓角底 */
-.nav-item.is-active {
-  background: var(--forest);
-  color: var(--on-forest);
-}
-.nav-item:focus-visible,
-.nav-up:focus-visible {
+.nav-item:focus-visible {
   outline: 3px solid var(--brass, #b08d57);
   outline-offset: 2px;
 }
 
-/* 上傳：黃銅圓鈕，中心在導覽列上緣、往上凸出半個直徑；外圈一圈頁面底色；下方文字森林綠；沒有選中狀態 */
-.nav-up {
-  color: var(--forest);
-}
-.nav-up-slot {
-  display: block;
-  height: var(--nav-icon); /* 佔住圖示的位置，「上傳」文字和其他項目的文字對齊 */
-}
-.nav-up-circle {
-  position: absolute;
-  left: 50%;
-  top: calc(-1 * (var(--nav-border) + var(--nav-pad)) - var(--nav-up-size) / 2);
-  width: var(--nav-up-size);
-  height: var(--nav-up-size);
-  margin-left: calc(var(--nav-up-size) / -2);
-  border-radius: 50%;
-  background: #c9a46a;
-  color: var(--forest);
-  display: grid;
-  place-items: center;
-  font-size: var(--nav-up-icon);
-  box-shadow:
-    0 0 0 var(--nav-up-ring) var(--bg),
-    0 calc(10 * var(--u)) calc(24 * var(--u)) rgba(31, 59, 51, 0.22);
-  transition: transform 0.3s var(--ease-spring, ease-out);
-}
-.nav-up:active .nav-up-circle {
-  transform: scale(0.92);
-}
-/* 待上傳數字：紅底白字，外圈一圈導覽列底色，在圓鈕右上角；0 時不顯示 */
+/* 待上傳數字：紅底白字，外圈一圈導覽列底色，在上傳圖示右上角；0 時不顯示 */
 .nav-up-badge {
   position: absolute;
-  top: -4%;
-  right: -8%;
+  left: 62%;
+  top: calc(var(--nav-badge) * -0.3);
   min-width: var(--nav-badge);
   height: var(--nav-badge);
   padding: 0 calc(var(--nav-badge) * 0.22);
@@ -203,5 +268,9 @@
 @media (prefers-reduced-motion: reduce) {
   .nav {
     animation: none;
+  }
+  .nav,
+  .nav * {
+    transition: none !important;
   }
 }

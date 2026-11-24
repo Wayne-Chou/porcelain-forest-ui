@@ -2,15 +2,24 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="icon" href="../img/logo.png" />
     <link rel="apple-touch-icon" href="../img/logo.png" />
-    <title>建豐健康科技 - 跌倒風險檢測</title>
+    <title>建豐健康科技 - AI跌倒風險檢測</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
+    />
     <style>
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 一體機歡迎頁（直式平板專用，基準 1032 × 1376）
@@ -97,7 +106,8 @@
         height: 100dvh;
         display: flex;
         flex-direction: column;
-        padding: calc(env(safe-area-inset-top) + 32 * var(--u)) var(--pad) calc(var(--ic-h) + 28 * var(--u));
+        padding: calc(env(safe-area-inset-top) + 32 * var(--u)) var(--pad)
+          calc(var(--ic-h) + 28 * var(--u));
         overflow: hidden;
       }
 
@@ -210,7 +220,8 @@
         font-style: normal;
         font-weight: 400;
         font-display: block;
-        src: url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.52.0/dist/fonts/tabler-icons-filled.rest.woff2") format("woff2");
+        src: url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.52.0/dist/fonts/tabler-icons-filled.rest.woff2")
+          format("woff2");
       }
       .ti.ti-arrow-big-right-filled::before,
       .ti.ti-arrow-big-down-filled::before {
@@ -366,7 +377,12 @@
         border-radius: calc(40 * var(--u));
         border: calc(3 * var(--u)) solid var(--brass);
         overflow: hidden;
-        background: radial-gradient(120% 140% at 30% 20%, #2d5348 0%, var(--forest) 55%, #142821 100%);
+        background: radial-gradient(
+          120% 140% at 30% 20%,
+          #2d5348 0%,
+          var(--forest) 55%,
+          #142821 100%
+        );
       }
       .video video {
         position: absolute;
@@ -406,7 +422,8 @@
         background: var(--card);
         border: calc(3 * var(--u)) solid var(--brass);
         border-radius: calc(40 * var(--u));
-        box-shadow: 0 calc(24 * var(--u)) calc(48 * var(--u)) calc(-24 * var(--u)) rgba(31, 59, 51, 0.35);
+        box-shadow: 0 calc(24 * var(--u)) calc(48 * var(--u))
+          calc(-24 * var(--u)) rgba(31, 59, 51, 0.35);
         overflow: hidden;
       }
       /* 進度條＋標籤：純顯示（不可點擊），每頁 12 秒自動填滿、自動換頁 */
@@ -591,8 +608,8 @@
       }
       .use-num {
         position: absolute;
-        left: calc(-14 * var(--u));
-        top: calc(-14 * var(--u));
+        left: calc(-24 * var(--u));
+        top: calc(-24 * var(--u));
         width: calc(84 * var(--u));
         height: calc(84 * var(--u));
         display: grid;
@@ -769,7 +786,8 @@
         grid-template-columns: calc(330 * var(--u)) minmax(0, 1fr);
         gap: calc(44 * var(--u));
         align-items: center;
-        padding: calc(10 * var(--u)) calc(36 * var(--u)) calc(24 * var(--u)) calc(52 * var(--u));
+        padding: calc(10 * var(--u)) calc(36 * var(--u)) calc(24 * var(--u))
+          calc(52 * var(--u));
       }
       .rp-card {
         position: relative;
@@ -780,7 +798,8 @@
         border-radius: calc(28 * var(--u));
         background: #f6f1e8;
         border: calc(2 * var(--u)) solid var(--line);
-        box-shadow: 0 calc(18 * var(--u)) calc(36 * var(--u)) calc(-18 * var(--u)) rgba(31, 59, 51, 0.4);
+        box-shadow: 0 calc(18 * var(--u)) calc(36 * var(--u))
+          calc(-18 * var(--u)) rgba(31, 59, 51, 0.4);
         transform: rotate(-4deg);
       }
       .rp-tag {
@@ -885,12 +904,18 @@
         padding: 0 calc(28 * var(--u));
         border-radius: calc(40 * var(--u));
         border: calc(3 * var(--u)) solid var(--brass);
-        background: linear-gradient(135deg, #2e5649 0%, var(--forest) 55%, #172d27 100%);
+        background: linear-gradient(
+          135deg,
+          #2e5649 0%,
+          var(--forest) 55%,
+          #172d27 100%
+        );
         color: var(--on-forest);
         text-align: left;
         text-decoration: none;
         -webkit-user-drag: none;
-        box-shadow: 0 calc(20 * var(--u)) calc(40 * var(--u)) calc(-20 * var(--u)) rgba(31, 59, 51, 0.55);
+        box-shadow: 0 calc(20 * var(--u)) calc(40 * var(--u))
+          calc(-20 * var(--u)) rgba(31, 59, 51, 0.55);
         animation: breathe 3.2s ease-in-out infinite;
         overflow: hidden;
       }
@@ -1123,7 +1148,8 @@
         border-radius: calc(40 * var(--u));
         background: var(--card);
         border: max(1px, calc(2 * var(--u))) solid var(--line);
-        box-shadow: 0 calc(30 * var(--u)) calc(80 * var(--u)) calc(-30 * var(--u)) rgba(0, 0, 0, 0.45);
+        box-shadow: 0 calc(30 * var(--u)) calc(80 * var(--u))
+          calc(-30 * var(--u)) rgba(0, 0, 0, 0.45);
         transform: scale(0.94);
         transition: transform 0.3s var(--ease-out);
       }
@@ -1302,14 +1328,21 @@
       <header class="topbar">
         <div class="brand">
           <!-- 長按 2 秒：進入待機（DEMO_MODE 時點一下） -->
-          <div class="logo" id="logo"><img src="../img/logo.png" alt="建豐健康科技" draggable="false" /></div>
+          <div class="logo" id="logo">
+            <img src="../img/logo.png" alt="建豐健康科技" draggable="false" />
+          </div>
           <span class="brand-name serif">建豐健康科技</span>
         </div>
         <div class="status">
-          <span class="weather" id="weather"><i class="ti ti-cloud-sun" aria-hidden="true"></i><span id="temp"></span></span>
+          <span class="weather" id="weather"
+            ><i class="ti ti-temperature-sun" aria-hidden="true"></i
+            ><span id="temp"></span
+          ></span>
           <span class="clock" id="clock"></span>
           <!-- 專家模式：直接前往專家首頁 -->
-          <a class="expert" href="home.html"><i class="ti ti-user-cog" aria-hidden="true"></i>專家模式</a>
+          <a class="expert" href="home.html"
+            ><i class="ti ti-user-cog" aria-hidden="true"></i>專家模式</a
+          >
         </div>
       </header>
 
@@ -1320,79 +1353,139 @@
       </div>
 
       <!-- 2. 標題 -->
-      <h1 class="title serif">跌倒風險檢測</h1>
+      <h1 class="title serif">AI跌倒風險檢測</h1>
 
       <!-- 3. 三步驟 -->
       <ol class="steps" aria-label="檢測步驟">
         <li class="step">
-          <span class="step-circle"><i class="ti ti-id" aria-hidden="true"></i><span class="step-num">1</span></span>
+          <span class="step-circle"
+            ><i class="ti ti-id" aria-hidden="true"></i
+            ><span class="step-num">1</span></span
+          >
           <span class="step-label">插入健保卡</span>
         </li>
-        <li class="step-arrow" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+        <li class="step-arrow" aria-hidden="true">
+          <i class="ti ti-arrow-big-right-filled"></i>
+        </li>
         <li class="step">
-          <span class="step-circle"><i class="ti ti-walk" aria-hidden="true"></i><span class="step-num">2</span></span>
+          <span class="step-circle"
+            ><i class="ti ti-walk" aria-hidden="true"></i
+            ><span class="step-num">2</span></span
+          >
           <span class="step-label">走一段路</span>
         </li>
-        <li class="step-arrow" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+        <li class="step-arrow" aria-hidden="true">
+          <i class="ti ti-arrow-big-right-filled"></i>
+        </li>
         <li class="step">
-          <span class="step-circle"><i class="ti ti-report-medical" aria-hidden="true"></i><span class="step-num">3</span></span>
+          <span class="step-circle"
+            ><i class="ti ti-report-medical" aria-hidden="true"></i
+            ><span class="step-num">3</span></span
+          >
           <span class="step-label">看結果</span>
         </li>
       </ol>
 
       <!-- A 版：影片區（沒有影片時顯示佔位） -->
       <section class="video" id="video" aria-label="衛教影片">
-        <div class="video-ph" aria-hidden="true"><span><i class="ti ti-player-play"></i></span></div>
+        <div class="video-ph" aria-hidden="true">
+          <span><i class="ti ti-player-play"></i></span>
+        </div>
       </section>
 
       <!-- B、C 版：輪播區塊（三頁，每頁 12 秒，依序循環） -->
-      <section class="carousel" id="carousel" aria-roledescription="輪播" aria-label="檢測介紹">
+      <section
+        class="carousel"
+        id="carousel"
+        aria-roledescription="輪播"
+        aria-label="檢測介紹"
+      >
         <!-- 進度條＋標籤：純顯示 -->
         <div class="cs-tabs" aria-hidden="true">
-          <div class="cs-tab is-current"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label" id="csLabel0">自我檢查</span></div>
-          <div class="cs-tab"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">檢測怎麼做</span></div>
-          <div class="cs-tab"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">報告搶先看</span></div>
+          <div class="cs-tab is-current">
+            <span class="cs-bar"><span class="cs-fill"></span></span
+            ><span class="cs-label" id="csLabel0">自我檢查</span>
+          </div>
+          <div class="cs-tab">
+            <span class="cs-bar"><span class="cs-fill"></span></span
+            ><span class="cs-label">檢測怎麼做</span>
+          </div>
+          <div class="cs-tab">
+            <span class="cs-bar"><span class="cs-fill"></span></span
+            ><span class="cs-label">報告搶先看</span>
+          </div>
         </div>
         <div class="cs-view">
           <!-- C 版第 1 頁：使用步驟（A、B 版由 JS 移除） -->
-          <div class="cs-slide use is-active is-play" id="slideUse" role="group" aria-roledescription="頁" aria-label="使用步驟">
+          <div
+            class="cs-slide use is-active is-play"
+            id="slideUse"
+            role="group"
+            aria-roledescription="頁"
+            aria-label="使用步驟"
+          >
             <h2 class="cs-h">只要三個步驟</h2>
             <ol class="use-steps">
               <li class="use-step" style="--i: 0">
-                <span class="use-circle"><i class="ti ti-id" aria-hidden="true"></i><span class="use-num">1</span></span>
+                <span class="use-circle"
+                  ><i class="ti ti-id" aria-hidden="true"></i
+                  ><span class="use-num">1</span></span
+                >
                 <span class="use-label">插入健保卡</span>
               </li>
-              <li class="use-arrow" style="--i: 0.5" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+              <li class="use-arrow" style="--i: 0.5" aria-hidden="true">
+                <i class="ti ti-arrow-big-right-filled"></i>
+              </li>
               <li class="use-step" style="--i: 1">
-                <span class="use-circle"><i class="ti ti-walk" aria-hidden="true"></i><span class="use-num">2</span></span>
+                <span class="use-circle"
+                  ><i class="ti ti-walk" aria-hidden="true"></i
+                  ><span class="use-num">2</span></span
+                >
                 <span class="use-label">走一段路</span>
               </li>
-              <li class="use-arrow" style="--i: 1.5" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+              <li class="use-arrow" style="--i: 1.5" aria-hidden="true">
+                <i class="ti ti-arrow-big-right-filled"></i>
+              </li>
               <li class="use-step" style="--i: 2">
-                <span class="use-circle"><i class="ti ti-report-medical" aria-hidden="true"></i><span class="use-num">3</span></span>
+                <span class="use-circle"
+                  ><i class="ti ti-report-medical" aria-hidden="true"></i
+                  ><span class="use-num">3</span></span
+                >
                 <span class="use-label">看結果</span>
               </li>
             </ol>
           </div>
           <!-- B 版第 1 頁：自我檢查（C 版由 JS 移除） -->
-          <div class="cs-slide is-active is-play" id="slideCheck" role="group" aria-roledescription="頁" aria-label="自我檢查">
+          <div
+            class="cs-slide is-active is-play"
+            id="slideCheck"
+            role="group"
+            aria-roledescription="頁"
+            aria-label="自我檢查"
+          >
             <h2 class="cs-h">問問自己</h2>
             <ul class="q-list">
               <li>
                 <div class="q">
-                  <span class="q-icon" aria-hidden="true"><i class="ti ti-history"></i></span>
+                  <span class="q-icon" aria-hidden="true"
+                    ><i class="ti ti-history"></i
+                  ></span>
                   <span class="q-text">過去一年曾經跌倒過嗎？</span>
                 </div>
               </li>
               <li>
                 <div class="q">
-                  <span class="q-icon" aria-hidden="true"><i class="ti ti-hand-stop"></i></span>
+                  <span class="q-icon" aria-hidden="true"
+                    ><i class="ti ti-hand-stop"></i
+                  ></span>
                   <span class="q-text">走路或起身需要扶東西嗎？</span>
                 </div>
               </li>
               <li>
                 <div class="q">
-                  <span class="q-icon" aria-hidden="true"><i class="ti ti-mood-nervous"></i></span>
+                  <span class="q-icon" aria-hidden="true"
+                    ><i class="ti ti-mood-nervous"></i
+                  ></span>
                   <span class="q-text">會擔心自己跌倒嗎？</span>
                 </div>
               </li>
@@ -1405,24 +1498,69 @@
           </div>
 
           <!-- 第 2 頁：檢測怎麼做 -->
-          <div class="cs-slide how" role="group" aria-roledescription="頁" aria-label="檢測怎麼做" aria-hidden="true" inert>
+          <div
+            class="cs-slide how"
+            role="group"
+            aria-roledescription="頁"
+            aria-label="檢測怎麼做"
+            aria-hidden="true"
+            inert
+          >
             <h2 class="cs-h">照平常的速度<br />從起點走到終點就完成</h2>
             <div class="walk" aria-hidden="true">
               <svg viewBox="0 0 800 260" preserveAspectRatio="xMidYMid meet">
                 <!-- 步道與黃銅虛線 -->
-                <rect x="40" y="200" width="720" height="36" rx="18" fill="#ece4d6" />
-                <line x1="90" y1="218" x2="710" y2="218" stroke="#b08d57" stroke-width="4" stroke-dasharray="14 12" stroke-linecap="round" />
+                <rect
+                  x="40"
+                  y="200"
+                  width="720"
+                  height="36"
+                  rx="18"
+                  fill="#ece4d6"
+                />
+                <line
+                  x1="90"
+                  y1="218"
+                  x2="710"
+                  y2="218"
+                  stroke="#b08d57"
+                  stroke-width="4"
+                  stroke-dasharray="14 12"
+                  stroke-linecap="round"
+                />
                 <!-- 起點：深綠旗 -->
-                <line x1="90" y1="218" x2="90" y2="70" stroke="#1f3b33" stroke-width="6" stroke-linecap="round" />
+                <line
+                  x1="90"
+                  y1="218"
+                  x2="90"
+                  y2="70"
+                  stroke="#1f3b33"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                />
                 <path d="M93 72 L156 92 L93 112 Z" fill="#1f3b33" />
                 <text x="100" y="152" fill="#1f3b33">起點</text>
                 <!-- 終點：黃銅旗 -->
-                <line x1="710" y1="218" x2="710" y2="70" stroke="#8f6e3c" stroke-width="6" stroke-linecap="round" />
+                <line
+                  x1="710"
+                  y1="218"
+                  x2="710"
+                  y2="70"
+                  stroke="#8f6e3c"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                />
                 <path d="M713 72 L776 92 L713 112 Z" fill="#b08d57" />
                 <text x="720" y="152" fill="#8f6e3c">終點</text>
                 <!-- 線條小人：髖部為原點，雙腳、雙手交替擺動 -->
                 <g transform="translate(0 165)">
-                  <g class="wk-man" stroke="#1f3b33" stroke-width="7" stroke-linecap="round" fill="none">
+                  <g
+                    class="wk-man"
+                    stroke="#1f3b33"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                    fill="none"
+                  >
                     <line class="wk-leg wk-a" x1="0" y1="0" x2="0" y2="47" />
                     <line class="wk-leg wk-b" x1="0" y1="0" x2="0" y2="47" />
                     <line x1="0" y1="0" x2="0" y2="-38" />
@@ -1430,20 +1568,40 @@
                       <line class="wk-arm wk-a" x1="0" y1="0" x2="0" y2="32" />
                       <line class="wk-arm wk-b" x1="0" y1="0" x2="0" y2="32" />
                     </g>
-                    <circle cx="0" cy="-54" r="13" fill="#1f3b33" stroke="none" />
+                    <circle
+                      cx="0"
+                      cy="-54"
+                      r="13"
+                      fill="#1f3b33"
+                      stroke="none"
+                    />
                   </g>
                 </g>
                 <!-- 抵達：終點上方綠色圓形打勾 -->
                 <g class="wk-done">
                   <circle cx="710" cy="38" r="27" fill="#2f6b4f" />
-                  <path d="M697 38 l9 9 l16 -17" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                  <path
+                    d="M697 38 l9 9 l16 -17"
+                    stroke="#fff"
+                    stroke-width="6"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </g>
               </svg>
             </div>
           </div>
 
           <!-- 第 3 頁：報告搶先看 -->
-          <div class="cs-slide" role="group" aria-roledescription="頁" aria-label="報告搶先看" aria-hidden="true" inert>
+          <div
+            class="cs-slide"
+            role="group"
+            aria-roledescription="頁"
+            aria-label="報告搶先看"
+            aria-hidden="true"
+            inert
+          >
             <div class="rp">
               <div class="rp-card" aria-hidden="true">
                 <span class="rp-tag">示意</span>
@@ -1452,7 +1610,15 @@
                 <svg class="rp-gauge" viewBox="0 0 200 112">
                   <g id="rpArcs"></g>
                   <g class="rp-needle">
-                    <line x1="100" y1="100" x2="100" y2="38" stroke="#1a2420" stroke-width="6" stroke-linecap="round" />
+                    <line
+                      x1="100"
+                      y1="100"
+                      x2="100"
+                      y2="38"
+                      stroke="#1a2420"
+                      stroke-width="6"
+                      stroke-linecap="round"
+                    />
                     <circle cx="100" cy="100" r="9" fill="#1a2420" />
                   </g>
                 </svg>
@@ -1461,9 +1627,18 @@
               <div class="rp-text">
                 <h2 class="cs-h rp-h">做完就能拿到<br />您的跌倒風險報告</h2>
                 <ul class="rp-list">
-                  <li><i class="ti ti-gauge" aria-hidden="true"></i>一眼看懂風險等級</li>
-                  <li><i class="ti ti-device-mobile" aria-hidden="true"></i>掃 QR Code 用手機帶走</li>
-                  <li><i class="ti ti-list-check" aria-hidden="true"></i>附上專屬的改善建議</li>
+                  <li>
+                    <i class="ti ti-gauge" aria-hidden="true"></i
+                    >一眼看懂風險等級
+                  </li>
+                  <li>
+                    <i class="ti ti-device-mobile" aria-hidden="true"></i>掃 QR
+                    Code 用手機帶走
+                  </li>
+                  <li>
+                    <i class="ti ti-list-check" aria-hidden="true"></i
+                    >附上專屬的改善建議
+                  </li>
                 </ul>
               </div>
             </div>
@@ -1481,13 +1656,20 @@
           <span class="guest-title serif">訪客模式</span>
           <span class="guest-sub">不用插卡，直接開始</span>
         </span>
-        <span class="tap" aria-hidden="true"><span class="tap-ring"></span><i class="ti ti-hand-finger"></i></span>
+        <span class="tap" aria-hidden="true"
+          ><span class="tap-ring"></span><i class="ti ti-hand-finger"></i
+        ></span>
       </a>
 
       <span class="or" aria-hidden="true">或</span>
 
       <!-- 插入健保卡：不是按鈕、不可聚焦；點擊（模擬插卡）時箭頭加速閃動兩次，再前往健保卡流程頁 -->
-      <div class="insert" id="insert" role="img" aria-label="請將健保卡插入螢幕下方讀卡機">
+      <div
+        class="insert"
+        id="insert"
+        role="img"
+        aria-label="請將健保卡插入螢幕下方讀卡機"
+      >
         <div class="ic-top">
           <div class="ic-title serif">插入健保卡</div>
           <div class="ic-sub">插入螢幕下方讀卡機</div>
@@ -1503,14 +1685,29 @@
 
     <!-- 進入待機：確認視窗 -->
     <div class="mask" id="sbMask" aria-hidden="true">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sbTitle" aria-describedby="sbBody">
-        <div class="dlg-icon" aria-hidden="true"><i class="ti ti-moon"></i></div>
+      <div
+        class="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sbTitle"
+        aria-describedby="sbBody"
+      >
+        <div class="dlg-icon" aria-hidden="true">
+          <i class="ti ti-moon"></i>
+        </div>
         <h2 class="dlg-title serif" id="sbTitle">進入待機</h2>
         <p class="dlg-body" id="sbBody">畫面會關閉，影片暫停播放。</p>
-        <div class="dlg-hint"><i class="ti ti-hand-click" aria-hidden="true"></i>要喚醒時，請在螢幕上連續點兩下</div>
+        <div class="dlg-hint">
+          <i class="ti ti-hand-click" aria-hidden="true"></i
+          >要喚醒時，請在螢幕上連續點兩下
+        </div>
         <div class="dlg-actions">
-          <button class="btn btn-ghost" id="sbCancel" type="button">取消</button>
-          <button class="btn btn-primary" id="sbOk" type="button">進入待機</button>
+          <button class="btn btn-ghost" id="sbCancel" type="button">
+            取消
+          </button>
+          <button class="btn btn-primary" id="sbOk" type="button">
+            進入待機
+          </button>
         </div>
       </div>
     </div>
@@ -1520,7 +1717,6 @@
       <div class="standby-title serif">待機中</div>
       <div class="standby-sub">點兩下螢幕喚醒</div>
     </div>
-
 
     <script>
       /* =========================================================
@@ -1534,9 +1730,9 @@
       // A 版：衛教影片網址；空字串時顯示佔位畫面
       const VIDEO_SRC = "";
       // A 版：跑馬燈文字
-      const MARQUEE_TEXT = "跌倒風險檢測";
+      const MARQUEE_TEXT = "AI跌倒風險檢測";
       // 天氣（之後改接天氣資料）
-      const WEATHER = { temp: 26, icon: "ti-cloud-sun" };
+      const WEATHER = { temp: 26, icon: "ti-temperature-sun" };
 
       const LONG_PRESS_MS = 2000; // 長按 Logo 開啟待機視窗
       const DOUBLE_TAP_MS = 400; // 待機時連點兩下的間隔
@@ -1594,10 +1790,18 @@
       function initVideo() {
         if (!VIDEO_SRC) return;
         videoEl = document.createElement("video");
-        Object.assign(videoEl, { src: VIDEO_SRC, autoplay: true, muted: true, loop: true, playsInline: true });
+        Object.assign(videoEl, {
+          src: VIDEO_SRC,
+          autoplay: true,
+          muted: true,
+          loop: true,
+          playsInline: true,
+        });
         videoEl.setAttribute("playsinline", "");
         videoEl.setAttribute("muted", "");
-        videoEl.addEventListener("loadeddata", () => $("#video").classList.add("has-video"));
+        videoEl.addEventListener("loadeddata", () =>
+          $("#video").classList.add("has-video"),
+        );
         videoEl.addEventListener("error", () => {
           $("#video").classList.remove("has-video");
           videoEl.remove();
@@ -1622,9 +1826,13 @@
           group.append(it);
         };
         add();
-        for (let i = 0; i < 40 && group.offsetWidth < box.clientWidth; i++) add();
+        for (let i = 0; i < 40 && group.offsetWidth < box.clientWidth; i++)
+          add();
         track.append(group.cloneNode(true));
-        track.style.setProperty("--mq-dur", (group.offsetWidth / (MQ_SPEED * unit())).toFixed(2) + "s");
+        track.style.setProperty(
+          "--mq-dur",
+          (group.offsetWidth / (MQ_SPEED * unit())).toFixed(2) + "s",
+        );
       }
 
       /* =========================================================
@@ -1648,7 +1856,8 @@
         }
         function paint() {
           tabs.forEach((t, j) => {
-            const v = j < idx ? 1 : j === idx ? Math.min(1, elapsed / SLIDE_MS) : 0;
+            const v =
+              j < idx ? 1 : j === idx ? Math.min(1, elapsed / SLIDE_MS) : 0;
             fills[j].style.transform = `scaleX(${v})`;
             t.classList.toggle("is-current", j === idx);
           });
@@ -1662,7 +1871,8 @@
             old.setAttribute("aria-hidden", "true");
             old.inert = true;
             setTimeout(() => {
-              if (!old.classList.contains("is-active")) old.classList.remove("is-out");
+              if (!old.classList.contains("is-active"))
+                old.classList.remove("is-out");
             }, 750);
             idx = i;
             const cur = slides[i];
@@ -1737,7 +1947,9 @@
             openStandbyDialog();
           }, LONG_PRESS_MS);
         });
-        ["pointerup", "pointercancel", "lostpointercapture"].forEach((t) => logo.addEventListener(t, cancel));
+        ["pointerup", "pointercancel", "lostpointercapture"].forEach((t) =>
+          logo.addEventListener(t, cancel),
+        );
         logo.addEventListener("click", () => {
           if (DEMO_MODE) openStandbyDialog();
         });
@@ -1777,7 +1989,10 @@
           if (e.key === "Escape") closeStandbyDialog();
           if (e.key === "Tab") {
             e.preventDefault();
-            ($("#sbCancel") === document.activeElement ? $("#sbOk") : $("#sbCancel")).focus();
+            ($("#sbCancel") === document.activeElement
+              ? $("#sbOk")
+              : $("#sbCancel")
+            ).focus();
           }
         });
       }
@@ -1835,10 +2050,14 @@
           card.classList.add("is-hint");
           // 閃動兩次（約 0.64 秒）後前往；reduced-motion 沒有動畫，稍等一下就前往
           const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-          setTimeout(() => onCardInserted({ simulated: true }), reduce ? 150 : 700);
+          setTimeout(
+            () => onCardInserted({ simulated: true }),
+            reduce ? 150 : 700,
+          );
         });
         card.querySelector(".ic-chev").addEventListener("animationend", (e) => {
-          if (e.animationName === "chev-blink") card.classList.remove("is-hint");
+          if (e.animationName === "chev-blink")
+            card.classList.remove("is-hint");
         });
         // 從瀏覽器返回（頁面快取）時可以再點一次
         addEventListener("pageshow", (e) => {

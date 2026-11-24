@@ -155,7 +155,7 @@
       }
 
       /* ===== 版面 ===== */
-      /* 整頁剛好一個畫面高：頁首那一列在上，底部留 --nav-clear（css/nav.css：導覽列＋往上凸出的上傳圓鈕）
+      /* 整頁剛好一個畫面高：頁首那一列在上，底部留 --nav-clear（css/nav.css：導覽列＋往上浮起的選中大圓）
        * 中間的 .stage 放「問候語＋兩張卡」，整組在兩者之間垂直置中（上下留白相等） */
       .home {
         height: 100dvh;
@@ -1355,6 +1355,7 @@
         sheet.setAttribute("aria-hidden", "false");
         document.body.classList.add("sheet-open", "up-open");
         $("#app").inert = true;
+        setNavActive("upload"); // 導覽列：上傳暫時浮起
       }
 
       // 有日期正在上傳時也可以關閉，上傳在背景繼續
@@ -1367,6 +1368,7 @@
         sheet.setAttribute("aria-hidden", "true");
         document.body.classList.remove("sheet-open", "up-open");
         $("#app").inert = false;
+        setNavActive(); // 導覽列：滑回鑑測
         up.lastFocus?.focus?.({ preventScroll: true });
       }
 
