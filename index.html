@@ -154,7 +154,8 @@
         { file: "pages/detail-gait.html?preview=1", name: "行走測驗詳細報告", desc: "受測者手機開啟的步態分析報告，可存成圖片", status: "done" },
         { file: "pages/detail-sppb.html?preview=1", name: "SPPB 詳細報告", desc: "受測者手機開啟的 SPPB 報告：三項分數、風險、VIVIFRAIL 與建議", status: "done" },
         { file: "pages/subjects.html", name: "受測者管理", desc: "管理各場域的受測人員，可新增、編輯資料", status: "done" },
-        // 一體機歡迎頁（直式平板）：layout=a 影片版、layout=b 輪播版（會記在 sessionStorage，專家首頁「回到一體機」回到上次的版本）
+        // 一體機歡迎頁（直式平板）：layout=c 合併版（預設）、layout=a 影片版、layout=b 輪播版（會記在 sessionStorage，專家首頁「回到一體機」回到上次的版本）
+        { file: "pages/kiosk.html?layout=c", name: "一體機歡迎頁 C（合併版）", desc: "直式一體機首頁（預設）：跑馬燈＋輪播使用步驟、檢測方式與報告預覽", status: "done" },
         { file: "pages/kiosk.html?layout=a", name: "一體機歡迎頁 A（影片）", desc: "直式一體機首頁：跑馬燈、三步驟、衛教影片、訪客模式與插入健保卡", status: "done" },
         { file: "pages/kiosk.html?layout=b", name: "一體機歡迎頁 B（輪播）", desc: "直式一體機首頁：三步驟下方輪播自我檢查、檢測方式與報告預覽", status: "done" },
         // 一體機訪客頁：選性別、生日後開始行走測驗（訪客編號存在 sessionStorage「kf.visitorSeq」）

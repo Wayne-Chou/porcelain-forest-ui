@@ -187,15 +187,19 @@
         transform: scale(0.96);
       }
 
-      /* ===== 版本切換：A 影片版／B 輪播版（html[data-layout]，沒有設定時為 A）=====
+      /* ===== 版本切換：A 影片版／B 輪播版／C 合併版（html[data-layout]，由 JS 設定）=====
        * 兩版共用頂部列、標題、三步驟、底部入口；差別只在步驟下方的區域
        */
       .carousel,
       html[data-layout="b"] .marquee,
-      html[data-layout="b"] .video {
+      html[data-layout="b"] .video,
+      html[data-layout="c"] .video,
+      html[data-layout="c"] .kiosk > .steps,
+      html[data-layout="c"] .or {
         display: none;
       }
-      html[data-layout="b"] .carousel {
+      html[data-layout="b"] .carousel,
+      html[data-layout="c"] .carousel {
         display: flex;
       }
 
@@ -550,6 +554,93 @@
         flex: none;
         color: var(--brass-light);
         font-size: calc(44 * var(--u));
+      }
+
+      /* C 版第 1 頁：使用步驟（三步驟在標題以下的空間垂直置中，進入時由左到右依序淡入上浮） */
+      .use .cs-h {
+        font-size: calc(52 * var(--u));
+      }
+      .use-steps {
+        flex: 1 1 0;
+        min-height: 0;
+        margin: 0;
+        padding: 0 calc(36 * var(--u));
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr;
+        align-content: center;
+        align-items: start;
+      }
+      .use-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: calc(16 * var(--u));
+      }
+      .use-circle {
+        position: relative;
+        width: calc(200 * var(--u));
+        height: calc(200 * var(--u));
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--card);
+        border: calc(5 * var(--u)) solid var(--brass);
+        color: var(--forest);
+        font-size: calc(104 * var(--u));
+      }
+      .use-num {
+        position: absolute;
+        left: calc(-14 * var(--u));
+        top: calc(-14 * var(--u));
+        width: calc(84 * var(--u));
+        height: calc(84 * var(--u));
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--forest);
+        box-shadow: 0 0 0 calc(6 * var(--u)) var(--card);
+        color: var(--brass-light);
+        font-family: var(--font-serif);
+        font-weight: 600;
+        font-size: calc(46 * var(--u));
+        line-height: 1;
+      }
+      .use-label {
+        font-size: calc(40 * var(--u));
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+      /* 與圓的垂直中心對齊（圓高 200、箭頭 86 → 往下 57） */
+      .use-arrow {
+        display: flex;
+        margin-top: calc(57 * var(--u));
+        color: #b08d57;
+        font-size: calc(86 * var(--u));
+        line-height: 1;
+      }
+      .is-play .use-step,
+      .is-play .use-arrow {
+        animation: use-in 0.6s calc(0.2s + var(--i) * 0.2s) var(--ease-out) both;
+      }
+      @keyframes use-in {
+        from {
+          opacity: 0;
+          transform: translateY(calc(28 * var(--u)));
+        }
+      }
+      /* C 版輪播較高：第 2 頁標題＋步道當成一組垂直置中（第 3 頁原本就垂直置中） */
+      html[data-layout="c"] .how {
+        justify-content: center;
+      }
+      html[data-layout="c"] .how .walk {
+        flex: 0 1 auto;
+      }
+      html[data-layout="c"] .how .walk svg {
+        height: auto;
+        max-height: 100%;
+        aspect-ratio: 800 / 260;
       }
 
       /* 第 2 頁：檢測怎麼做（每趟約 5 秒） */
@@ -1183,7 +1274,9 @@
         .wk-leg,
         .wk-arm,
         .wk-done,
-        .rp-needle {
+        .rp-needle,
+        .use-step,
+        .use-arrow {
           animation: none !important;
         }
         .wk-man {
@@ -1252,17 +1345,37 @@
         <div class="video-ph" aria-hidden="true"><span><i class="ti ti-player-play"></i></span></div>
       </section>
 
-      <!-- B 版：輪播區塊（三頁，每頁 12 秒，依序循環） -->
+      <!-- B、C 版：輪播區塊（三頁，每頁 12 秒，依序循環） -->
       <section class="carousel" id="carousel" aria-roledescription="輪播" aria-label="檢測介紹">
         <!-- 進度條＋標籤：純顯示 -->
         <div class="cs-tabs" aria-hidden="true">
-          <div class="cs-tab is-current"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">自我檢查</span></div>
+          <div class="cs-tab is-current"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label" id="csLabel0">自我檢查</span></div>
           <div class="cs-tab"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">檢測怎麼做</span></div>
           <div class="cs-tab"><span class="cs-bar"><span class="cs-fill"></span></span><span class="cs-label">報告搶先看</span></div>
         </div>
         <div class="cs-view">
-          <!-- 第 1 頁：自我檢查 -->
-          <div class="cs-slide is-active is-play" role="group" aria-roledescription="頁" aria-label="自我檢查">
+          <!-- C 版第 1 頁：使用步驟（A、B 版由 JS 移除） -->
+          <div class="cs-slide use is-active is-play" id="slideUse" role="group" aria-roledescription="頁" aria-label="使用步驟">
+            <h2 class="cs-h">只要三個步驟</h2>
+            <ol class="use-steps">
+              <li class="use-step" style="--i: 0">
+                <span class="use-circle"><i class="ti ti-id" aria-hidden="true"></i><span class="use-num">1</span></span>
+                <span class="use-label">插入健保卡</span>
+              </li>
+              <li class="use-arrow" style="--i: 0.5" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+              <li class="use-step" style="--i: 1">
+                <span class="use-circle"><i class="ti ti-walk" aria-hidden="true"></i><span class="use-num">2</span></span>
+                <span class="use-label">走一段路</span>
+              </li>
+              <li class="use-arrow" style="--i: 1.5" aria-hidden="true"><i class="ti ti-arrow-big-right-filled"></i></li>
+              <li class="use-step" style="--i: 2">
+                <span class="use-circle"><i class="ti ti-report-medical" aria-hidden="true"></i><span class="use-num">3</span></span>
+                <span class="use-label">看結果</span>
+              </li>
+            </ol>
+          </div>
+          <!-- B 版第 1 頁：自我檢查（C 版由 JS 移除） -->
+          <div class="cs-slide is-active is-play" id="slideCheck" role="group" aria-roledescription="頁" aria-label="自我檢查">
             <h2 class="cs-h">問問自己</h2>
             <ul class="q-list">
               <li>
@@ -1292,7 +1405,7 @@
           </div>
 
           <!-- 第 2 頁：檢測怎麼做 -->
-          <div class="cs-slide" role="group" aria-roledescription="頁" aria-label="檢測怎麼做" aria-hidden="true" inert>
+          <div class="cs-slide how" role="group" aria-roledescription="頁" aria-label="檢測怎麼做" aria-hidden="true" inert>
             <h2 class="cs-h">照平常的速度<br />從起點走到終點就完成</h2>
             <div class="walk" aria-hidden="true">
               <svg viewBox="0 0 800 260" preserveAspectRatio="xMidYMid meet">
@@ -1413,9 +1526,9 @@
       /* =========================================================
        * 設定
        * ========================================================= */
-      // 版本：'a' 影片版／'b' 輪播版。網址 ?layout=a｜b 可覆寫，並記在 sessionStorage「kf.kioskLayout」
+      // 版本：'a' 影片版／'b' 輪播版／'c' 合併版（跑馬燈＋輪播）。網址 ?layout=a｜b｜c 可覆寫，並記在 sessionStorage「kf.kioskLayout」
       // 沒有網址參數時：先用 sessionStorage 記住的版本（專家首頁「回到一體機」會回到上次的版本），沒有才用這個設定
-      const LAYOUT = "a";
+      const LAYOUT = "c";
       // 展示用：true 時點一下 Logo 就開啟「進入待機」視窗（正式為長按 2 秒）
       const DEMO_MODE = false;
       // A 版：衛教影片網址；空字串時顯示佔位畫面
@@ -1436,7 +1549,7 @@
       /* ===== 版本 ===== */
       const LAYOUT_KEY = "kf.kioskLayout";
       const layout = (() => {
-        const ok = (v) => v === "a" || v === "b";
+        const ok = (v) => ["a", "b", "c"].includes(v);
         const fromUrl = new URLSearchParams(location.search).get("layout");
         if (ok(fromUrl)) {
           try {
@@ -1448,9 +1561,14 @@
           const saved = sessionStorage.getItem(LAYOUT_KEY);
           if (ok(saved)) return saved;
         } catch {}
-        return ok(LAYOUT) ? LAYOUT : "a";
+        return ok(LAYOUT) ? LAYOUT : "c";
       })();
       document.documentElement.dataset.layout = layout;
+      // 輪播第 1 頁：C 版是「使用步驟」，B 版是「自我檢查」；移除這個版本不用的那一頁（要在建立輪播之前）
+      if (layout === "c") {
+        $("#slideCheck").remove();
+        $("#csLabel0").textContent = "使用步驟";
+      } else $("#slideUse").remove();
 
       // 一體機：關閉長按系統選單
       document.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -1510,7 +1628,7 @@
       }
 
       /* =========================================================
-       * B 版：輪播（三頁、每頁 12 秒、依序循環）
+       * B、C 版：輪播（三頁、每頁 12 秒、依序循環）
        * 進度條：已播過的滿格、正在播放的由左往右填滿、未播的空白；標籤與題目都是純顯示，不可點擊
        * 待機時暫停計時，喚醒後繼續
        * ========================================================= */
@@ -1747,8 +1865,9 @@
       initDialog();
       initStandby();
       initInsert();
-      if (layout === "a") {
-        initVideo();
+      if (layout === "a") initVideo();
+      // A、C 版：跑馬燈
+      if (layout !== "b") {
         buildMarquee();
         document.fonts.ready.then(buildMarquee);
         let rz;
@@ -1756,7 +1875,9 @@
           clearTimeout(rz);
           rz = setTimeout(buildMarquee, 150);
         });
-      } else {
+      }
+      // B、C 版：輪播
+      if (layout !== "a") {
         buildGauge();
         Carousel.start();
       }
