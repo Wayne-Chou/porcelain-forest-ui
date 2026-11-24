@@ -532,7 +532,122 @@
   cursor: not-allowed;
 }
 
+/* ===== 免責聲明：選好場域後的確認對話框（create() 有給 disclaimer 時才會出現；高於面板 210、低於 toast 300） ===== */
+.fsd-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 30, 26, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.35s var(--ease-out),
+    visibility 0s 0.35s;
+}
+.fsd-mask.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s var(--ease-out);
+}
+.fsd {
+  display: flex;
+  flex-direction: column;
+  width: min(max(calc(760 * var(--u)), 340px), calc(100vw - 32px));
+  max-height: 80vh;
+  max-height: 80dvh;
+  padding: calc(48 * var(--u));
+  border-radius: calc(44 * var(--u));
+  background: var(--card);
+  box-shadow: 0 calc(30 * var(--u)) calc(80 * var(--u)) calc(-30 * var(--u)) rgba(0, 0, 0, 0.45);
+  transform: scale(0.94);
+  transition: transform 0.35s var(--ease-spring);
+}
+.fsd-mask.is-open .fsd {
+  transform: none;
+}
+.fsd-head {
+  flex: none;
+  text-align: center;
+}
+.fsd-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(16 * var(--u));
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: max(22px, calc(48 * var(--u)));
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--forest);
+}
+.fsd-title .ti {
+  flex: none;
+  color: var(--brass);
+  font-size: max(28px, calc(64 * var(--u)));
+  line-height: 1;
+}
+/* 內容過長時只捲動內文，標題與按鈕固定 */
+.fsd-body {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-top: calc(28 * var(--u));
+  padding: calc(32 * var(--u));
+  border: max(1px, calc(2 * var(--u))) solid var(--line);
+  border-radius: calc(24 * var(--u));
+  background: #f7f4ee;
+  color: var(--ink);
+  font-size: max(18px, calc(30 * var(--u)));
+  line-height: 1.8;
+}
+.fsd-body p {
+  margin: 0;
+}
+.fsd-body p + p {
+  margin-top: 0.8em;
+}
+.fsd-btns {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(20 * var(--u));
+  margin-top: calc(32 * var(--u));
+}
+.fsd-btn {
+  height: max(48px, calc(120 * var(--u)));
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: max(18px, calc(42 * var(--u)));
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.2s var(--ease-out);
+}
+.fsd-btn:active {
+  transform: scale(0.97);
+}
+.fsd-no {
+  border: max(1px, calc(2 * var(--u))) solid var(--line-soft);
+  background: var(--card);
+  color: var(--forest);
+}
+.fsd-yes {
+  border: max(2px, calc(3 * var(--u))) solid var(--brass);
+  background: linear-gradient(135deg, #2e5649 0%, var(--forest) 55%, #172d27 100%);
+  color: var(--on-forest);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .fsd,
+  .fsd-btn,
+  .fsd-mask,
+  .fsd-mask.is-open {
+    transform: none;
+    transition: none !important;
+  }
   .fsh-view,
   .fsh-view.is-off-left,
   .fsh-view.is-off-right {

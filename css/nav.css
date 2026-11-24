@@ -30,6 +30,33 @@
   --nav-q: var(--nav-qr);
 }
 
+/* 語系（html[data-nav-lang] 由 js/app-i18n.js 設定）：最長項目的字寬、文字行數 */
+:root {
+  --nav-em: 3.3;
+  --nav-lines: 1;
+}
+:root[data-nav-lang="ja"] {
+  --nav-em: 6.2; /* アップロード */
+}
+:root[data-nav-lang="en"] {
+  --nav-em: 4.5; /* Subjects */
+}
+/* 窄螢幕：日文「アップロード」放兩行，字級不縮小 */
+@media (max-width: 599px) {
+  :root[data-nav-lang="ja"] {
+    --nav-em: 3.3;
+    --nav-lines: 2;
+  }
+  :root[data-nav-lang="ja"] .nav-label {
+    white-space: normal;
+    word-break: keep-all;
+    text-align: center;
+  }
+  :root[data-nav-lang="en"] .nav-label {
+    letter-spacing: -0.03em;
+  }
+}
+
 /* 尺寸公式（:root 與 .nav 各自用自己的 --nav-q 計算） */
 :root,
 .nav {
@@ -37,8 +64,9 @@
   --nav-ip: calc(1.2 * var(--nav-q)); /* 項目上下內距 */
   --nav-g: calc(0.8 * var(--nav-q)); /* 圖示與文字的間距 */
   --nav-r: calc(3 * var(--nav-q)); /* 項目圓角（鍵盤焦點框） */
-  /* 文字：最多 40px；「受測者」三個字必須放進欄寬（欄寬 20% 扣掉左右留白，再留一點餘裕），放不下就以欄寬為準 */
-  --nav-fs: clamp(15px, min(calc(6 * var(--nav-q)), calc((20 * var(--nav-q) - 2 * var(--nav-mx)) / 3.3)), 40px);
+  /* 文字：最多 40px；「受測者」三個字必須放進欄寬（欄寬 20% 扣掉左右留白，再留一點餘裕），放不下就以欄寬為準
+   * --nav-em：最長的項目寬幾個字（中文「受測者」3.3；日文、英文見下方 data-nav-lang） */
+  --nav-fs: clamp(15px, min(calc(6 * var(--nav-q)), calc((20 * var(--nav-q) - 2 * var(--nav-mx)) / var(--nav-em))), 40px);
   --nav-icon: clamp(24px, calc(9 * var(--nav-q)), 64px);
   --nav-d: clamp(64px, calc(16 * var(--nav-q)), 132px); /* 選中大圓直徑 */
   --nav-d-icon: clamp(30px, calc(8 * var(--nav-q)), 64px); /* 大圓裡的圖示 */
@@ -76,7 +104,7 @@
 }
 :root {
   /* 導覽列高度＝框＋內距＋項目（上下內距＋圖示＋間距＋文字 1.1 行高） */
-  --nav-h: calc(2 * var(--nav-border) + 2 * var(--nav-pad) + 2 * var(--nav-ip) + var(--nav-icon) + var(--nav-g) + 1.1 * var(--nav-fs));
+  --nav-h: calc(2 * var(--nav-border) + 2 * var(--nav-pad) + 2 * var(--nav-ip) + var(--nav-icon) + var(--nav-g) + 1.1 * var(--nav-fs) * var(--nav-lines));
   /* 導覽列上緣再加上大圓凸出的高度（半徑 − 圓心位置）和外圈 */
   --nav-clear: calc(var(--nav-bottom) + var(--nav-h) + var(--nav-d) / 2 - var(--nav-cy) + var(--nav-ring));
 }

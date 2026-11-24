@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="zh-TW" data-app-i18n>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="../img/logo.png" />
+    <link rel="apple-touch-icon" href="../img/logo.png" />
+    <title data-i18n="consent.docTitle">建豐健康科技 - 個人資料蒐集與檢測同意</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+    <!-- 多語系 -->
+    <link rel="stylesheet" href="../css/app-i18n.css" />
+    <script src="../js/app-i18n.js"></script>
+    <style>
+      /* =========================================================
+       * 瓷白森林 Porcelain Forest — 一體機「個人資料蒐集與檢測同意」頁（信箋版；直式平板專用，基準 1032 × 1376）
+       * 整頁固定一個畫面高度、不可捲動；按鈕區貼在信紙底部
+       * ========================================================= */
+      :root {
+        --bg: #ddd5c6; /* 信紙後面的底色 */
+        --paper: #fffdf9;
+        --card: #f7f4ee;
+        --line: #d9cfbe;
+        --line-pale: #e4dccd;
+        --forest: #1f3b33; /* 森林綠：主色 */
+        --brass: #b08d57; /* 黃銅：重點色 */
+        --brass-pale: #e6cd9c;
+        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+        --ink: #1a2420;
+        --muted: #6f6656;
+        --on-forest: #f6f1e8;
+
+        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+        --font-serif: "Noto Serif TC", "Songti TC", serif;
+        /* 縮放單位：1032 × 1376 時 1 --u = 1px；依「寬度」與「高度 × 0.75」中較小者等比縮放 */
+        --u: calc(min(100vw, 100dvh * 0.75) / 1032);
+
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        -webkit-font-smoothing: antialiased;
+        /* 一體機：防止長按選字與系統選單 */
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 3px solid var(--brass);
+        outline-offset: 4px;
+      }
+      h1,
+      h2,
+      p,
+      ol {
+        margin: 0;
+      }
+
+      /* ===== 信紙 ===== */
+      .page {
+        height: 100dvh;
+        display: flex;
+        justify-content: center; /* 橫向較寬時置中 */
+        padding: calc(env(safe-area-inset-top) + 48 * var(--u)) calc(48 * var(--u)) calc(48 * var(--u));
+      }
+      .paper {
+        width: 100%;
+        max-width: calc(936 * var(--u));
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        padding: calc(48 * var(--u)) calc(72 * var(--u)) calc(40 * var(--u));
+        border: 2px solid var(--line);
+        border-radius: calc(12 * var(--u));
+        background: var(--paper);
+      }
+      .paper > * {
+        flex: none;
+      }
+
+      /* ① ② ③ 小標、標題、裝飾線 */
+      .eyebrow {
+        text-align: center;
+        font-size: max(16px, calc(26 * var(--u)));
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: calc(12 * var(--u));
+        text-indent: calc(12 * var(--u)); /* 抵銷字距造成的偏左 */
+        color: var(--brass-text);
+      }
+      .title {
+        margin-top: calc(12 * var(--u));
+        text-align: center;
+        font-family: var(--font-serif);
+        font-size: calc(64 * var(--u));
+        font-weight: 600;
+        line-height: 1.2;
+        text-wrap: balance;
+        color: var(--ink);
+      }
+      /* 金色菱形裝飾（共用）：左線＋菱形＋右線，置中 */
+      .ornament {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: calc(12 * var(--u));
+      }
+      .ornament::before,
+      .ornament::after {
+        content: "";
+        width: calc(70 * var(--u));
+        height: calc(2 * var(--u));
+        background: var(--brass);
+      }
+      .ornament i {
+        width: calc(12 * var(--u));
+        height: calc(12 * var(--u));
+        background: var(--brass);
+        transform: rotate(45deg);
+      }
+      .title + .ornament {
+        margin-top: calc(20 * var(--u));
+      }
+
+      /* ④ ⑤ 導言、條列 */
+      .intro {
+        margin: calc(34 * var(--u)) 0 calc(10 * var(--u));
+        font-family: var(--font-serif);
+        font-size: calc(40 * var(--u));
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--forest);
+      }
+      .items {
+        padding: 0;
+        list-style: none;
+        counter-reset: n;
+      }
+      .items li {
+        counter-increment: n;
+        display: flex;
+        align-items: baseline;
+        gap: calc(24 * var(--u));
+        padding: calc(17 * var(--u)) 0;
+        font-size: calc(40 * var(--u));
+        line-height: 1.25;
+      }
+      .items li::before {
+        content: counter(n, cjk-ideographic) "、";
+        flex: none;
+        min-width: calc(64 * var(--u));
+        font-family: var(--font-serif);
+        font-size: calc(42 * var(--u));
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--brass);
+      }
+      html:lang(en) .items li::before {
+        content: counter(n) ".";
+      }
+
+      /* ⑥ 免責提醒 */
+      .note {
+        margin-top: calc(24 * var(--u));
+        font-size: calc(32 * var(--u));
+        line-height: 1.6;
+        color: #5a4a2e;
+      }
+
+      /* ⑦ 附件 */
+      .attach {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: calc(26 * var(--u));
+        width: 100%;
+        margin-top: calc(34 * var(--u));
+        padding: calc(26 * var(--u)) calc(30 * var(--u));
+        border: calc(3 * var(--u)) solid var(--forest);
+        border-radius: calc(26 * var(--u));
+        background: #f3ece0;
+        text-align: left;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .attach:active {
+        transform: scale(0.98);
+      }
+      .attach-tag {
+        position: absolute;
+        left: calc(30 * var(--u));
+        top: calc(-22 * var(--u));
+        padding: calc(6 * var(--u)) calc(18 * var(--u));
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--brass-pale);
+        font-size: max(16px, calc(24 * var(--u)));
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: calc(4 * var(--u));
+        text-indent: calc(4 * var(--u));
+        white-space: nowrap;
+      }
+      .attach-icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: calc(96 * var(--u));
+        height: calc(96 * var(--u));
+        border-radius: calc(22 * var(--u));
+        background: var(--forest);
+        color: var(--brass-pale);
+        font-size: calc(54 * var(--u));
+        line-height: 1;
+      }
+      .attach-text {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+      }
+      .attach-title {
+        display: block;
+        font-family: var(--font-serif);
+        font-size: calc(42 * var(--u));
+        font-weight: 600;
+        line-height: 1.25;
+        color: var(--forest);
+      }
+      .attach-sub {
+        display: block;
+        margin-top: calc(4 * var(--u));
+        font-size: max(16px, calc(26 * var(--u)));
+        line-height: 1.3;
+        color: var(--muted);
+      }
+      .attach-view {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        gap: calc(6 * var(--u));
+        height: max(44px, calc(84 * var(--u)));
+        padding: 0 calc(34 * var(--u));
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: max(18px, calc(32 * var(--u)));
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .attach-view .ti {
+        font-size: calc(36 * var(--u));
+      }
+
+      /* ⑧ 按鈕區：上面裝飾、下面按鈕列，整段貼在信紙底部 */
+      .foot {
+        margin-top: auto;
+      }
+      .foot-btns {
+        display: flex;
+        align-items: center;
+        gap: calc(40 * var(--u));
+        margin-top: calc(34 * var(--u));
+      }
+      .decline {
+        flex: 1;
+        min-width: 0;
+        height: calc(150 * var(--u));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: calc(12 * var(--u));
+        border: calc(3 * var(--u)) solid #4b453b;
+        border-radius: 999px;
+        background: var(--paper);
+        font-size: max(18px, calc(40 * var(--u)));
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .decline .ti {
+        font-size: calc(44 * var(--u));
+        color: var(--muted);
+      }
+      .decline:active {
+        transform: scale(0.97);
+      }
+      /* 印章：盤緣用 box-shadow；呼吸動畫與 kiosk.html 訪客卡相同 */
+      .seal {
+        flex-shrink: 0;
+        width: calc(280 * var(--u));
+        height: calc(280 * var(--u));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--forest);
+        box-shadow:
+          inset 0 0 0 calc(12 * var(--u)) var(--forest),
+          inset 0 0 0 calc(16 * var(--u)) var(--brass),
+          0 0 0 calc(8 * var(--u)) rgba(176, 141, 87, 0.25);
+        color: var(--on-forest);
+        text-align: center;
+        animation: breathe 3.2s ease-in-out infinite;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .seal:active,
+      .seal.is-pressed {
+        animation: none;
+        transform: scale(0.94);
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.03);
+        }
+      }
+      .seal-main {
+        font-family: var(--font-serif);
+        font-size: calc(52 * var(--u));
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: calc(4 * var(--u));
+        text-indent: calc(4 * var(--u));
+        white-space: pre;
+      }
+      .seal-sub {
+        margin-top: calc(8 * var(--u));
+        font-size: max(15px, calc(22 * var(--u)));
+        line-height: 1.2;
+        color: var(--brass-pale);
+        white-space: nowrap;
+      }
+
+      /* ===== 隱私權政策彈窗 ===== */
+      .pp-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        background: rgba(26, 36, 32, 0.58);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.25s,
+          visibility 0s 0.25s;
+      }
+      .pp-mask.is-open {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.25s;
+      }
+      .pp {
+        width: min(calc(100vw - 112 * var(--u)), calc(1032 * var(--u)));
+        max-height: 88vh;
+        max-height: 88dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 2px solid var(--brass);
+        border-radius: calc(12 * var(--u));
+        background: var(--paper);
+        transform: scale(0.96);
+        transition: transform 0.25s var(--ease-out);
+      }
+      .pp-mask.is-open .pp {
+        transform: none;
+      }
+      .pp-head {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: calc(24 * var(--u));
+        padding: calc(34 * var(--u)) calc(48 * var(--u));
+        border-bottom: 2px solid var(--line-pale);
+      }
+      .pp-eyebrow {
+        font-size: max(15px, calc(22 * var(--u)));
+        font-weight: 700;
+        line-height: 1.3;
+        letter-spacing: calc(10 * var(--u));
+        color: var(--brass-text);
+        white-space: nowrap;
+      }
+      .pp-title {
+        font-family: var(--font-serif);
+        font-size: calc(50 * var(--u));
+        font-weight: 600;
+        line-height: 1.25;
+        color: var(--forest);
+      }
+      .pp-close {
+        flex: none;
+        height: max(44px, calc(96 * var(--u)));
+        padding: 0 calc(48 * var(--u));
+        border-radius: 999px;
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: max(18px, calc(36 * var(--u)));
+        font-weight: 700;
+        white-space: nowrap;
+        transition: transform 0.2s var(--ease-out);
+      }
+      .pp-close:active {
+        transform: scale(0.97);
+      }
+      .pp-body {
+        flex: 0 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        padding: calc(32 * var(--u)) calc(56 * var(--u)) calc(48 * var(--u));
+        font-size: max(18px, calc(32 * var(--u)));
+        line-height: 1.85;
+        color: #3e463f;
+      }
+      .pp-body:focus-visible {
+        outline-offset: -4px;
+      }
+      .pp-lang {
+        margin-bottom: 0.6em;
+        font-weight: 700;
+        color: var(--brass-text);
+      }
+      .pp-lang:empty {
+        display: none;
+      }
+      .pp-body h4 {
+        display: flex;
+        gap: calc(18 * var(--u));
+        margin: calc(40 * var(--u)) 0 calc(14 * var(--u));
+        font-family: var(--font-serif);
+        font-size: max(20px, calc(40 * var(--u)));
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--forest);
+      }
+      .pp-body h4::before {
+        content: "";
+        flex: none;
+        width: calc(8 * var(--u));
+        background: var(--brass);
+      }
+      .pp-list {
+        padding: 0;
+        list-style: none;
+        counter-reset: p;
+      }
+      .pp-list li {
+        counter-increment: p;
+        display: flex;
+        gap: calc(16 * var(--u));
+      }
+      .pp-list li::before {
+        content: counter(p) ".";
+        flex: none;
+        width: 1.6em;
+        text-align: right;
+        font-family: var(--font-serif);
+        font-weight: 600;
+        color: var(--brass-text);
+      }
+      .pp-warn {
+        margin-top: calc(24 * var(--u));
+        padding: calc(24 * var(--u)) calc(28 * var(--u));
+        border: 2px solid rgba(176, 141, 87, 0.4);
+        border-radius: calc(22 * var(--u));
+        background: #f3ece0;
+        color: #5a4a2e;
+      }
+      .pp-ver {
+        margin-top: calc(48 * var(--u));
+        text-align: center;
+        font-size: max(16px, calc(24 * var(--u)));
+        color: var(--muted);
+      }
+
+      /* ===== 日文、英文：較長的文字縮小字級（不換行），英文標題與免責提醒可換兩行 ===== */
+      html:lang(ja) .title {
+        font-size: calc(48 * var(--u));
+        line-height: 1.4;
+      }
+      html:lang(ja) .intro {
+        font-size: calc(38 * var(--u));
+      }
+      html:lang(ja) .note {
+        font-size: calc(27 * var(--u));
+      }
+      html:lang(ja) .attach-title {
+        font-size: calc(31 * var(--u));
+      }
+      html:lang(ja) .attach-sub {
+        font-size: max(15px, calc(24 * var(--u)));
+      }
+      html:lang(ja) .seal-main {
+        font-size: calc(36 * var(--u));
+        letter-spacing: 0;
+        text-indent: 0;
+      }
+      html:lang(en) .title {
+        font-size: calc(52 * var(--u));
+        line-height: 1.15;
+      }
+      html:lang(en) .intro {
+        margin-top: calc(22 * var(--u));
+        font-size: calc(36 * var(--u));
+      }
+      html:lang(en) .items li {
+        padding: calc(12 * var(--u)) 0;
+      }
+      html:lang(en) .note {
+        margin-top: calc(18 * var(--u));
+        font-size: calc(28 * var(--u));
+        line-height: 1.35;
+        text-wrap: balance;
+      }
+      html:lang(en) .attach-title {
+        font-size: calc(38 * var(--u));
+      }
+      html:lang(en) .attach-tag {
+        letter-spacing: 0.04em;
+        text-indent: 0;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .seal {
+          animation: none;
+        }
+        .pp,
+        .pp-mask,
+        .pp-mask.is-open {
+          transform: none;
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page" id="page">
+      <section class="paper" aria-labelledby="title">
+        <p class="eyebrow" lang="en">CONSENT</p>
+        <h1 class="title" id="title" data-i18n="consent.title">個人資料蒐集與檢測同意</h1>
+        <div class="ornament" aria-hidden="true"><i></i></div>
+
+        <p class="intro" data-i18n="consent.intro">檢測前，請您先了解以下事項：</p>
+        <ol class="items">
+          <li><span data-i18n="consent.item1">蒐集您的基本資料</span></li>
+          <li><span data-i18n="consent.item2">錄製行走畫面</span></li>
+          <li><span data-i18n="consent.item3">使用 AI 分析步態與平衡</span></li>
+          <li><span data-i18n="consent.item4">產出跌倒風險評估</span></li>
+        </ol>
+        <p class="note" data-i18n="consent.note">＊本結果僅供健康評估參考，不等同醫療診斷。</p>
+
+        <!-- 附件：整塊都可點，打開隱私權政策 -->
+        <button class="attach" id="attach" type="button" aria-haspopup="dialog">
+          <span class="attach-tag" data-i18n="consent.attach">附件</span>
+          <span class="attach-icon" aria-hidden="true"><i class="ti ti-file-text"></i></span>
+          <span class="attach-text">
+            <span class="attach-title" data-i18n="consent.policy">完整隱私權政策</span>
+            <span class="attach-sub" data-i18n="consent.policySub">共十三條，點此查看全文</span>
+          </span>
+          <span class="attach-view"><span data-i18n="consent.view">查看</span><i class="ti ti-chevron-right" aria-hidden="true"></i></span>
+        </button>
+
+        <div class="foot">
+          <div class="ornament" aria-hidden="true"><i></i></div>
+          <div class="foot-btns">
+            <button class="decline" id="decline" type="button"><i class="ti ti-x" aria-hidden="true"></i><span data-i18n="consent.decline">不同意並離開</span></button>
+            <button class="seal" id="agree" type="button">
+              <span class="seal-main" data-i18n="consent.agree">已瞭解並同意</span>
+              <span class="seal-sub" data-i18n="consent.agreeSub">點此確認</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 隱私權政策 -->
+    <div class="pp-mask" id="ppMask" aria-hidden="true">
+      <section class="pp" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
+        <header class="pp-head">
+          <div>
+            <p class="pp-eyebrow" lang="en">PRIVACY POLICY</p>
+            <h2 class="pp-title" id="ppTitle" data-i18n="policy.title">隱私權政策</h2>
+          </div>
+          <button class="pp-close" id="ppClose" type="button" data-i18n="policy.close">關閉</button>
+        </header>
+        <div class="pp-body" id="ppBody" tabindex="0" role="region" aria-labelledby="ppTitle">
+          <!-- 日文、英文：內容尚未翻譯的提示（中文為空、不顯示） -->
+          <p class="pp-lang" data-i18n="policy.langNote"></p>
+          <!-- TODO: 正式全文待法務確認後替換 -->
+          <div lang="zh-Hant">
+            <p>建豐健康科技股份有限公司（以下簡稱「本公司」）重視您的個人資料及隱私權保護。為提供「行動力檢測」服務，本公司將依《個人資料保護法》及相關法令，於必要範圍內蒐集、處理及利用您的個人資料。</p>
+
+            <h4>一、適用範圍</h4>
+            <p>本隱私權政策適用於您使用行動力檢測設備、檢測系統及相關後台服務時，所涉及之個人資料蒐集、處理及利用。</p>
+
+            <h4>二、個人資料蒐集單位</h4>
+            <ol class="pp-list">
+              <li><span>建豐健康科技股份有限公司：負責行動力檢測系統之建置、操作、資料儲存、影像分析、檢測結果產出及系統維護。</span></li>
+              <li><span>新北市政府衛生局及執行本案之衛生所：於本計畫執行及服務管理之必要範圍內使用相關資料。</span></li>
+            </ol>
+
+            <h4>五、檢測錄影及人工智慧分析</h4>
+            <p>本服務於檢測過程中會錄製受測者之行走畫面，並透過人工智慧技術分析人體骨架、步態、行走速度、身體搖擺及其他行動功能特徵。</p>
+            <p class="pp-warn">若您不同意錄影，本系統將無法進行影像分析，也無法完成本次行動力檢測。本檢測結果屬健康風險評估及衛教參考，不等同醫療診斷、疾病診斷或醫療處方。</p>
+
+            <p class="pp-ver">政策版本：V1.0（草稿）</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      /* =========================================================
+       * 設定
+       * ========================================================= */
+      const CONSENT_VERSION = "V1.0";
+      const IDLE_MS = 90000; // 閒置（沒有點擊、滾動、按鍵）多久自動回到一體機歡迎頁（與訪客頁、健保卡頁相同）
+      const PRESS_MS = 200; // 印章按下後多久跳頁
+      const HOME_URL = "kiosk.html"; // 依 sessionStorage「kf.kioskLayout」顯示原本的版本
+      const NEXT_URL = { guest: "kiosk-guest.html", card: "kiosk-card.html" };
+
+      const $ = (s) => document.querySelector(s);
+      const next = new URLSearchParams(location.search).get("next");
+      const valid = Object.hasOwn(NEXT_URL, next ?? "");
+      const drop = (...keys) =>
+        keys.forEach((k) => {
+          try {
+            sessionStorage.removeItem(k);
+          } catch {}
+        });
+
+      // 一體機：關閉長按系統選單
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      /* ===== 不同意、閒置：清掉同意紀錄、待處理的卡片資料、訪客暫存資料，回到歡迎頁 ===== */
+      function leave() {
+        drop("kf.consent", "kf.cardPending", "kf.kioskVisitor");
+        location.replace(HOME_URL);
+      }
+
+      /* ===== 同意：寫入 kf.consent，印章縮放後前往下一頁（replace：下一頁按上一頁不會回到這裡） ===== */
+      let going = false;
+      function agree() {
+        if (going) return;
+        going = true;
+        try {
+          sessionStorage.setItem("kf.consent", JSON.stringify({ version: CONSENT_VERSION, agreedAt: new Date().toISOString(), next }));
+        } catch {}
+        $("#agree").classList.add("is-pressed");
+        setTimeout(() => location.replace(NEXT_URL[next]), PRESS_MS);
+      }
+
+      /* ===== 隱私權政策彈窗：點遮罩、Esc、「關閉」都會關閉 ===== */
+      const ppMask = $("#ppMask");
+      let ppOpen = false;
+      function togglePolicy(v) {
+        if (ppOpen === v) return;
+        ppOpen = v;
+        ppMask.classList.toggle("is-open", v);
+        ppMask.setAttribute("aria-hidden", String(!v));
+        $("#page").inert = v;
+        if (v) $("#ppBody").scrollTop = 0;
+        (v ? $("#ppClose") : $("#attach")).focus({ preventScroll: true });
+      }
+      function initPolicy() {
+        $("#attach").addEventListener("click", () => togglePolicy(true));
+        $("#ppClose").addEventListener("click", () => togglePolicy(false));
+        ppMask.addEventListener("click", (e) => e.target === ppMask && togglePolicy(false));
+        document.addEventListener("keydown", (e) => {
+          if (!ppOpen) return;
+          if (e.key === "Escape") togglePolicy(false);
+          else if (e.key === "Tab") {
+            // 焦點只在「關閉」與內容區（可用方向鍵捲動）之間循環
+            e.preventDefault();
+            (document.activeElement === $("#ppClose") ? $("#ppBody") : $("#ppClose")).focus({ preventScroll: true });
+          }
+        });
+      }
+
+      /* ===== 閒置 90 秒自動回到一體機歡迎頁 ===== */
+      let idleTimer;
+      function resetIdle() {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(leave, IDLE_MS);
+      }
+
+      /* ===== 啟動 ===== */
+      if (!valid) {
+        // next 不合法：直接回歡迎頁
+        drop("kf.consent", "kf.cardPending");
+        location.replace(HOME_URL);
+      } else {
+        drop("kf.consent"); // 每個人都要重新同意，不沿用前一位的紀錄
+        $("#decline").addEventListener("click", leave);
+        $("#agree").addEventListener("click", agree);
+        initPolicy();
+        ["pointerdown", "keydown", "wheel", "touchstart"].forEach((t) => document.addEventListener(t, resetIdle, { passive: true }));
+        document.addEventListener("scroll", resetIdle, { capture: true, passive: true }); // 彈窗內捲動不會冒泡，用 capture
+        resetIdle();
+        // 從瀏覽器上一頁回來（頁面快取）：重新開始
+        addEventListener("pageshow", (e) => {
+          if (!e.persisted) return;
+          going = false;
+          drop("kf.consent");
+          $("#agree").classList.remove("is-pressed");
+          togglePolicy(false);
+          resetIdle();
+        });
+      }
+    </script>
+  </body>
+</html>

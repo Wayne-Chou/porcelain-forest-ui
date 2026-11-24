@@ -10,6 +10,8 @@
  *     toast: showToast,
  *     onConfirm(field),              // 按確認按鈕，或新增場域成功（＝點選該場域後確認）
  *     onRename(field),               // 自訂場域改名後：頁面更新顯示的名稱
+ *     disclaimer(field),             // 選填：回傳內文段落（字串陣列）時先顯示「免責聲明」，按「同意並開始」才執行 onConfirm；
+ *                                    //       不同意／點遮罩／Esc 回到列表（保留搜尋字、捲動位置、選取）。沒給就直接 onConfirm
  *   });
  *   fieldSheet.open({ sub, selectedId });  fieldSheet.close();  fieldSheet.escape()（表單→回列表；列表→關閉）
  *
@@ -81,7 +83,7 @@
     const { sheet, mask, app } = opts;
     const id = `fsh${++uid}`;
     const toast = opts.toast || ((m) => console.info(m));
-    const S = { open: false, selectedId: null, query: "", mode: "list", editId: null, lastFocus: null, formFrom: null };
+    const S = { open: false, selectedId: null, query: "", mode: "list", editId: null, lastFocus: null, formFrom: null, rowFrom: null };
 
     sheet.classList.add("fsh");
     sheet.setAttribute("aria-labelledby", `${id}-title`);
@@ -218,7 +220,83 @@
         toast("請先選擇場域");
         return;
       }
-      opts.onConfirm?.(field);
+      requestConfirm(field);
+    }
+
+    /* ── 免責聲明（選填） ── */
+    let D = null; // 對話框節點，第一次用到時建立
+    let dOpen = false;
+    function buildDisclaimer() {
+      const box = document.createElement("div");
+      box.className = "fsd-mask";
+      box.lang = "zh-Hant"; // 尚未翻譯
+      box.setAttribute("aria-hidden", "true");
+      box.innerHTML = `
+        <div class="fsd" role="dialog" aria-modal="true" aria-labelledby="${id}-dis-title">
+          <header class="fsd-head">
+            <h2 class="fsd-title" id="${id}-dis-title"><i class="ti ti-file-info" aria-hidden="true"></i>免責聲明</h2>
+          </header>
+          <div class="fsd-body"></div>
+          <div class="fsd-btns">
+            <button class="fsd-btn fsd-no" type="button">不同意</button>
+            <button class="fsd-btn fsd-yes" type="button">同意並開始</button>
+          </div>
+        </div>`;
+      document.body.appendChild(box);
+      const q = (sel) => box.querySelector(sel);
+      D = { box, body: q(".fsd-body"), no: q(".fsd-no"), yes: q(".fsd-yes"), field: null };
+      D.no.addEventListener("click", declineDisclaimer);
+      D.yes.addEventListener("click", () => {
+        if (!dOpen) return; // 避免連點
+        toggleDisclaimer(false);
+        opts.onConfirm?.(D.field);
+      });
+      box.addEventListener("click", (e) => e.target === box && declineDisclaimer());
+      // Tab 只在對話框內循環；內文需要捲動時也可聚焦，用方向鍵捲動
+      document.addEventListener("keydown", (e) => {
+        if (!dOpen || e.key !== "Tab") return;
+        e.preventDefault();
+        const stops = [...(D.body.tabIndex === 0 ? [D.body] : []), D.no, D.yes];
+        const i = stops.indexOf(document.activeElement);
+        const next = e.shiftKey ? (i <= 0 ? stops.length - 1 : i - 1) : (i + 1) % stops.length;
+        stops[next].focus({ preventScroll: true });
+      });
+    }
+    function toggleDisclaimer(v) {
+      dOpen = v;
+      D.box.classList.toggle("is-open", v);
+      D.box.setAttribute("aria-hidden", String(!v));
+      sheet.inert = v;
+    }
+    function declineDisclaimer() {
+      if (!dOpen) return;
+      toggleDisclaimer(false);
+      // 焦點回到剛才選的場域列；不在目前的搜尋結果裡就回搜尋框
+      const sel = `.fsh-row[data-id="${CSS.escape(S.selectedId ?? "")}"] .fsh-pick`;
+      const row = S.rowFrom?.isConnected && S.rowFrom.matches(sel) ? S.rowFrom : list.querySelector(sel);
+      (row || search).focus({ preventScroll: true });
+    }
+    function requestConfirm(field, fromForm = false) {
+      const paragraphs = opts.disclaimer?.(field);
+      if (!paragraphs) return opts.onConfirm?.(field);
+      if (dOpen) return;
+      // 剛新增的場域：先把後面的面板切回列表（保留搜尋字與捲動位置），不同意時就停在那裡
+      if (fromForm) {
+        const top = list.scrollTop;
+        S.mode = "list";
+        S.rowFrom = null;
+        renderList();
+        showView("list");
+        list.scrollTop = top;
+      }
+      if (!D) buildDisclaimer();
+      D.field = field;
+      D.body.innerHTML = paragraphs.map((p) => `<p>${esc(p)}</p>`).join("");
+      D.body.scrollTop = 0;
+      D.body.tabIndex = D.body.scrollHeight > D.body.clientHeight + 1 ? 0 : -1;
+      void D.box.offsetWidth; // 剛建立時也要有進場動畫
+      toggleDisclaimer(true);
+      D.yes.focus({ preventScroll: true });
     }
 
     /* ── 畫面切換 ── */
@@ -301,7 +379,7 @@
       }
       input.blur();
       S.selectedId = r.field.id;
-      opts.onConfirm?.(r.field); // 和「點選該場域後確認」完全相同的流程
+      requestConfirm(r.field, true); // 和「點選該場域後確認」完全相同的流程
     }
 
     /* ── 開關 ── */
@@ -309,6 +387,7 @@
       bindViewport();
       S.open = true;
       S.query = "";
+      S.rowFrom = null;
       S.selectedId = selectedId;
       S.lastFocus = document.activeElement;
       search.value = "";
@@ -338,10 +417,11 @@
       // 面板收合後回到列表畫面
       setTimeout(() => !S.open && showView("list", true), 500);
     }
-    // Esc：表單 → 回列表；列表 → 關閉；回傳是否有處理
+    // Esc：免責聲明 → 不同意；表單 → 回列表；列表 → 關閉；回傳是否有處理
     function escape() {
       if (!S.open) return false;
-      if (S.mode !== "list") backToList();
+      if (dOpen) declineDisclaimer();
+      else if (S.mode !== "list") backToList();
       else close();
       return true;
     }
@@ -364,12 +444,14 @@
         if (f) openForm("edit", { fid: f.id, name: f.name });
         return;
       }
+      S.rowFrom = row.querySelector(".fsh-pick");
       select(row.dataset.id);
     });
     list.addEventListener("keydown", (e) => {
       const pick = e.target.closest?.(".fsh-pick");
       if (pick && e.target === pick && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
+        S.rowFrom = pick;
         select(pick.closest(".fsh-row").dataset.id);
       }
     });

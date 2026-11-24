@@ -55,6 +55,18 @@
   outline: 3px solid var(--brass, #b08d57);
   outline-offset: 2px;
 }
+/* 僅圖示：圓形；直徑 --lp-h 預設與文字版同高，頁面可覆寫（至少 44px） */
+.lp-btn--icon {
+  --lp-d: max(44px, var(--lp-h, calc(36 * var(--lp-u))));
+  width: var(--lp-d);
+  height: var(--lp-d);
+  padding: 0;
+  border-radius: 50%;
+}
+.lp-btn--icon i {
+  font-size: calc(var(--lp-d) * 0.5);
+  line-height: 1;
+}
 /* 淺底版：首頁、過期／無權限卡片上 */
 .lp-btn--light {
   border: 2px solid #c7bba6;

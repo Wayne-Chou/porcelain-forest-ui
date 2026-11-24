@@ -18,6 +18,9 @@
     { id: "subjects", label: "受測者", icon: "ti-users", href: "subjects.html", ready: true },
     { id: "settings", label: "設定", icon: "ti-settings", href: "settings.html", ready: false },
   ];
+  // 文字跟著語系（js/app-i18n.js，需在本檔之前載入）；沒有載入時用上面的中文
+  const tr = (key, fallback, params) => (window.AppI18n ? AppI18n.t(key, params) : fallback);
+  const labelOf = (n) => tr("nav." + n.id, n.label);
   const PENDING_KEY = "kf.uploadPending";
   const PREV_KEY = "kf.navPrev";
   const currentItem = () => {
@@ -66,21 +69,40 @@
     }
   }
 
+  // 套用語系文字（切換語系時不重建，浮起的位置不變）
+  function applyNavLang(nav) {
+    if (window.AppI18n) nav.lang = AppI18n.lang === "zh-TW" ? "zh-Hant" : AppI18n.lang;
+    nav.setAttribute("aria-label", tr("nav.menu", "主選單"));
+    NAV_ITEMS.forEach((n) => {
+      const el = nav.querySelector(`[data-id="${n.id}"] .nav-label`);
+      el.textContent = labelOf(n);
+      // 窄螢幕的日文放兩行：アップ／ロード
+      if (el.textContent === "アップロード") el.innerHTML = "アップ<wbr>ロード";
+    });
+  }
+  document.addEventListener("app:langchange", () => {
+    const nav = document.getElementById("nav");
+    if (!nav?.querySelector(".nav-item")) return;
+    applyNavLang(nav);
+    setNavBadge(pendingNow);
+    still(nav, () => placeNotch(nav));
+  });
+
   function renderNav() {
     const nav = document.getElementById("nav");
     if (!nav) return;
     const current = currentItem();
-    nav.setAttribute("aria-label", "主選單");
     nav.innerHTML =
       '<span class="nav-bg" aria-hidden="true"></span>' +
       NAV_ITEMS.map((n) => {
-        const attrs = n.action ? `data-action="${n.action}" aria-label="${n.label}"` : `data-href="${n.href}" data-ready="${n.ready}"${n.id === current ? ' aria-current="page"' : ""}`;
+        const attrs = n.action ? `data-action="${n.action}"` : `data-href="${n.href}" data-ready="${n.ready}"${n.id === current ? ' aria-current="page"' : ""}`;
         const badge = n.action === "upload" ? '<b class="nav-up-badge" id="navUpBadge" hidden></b>' : "";
         return `<button class="nav-item" type="button" data-id="${n.id}" ${attrs}>
             <span class="nav-float"><span class="nav-bub"></span><i class="ti ${n.icon} nav-icon" aria-hidden="true"></i>${badge}</span>
-            <span class="nav-label">${n.label}</span>
+            <span class="nav-label"></span>
           </button>`;
       }).join("");
+    applyNavLang(nav);
     // 不支援 @property 或 mask：改用頁面底色的圓疊在導覽列上
     const canNotch = typeof CSS !== "undefined" && "registerProperty" in CSS && (CSS.supports("mask", "radial-gradient(#000, #000)") || CSS.supports("-webkit-mask", "radial-gradient(#000, #000)"));
     nav.classList.toggle("no-notch", !canNotch);
@@ -117,7 +139,7 @@
       if (btn.getAttribute("aria-current") === "page") return;
       if (btn.dataset.ready !== "true") {
         const label = btn.querySelector(".nav-label").textContent;
-        if (typeof window.showToast === "function") window.showToast(`「${label}」頁面製作中`);
+        if (typeof window.showToast === "function") window.showToast(tr("nav.wip", `「${label}」頁面製作中`, { name: label }));
         return;
       }
       go(btn.dataset.href);
@@ -125,12 +147,14 @@
   }
 
   // 上傳圖示右上角的紅色數字（0 時不顯示）
+  let pendingNow = 0;
   function setNavBadge(n) {
+    pendingNow = n;
     const badge = document.getElementById("navUpBadge");
     if (!badge) return;
     badge.textContent = n;
     badge.hidden = !(n > 0);
-    badge.closest(".nav-item").setAttribute("aria-label", n > 0 ? `上傳（${n} 筆待上傳）` : "上傳");
+    badge.closest(".nav-item").setAttribute("aria-label", n > 0 ? tr("nav.pending", `上傳（${n} 筆待上傳）`, { n }) : tr("nav.upload", "上傳"));
   }
 
   // 首頁：更新徽章並記下來給其他頁使用

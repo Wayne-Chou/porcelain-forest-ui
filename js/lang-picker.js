@@ -3,6 +3,7 @@
  * 需要：css/wheel.css、css/lang-picker.css、js/wheel.js（先載入）、Tabler icons
  *
  *   LangPicker.buttonHTML("light" | "dark")  產生按鈕（淺底：首頁、過期／無權限卡片；深底：詳細頁頂帶）
+ *   LangPicker.buttonHTML("light", { iconOnly: true })  僅圖示：圓形，只有地球圖示（首頁、一體機歡迎頁）；直徑 --lp-h
  *   LangPicker.current()                     目前語系（sessionStorage「kf.lang」，預設 zh-TW）
  *   LangPicker.open(triggerEl)               開啟彈窗（按鈕已用事件委派綁好，一般不用自己呼叫）
  *
@@ -31,9 +32,9 @@
     return LANGS.includes(l) ? l : "zh-TW";
   }
 
-  // 按鈕：「Language」固定英文
-  function buttonHTML(variant = "light") {
-    return `<button type="button" class="lp-btn lp-btn--${variant === "dark" ? "dark" : "light"}" data-lang-picker aria-label="Language" aria-haspopup="dialog" lang="en" data-html2canvas-ignore><i class="ti ti-world" aria-hidden="true"></i>Language</button>`;
+  // 按鈕：「Language」固定英文；iconOnly 只有圖示（文字留在 aria-label）
+  function buttonHTML(variant = "light", { iconOnly = false } = {}) {
+    return `<button type="button" class="lp-btn lp-btn--${variant === "dark" ? "dark" : "light"}${iconOnly ? " lp-btn--icon" : ""}" data-lang-picker aria-label="Language" aria-haspopup="dialog" lang="en" data-html2canvas-ignore><i class="ti ti-world" aria-hidden="true"></i>${iconOnly ? "" : "Language"}</button>`;
   }
 
   /* ── 彈窗：第一次開啟時建立 ── */

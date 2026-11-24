@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-TW" data-app-i18n>
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="icon" href="../img/logo.png" />
     <link rel="apple-touch-icon" href="../img/logo.png" />
-    <title>建豐健康科技 - AI跌倒風險檢測</title>
+    <title data-i18n="kiosk.docTitle">建豐健康科技 - AI跌倒風險檢測</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,6 +20,13 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
+    <!-- 語系選擇（共用滾輪＋彈窗）、多語系 -->
+    <link rel="stylesheet" href="../css/wheel.css" />
+    <link rel="stylesheet" href="../css/lang-picker.css" />
+    <link rel="stylesheet" href="../css/app-i18n.css" />
+    <script src="../js/wheel.js"></script>
+    <script src="../js/lang-picker.js"></script>
+    <script src="../js/app-i18n.js"></script>
     <style>
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 一體機歡迎頁（直式平板專用，基準 1032 × 1376）
@@ -43,7 +50,7 @@
         --font-serif: "Noto Serif TC", "Songti TC", serif;
         /* 縮放單位：1032 × 1376 時 1 --u = 1px；依「寬度」與「高度 × 0.75」中較小者等比縮放 */
         --u: calc(min(100vw, 100dvh * 0.75) / 1032);
-        --pad: calc(48 * var(--u)); /* 左右外距 */
+        --pad: calc(56 * var(--u)); /* 左右外距 */
 
         /* 底部入口區 */
         --ic-w: calc(470 * var(--u)); /* 插入健保卡指示卡：寬 */
@@ -51,6 +58,12 @@
         --or-w: calc(72 * var(--u)); /* 「或」所佔寬度 */
 
         --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+        /* 語系選擇（css/lang-picker.css）：與首頁相同 */
+        --lp-u: max(1px, calc(2 * var(--u)));
+        --lp-dialog-w: min(max(calc(640 * var(--u)), 320px), calc(100vw - 40px));
+        --lp-dialog-r: max(20px, calc(40 * var(--u)));
+        --lp-h: calc(76 * var(--u)); /* 語系圓鈕：與「專家模式」同高 */
       }
 
       * {
@@ -112,18 +125,17 @@
       }
 
       /* ===== 1. 頂部列 ===== */
+      /* 左：Logo＋公司名稱；中：日期時間（在兩側之間置中）；右：專家模式＋語系圓鈕（最右） */
       .topbar {
         flex: none;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: calc(24 * var(--u));
       }
       .brand {
         display: flex;
         align-items: center;
         gap: calc(20 * var(--u));
-        min-width: 0;
+        flex: none;
       }
       .logo {
         flex: none;
@@ -153,25 +165,30 @@
         line-height: 1.2;
         white-space: nowrap;
       }
-      .status {
-        display: flex;
-        align-items: center;
-        gap: calc(20 * var(--u));
-        font-size: max(18px, calc(28 * var(--u)));
-        line-height: 1.2;
+      .actions {
+        flex: none;
         white-space: nowrap;
-      }
-      .weather {
         display: flex;
         align-items: center;
-        gap: calc(8 * var(--u));
-      }
-      .weather .ti {
-        color: var(--brass);
-        font-size: max(24px, calc(42 * var(--u)));
+        gap: calc(16 * var(--u));
       }
       .clock {
+        flex: 1 1 0;
+        min-width: 0;
+        text-align: center;
+        white-space: nowrap;
+        font-size: max(18px, calc(28 * var(--u)));
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--muted);
         font-variant-numeric: tabular-nums;
+      }
+      /* 日文、英文的「專家模式」較長：日期縮小、左邊收緊，與兩側至少留 16px */
+      html:not(:lang(zh)) .brand {
+        gap: calc(12 * var(--u));
+      }
+      html:not(:lang(zh)) .clock {
+        font-size: max(18px, calc(24 * var(--u)));
       }
       /* 專家模式：膠囊按鈕，點一下直接前往 home.html */
       .expert {
@@ -195,6 +212,9 @@
       }
       .expert:active {
         transform: scale(0.96);
+      }
+      html:not(:lang(zh)) .expert {
+        font-size: max(18px, calc(25 * var(--u)));
       }
 
       /* ===== 版本切換：A 影片版／B 輪播版／C 合併版（html[data-layout]，由 JS 設定）=====
@@ -234,7 +254,7 @@
         content: "\f6c6";
       }
 
-      /* ===== A 版：跑馬燈（頂部列正下方，左右延伸到螢幕邊緣） ===== */
+      /* ===== A、C 版：跑馬燈（頂部列正下方，左右延伸到螢幕邊緣） ===== */
       .marquee {
         flex: none;
         position: relative;
@@ -901,7 +921,7 @@
         display: flex;
         align-items: center;
         gap: calc(18 * var(--u));
-        padding: 0 calc(28 * var(--u));
+        padding: 0 calc(28 * var(--u)) 0 calc(20 * var(--u));
         border-radius: calc(40 * var(--u));
         border: calc(3 * var(--u)) solid var(--brass);
         background: linear-gradient(
@@ -1263,6 +1283,61 @@
         animation-play-state: paused;
       }
 
+      /* ===== 日文、英文：較長的文字縮小字級或換行（不低於 18px 的下限） ===== */
+      html:lang(en) .title {
+        font-size: calc(76 * var(--u));
+        line-height: 1.453; /* 行高維持 110 單位，下方位置不變 */
+        letter-spacing: 0;
+      }
+      html:lang(en) .marquee {
+        letter-spacing: 0.12em;
+      }
+      html:lang(en) .mq-item::after {
+        margin-left: calc(64 * var(--u) - 0.12em);
+      }
+      html:not(:lang(zh)) .step-label,
+      html:not(:lang(zh)) .use-label {
+        font-size: max(18px, calc(36 * var(--u)));
+        text-align: center;
+        white-space: normal;
+        word-break: keep-all;
+      }
+      html:not(:lang(zh)) .step-label {
+        font-size: max(18px, calc(34 * var(--u)));
+        line-height: 1.2;
+      }
+      html:lang(ja) .cs-h {
+        word-break: keep-all;
+      }
+      html:lang(ja) .rp-h {
+        font-size: max(20px, calc(40 * var(--u)));
+      }
+      html:not(:lang(zh)) .rp-list {
+        margin-top: calc(20 * var(--u));
+      }
+      html:not(:lang(zh)) .guest-title {
+        font-size: calc(46 * var(--u));
+      }
+      html:not(:lang(zh)) .guest-sub {
+        white-space: normal;
+        word-break: keep-all;
+      }
+      html:lang(ja) .ic-title {
+        font-size: calc(53 * var(--u));
+      }
+      html:lang(en) .ic-title {
+        font-size: calc(54 * var(--u));
+      }
+      html:lang(ja) .or {
+        font-size: max(18px, calc(22 * var(--u)));
+        white-space: nowrap;
+      }
+      html:not(:lang(zh)) .standby-title,
+      html:not(:lang(zh)) .standby-sub {
+        letter-spacing: 0.06em;
+        text-align: center;
+      }
+
       /* ===== 減少動態 =====
        * 關閉呼吸、手指、跑馬燈、健保卡箭頭；輪播直接切換（仍每 12 秒換頁）
        * 小人停在終點並顯示打勾、指針停在「稍低」
@@ -1331,38 +1406,37 @@
           <div class="logo" id="logo">
             <img src="../img/logo.png" alt="建豐健康科技" draggable="false" />
           </div>
-          <span class="brand-name serif">建豐健康科技</span>
+          <span class="brand-name serif i18n-co" lang="zh-Hant">建豐健康科技</span>
         </div>
-        <div class="status">
-          <span class="weather" id="weather"
-            ><i class="ti ti-temperature-sun" aria-hidden="true"></i
-            ><span id="temp"></span
-          ></span>
-          <span class="clock" id="clock"></span>
+        <span class="clock" id="clock"></span>
+        <div class="actions">
           <!-- 專家模式：直接前往專家首頁 -->
           <a class="expert" href="home.html"
-            ><i class="ti ti-user-cog" aria-hidden="true"></i>專家模式</a
+            ><i class="ti ti-user-cog" aria-hidden="true"></i
+            ><span data-i18n="kiosk.expert">專家模式</span></a
           >
+          <!-- 語系選擇（js/lang-picker.js，僅圖示）：固定在最右邊 -->
+          <span id="langBtn"></span>
         </div>
       </header>
 
-      <!-- A 版：跑馬燈（頂部列正下方，滿版） -->
+      <!-- A、C 版：跑馬燈（頂部列正下方，滿版） -->
       <div class="marquee" id="marquee" role="marquee">
         <div class="mq-track" id="mqTrack" aria-hidden="true"></div>
         <span class="mq-static" id="mqStatic"></span>
       </div>
 
       <!-- 2. 標題 -->
-      <h1 class="title serif">AI跌倒風險檢測</h1>
+      <h1 class="title serif" data-i18n="kiosk.title">AI跌倒風險檢測</h1>
 
       <!-- 3. 三步驟 -->
-      <ol class="steps" aria-label="檢測步驟">
+      <ol class="steps" aria-label="檢測步驟" data-i18n-attr="aria-label:kiosk.steps">
         <li class="step">
           <span class="step-circle"
             ><i class="ti ti-id" aria-hidden="true"></i
             ><span class="step-num">1</span></span
           >
-          <span class="step-label">插入健保卡</span>
+          <span class="step-label" data-i18n-html="kiosk.step1">插入健保卡</span>
         </li>
         <li class="step-arrow" aria-hidden="true">
           <i class="ti ti-arrow-big-right-filled"></i>
@@ -1372,7 +1446,7 @@
             ><i class="ti ti-walk" aria-hidden="true"></i
             ><span class="step-num">2</span></span
           >
-          <span class="step-label">走一段路</span>
+          <span class="step-label" data-i18n-html="kiosk.step2">走一段路</span>
         </li>
         <li class="step-arrow" aria-hidden="true">
           <i class="ti ti-arrow-big-right-filled"></i>
@@ -1382,12 +1456,12 @@
             ><i class="ti ti-report-medical" aria-hidden="true"></i
             ><span class="step-num">3</span></span
           >
-          <span class="step-label">看結果</span>
+          <span class="step-label" data-i18n-html="kiosk.step3">看結果</span>
         </li>
       </ol>
 
       <!-- A 版：影片區（沒有影片時顯示佔位） -->
-      <section class="video" id="video" aria-label="衛教影片">
+      <section class="video" id="video" aria-label="衛教影片" data-i18n-attr="aria-label:kiosk.video">
         <div class="video-ph" aria-hidden="true">
           <span><i class="ti ti-player-play"></i></span>
         </div>
@@ -1399,20 +1473,21 @@
         id="carousel"
         aria-roledescription="輪播"
         aria-label="檢測介紹"
+        data-i18n-attr="aria-roledescription:kiosk.carouselRole;aria-label:kiosk.carousel"
       >
         <!-- 進度條＋標籤：純顯示 -->
         <div class="cs-tabs" aria-hidden="true">
           <div class="cs-tab is-current">
             <span class="cs-bar"><span class="cs-fill"></span></span
-            ><span class="cs-label" id="csLabel0">自我檢查</span>
+            ><span class="cs-label" id="csLabel0" data-i18n="kiosk.tabCheck">自我檢查</span>
           </div>
           <div class="cs-tab">
             <span class="cs-bar"><span class="cs-fill"></span></span
-            ><span class="cs-label">檢測怎麼做</span>
+            ><span class="cs-label" data-i18n="kiosk.tabHow">檢測怎麼做</span>
           </div>
           <div class="cs-tab">
             <span class="cs-bar"><span class="cs-fill"></span></span
-            ><span class="cs-label">報告搶先看</span>
+            ><span class="cs-label" data-i18n="kiosk.tabReport">報告搶先看</span>
           </div>
         </div>
         <div class="cs-view">
@@ -1423,15 +1498,16 @@
             role="group"
             aria-roledescription="頁"
             aria-label="使用步驟"
+            data-i18n-attr="aria-roledescription:kiosk.slideRole;aria-label:kiosk.tabUse"
           >
-            <h2 class="cs-h">只要三個步驟</h2>
+            <h2 class="cs-h" data-i18n="kiosk.useTitle">只要三個步驟</h2>
             <ol class="use-steps">
               <li class="use-step" style="--i: 0">
                 <span class="use-circle"
                   ><i class="ti ti-id" aria-hidden="true"></i
                   ><span class="use-num">1</span></span
                 >
-                <span class="use-label">插入健保卡</span>
+                <span class="use-label" data-i18n-html="kiosk.step1">插入健保卡</span>
               </li>
               <li class="use-arrow" style="--i: 0.5" aria-hidden="true">
                 <i class="ti ti-arrow-big-right-filled"></i>
@@ -1441,7 +1517,7 @@
                   ><i class="ti ti-walk" aria-hidden="true"></i
                   ><span class="use-num">2</span></span
                 >
-                <span class="use-label">走一段路</span>
+                <span class="use-label" data-i18n-html="kiosk.step2">走一段路</span>
               </li>
               <li class="use-arrow" style="--i: 1.5" aria-hidden="true">
                 <i class="ti ti-arrow-big-right-filled"></i>
@@ -1451,7 +1527,7 @@
                   ><i class="ti ti-report-medical" aria-hidden="true"></i
                   ><span class="use-num">3</span></span
                 >
-                <span class="use-label">看結果</span>
+                <span class="use-label" data-i18n-html="kiosk.step3">看結果</span>
               </li>
             </ol>
           </div>
@@ -1462,15 +1538,16 @@
             role="group"
             aria-roledescription="頁"
             aria-label="自我檢查"
+            data-i18n-attr="aria-roledescription:kiosk.slideRole;aria-label:kiosk.tabCheck"
           >
-            <h2 class="cs-h">問問自己</h2>
+            <h2 class="cs-h" data-i18n="kiosk.checkTitle">問問自己</h2>
             <ul class="q-list">
               <li>
                 <div class="q">
                   <span class="q-icon" aria-hidden="true"
                     ><i class="ti ti-history"></i
                   ></span>
-                  <span class="q-text">過去一年曾經跌倒過嗎？</span>
+                  <span class="q-text" data-i18n="kiosk.q1">過去一年曾經跌倒過嗎？</span>
                 </div>
               </li>
               <li>
@@ -1478,7 +1555,7 @@
                   <span class="q-icon" aria-hidden="true"
                     ><i class="ti ti-hand-stop"></i
                   ></span>
-                  <span class="q-text">走路或起身需要扶東西嗎？</span>
+                  <span class="q-text" data-i18n="kiosk.q2">走路或起身需要扶東西嗎？</span>
                 </div>
               </li>
               <li>
@@ -1486,13 +1563,13 @@
                   <span class="q-icon" aria-hidden="true"
                     ><i class="ti ti-mood-nervous"></i
                   ></span>
-                  <span class="q-text">會擔心自己跌倒嗎？</span>
+                  <span class="q-text" data-i18n="kiosk.q3">會擔心自己跌倒嗎？</span>
                 </div>
               </li>
             </ul>
             <div class="q-cta" id="qCta">
               <i class="ti ti-alert-circle" aria-hidden="true"></i>
-              <span>只要有一項，就建議您做一次檢測</span>
+              <span data-i18n="kiosk.qCta">只要有一項，就建議您做一次檢測</span>
               <i class="ti ti-arrow-big-down-filled" aria-hidden="true"></i>
             </div>
           </div>
@@ -1503,10 +1580,11 @@
             role="group"
             aria-roledescription="頁"
             aria-label="檢測怎麼做"
+            data-i18n-attr="aria-roledescription:kiosk.slideRole;aria-label:kiosk.tabHow"
             aria-hidden="true"
             inert
           >
-            <h2 class="cs-h">照平常的速度<br />從起點走到終點就完成</h2>
+            <h2 class="cs-h" data-i18n-html="kiosk.howTitle">照平常的速度<br />從起點走到終點就完成</h2>
             <div class="walk" aria-hidden="true">
               <svg viewBox="0 0 800 260" preserveAspectRatio="xMidYMid meet">
                 <!-- 步道與黃銅虛線 -->
@@ -1539,7 +1617,7 @@
                   stroke-linecap="round"
                 />
                 <path d="M93 72 L156 92 L93 112 Z" fill="#1f3b33" />
-                <text x="100" y="152" fill="#1f3b33">起點</text>
+                <text x="100" y="152" fill="#1f3b33" data-i18n="kiosk.walkStart">起點</text>
                 <!-- 終點：黃銅旗 -->
                 <line
                   x1="710"
@@ -1551,7 +1629,7 @@
                   stroke-linecap="round"
                 />
                 <path d="M713 72 L776 92 L713 112 Z" fill="#b08d57" />
-                <text x="720" y="152" fill="#8f6e3c">終點</text>
+                <text x="720" y="152" fill="#8f6e3c" data-i18n="kiosk.walkEnd">終點</text>
                 <!-- 線條小人：髖部為原點，雙腳、雙手交替擺動 -->
                 <g transform="translate(0 165)">
                   <g
@@ -1599,13 +1677,14 @@
             role="group"
             aria-roledescription="頁"
             aria-label="報告搶先看"
+            data-i18n-attr="aria-roledescription:kiosk.slideRole;aria-label:kiosk.tabReport"
             aria-hidden="true"
             inert
           >
             <div class="rp">
               <div class="rp-card" aria-hidden="true">
-                <span class="rp-tag">示意</span>
-                <span class="rp-label">跌倒風險等級</span>
+                <span class="rp-tag" data-i18n="kiosk.sample">示意</span>
+                <span class="rp-label" data-i18n="kiosk.riskLevel">跌倒風險等級</span>
                 <!-- 五色半圓儀表（顏色與結果頁相同）；指針從左轉到「稍低」再回來 -->
                 <svg class="rp-gauge" viewBox="0 0 200 112">
                   <g id="rpArcs"></g>
@@ -1622,22 +1701,22 @@
                     <circle cx="100" cy="100" r="9" fill="#1a2420" />
                   </g>
                 </svg>
-                <span class="rp-level">稍低風險</span>
+                <span class="rp-level" data-i18n="kiosk.riskLow">稍低風險</span>
               </div>
               <div class="rp-text">
-                <h2 class="cs-h rp-h">做完就能拿到<br />您的跌倒風險報告</h2>
+                <h2 class="cs-h rp-h" data-i18n-html="kiosk.reportTitle">做完就能拿到<br />您的跌倒風險報告</h2>
                 <ul class="rp-list">
                   <li>
                     <i class="ti ti-gauge" aria-hidden="true"></i
-                    >一眼看懂風險等級
+                    ><span data-i18n="kiosk.report1">一眼看懂風險等級</span>
                   </li>
                   <li>
-                    <i class="ti ti-device-mobile" aria-hidden="true"></i>掃 QR
-                    Code 用手機帶走
+                    <i class="ti ti-device-mobile" aria-hidden="true"></i
+                    ><span data-i18n="kiosk.report2">掃 QR Code 用手機帶走</span>
                   </li>
                   <li>
                     <i class="ti ti-list-check" aria-hidden="true"></i
-                    >附上專屬的改善建議
+                    ><span data-i18n="kiosk.report3">附上專屬的改善建議</span>
                   </li>
                 </ul>
               </div>
@@ -1649,30 +1728,31 @@
 
     <!-- 6. 底部兩個入口（固定在畫面底部） -->
     <div class="dock">
-      <!-- 訪客模式：前往訪客頁（不用插卡） -->
-      <a class="guest" id="guest" href="kiosk-guest.html" draggable="false">
+      <!-- 訪客模式（不用插卡）：先到同意頁，同意後前往訪客頁 -->
+      <a class="guest" id="guest" href="kiosk-consent.html?next=guest" draggable="false">
         <i class="ti ti-user-circle guest-icon" aria-hidden="true"></i>
         <span class="guest-text">
-          <span class="guest-title serif">訪客模式</span>
-          <span class="guest-sub">不用插卡，直接開始</span>
+          <span class="guest-title serif" data-i18n="kiosk.guest">訪客模式</span>
+          <span class="guest-sub" data-i18n-html="kiosk.guestSub">不用插卡，直接開始</span>
         </span>
         <span class="tap" aria-hidden="true"
           ><span class="tap-ring"></span><i class="ti ti-hand-finger"></i
         ></span>
       </a>
 
-      <span class="or" aria-hidden="true">或</span>
+      <span class="or" aria-hidden="true" data-i18n="kiosk.or">或</span>
 
-      <!-- 插入健保卡：不是按鈕、不可聚焦；點擊（模擬插卡）時箭頭加速閃動兩次，再前往健保卡流程頁 -->
+      <!-- 插入健保卡：不是按鈕、不可聚焦；點擊（模擬插卡）時箭頭加速閃動兩次，再前往同意頁 -->
       <div
         class="insert"
         id="insert"
         role="img"
         aria-label="請將健保卡插入螢幕下方讀卡機"
+        data-i18n-attr="aria-label:kiosk.insertAria"
       >
         <div class="ic-top">
-          <div class="ic-title serif">插入健保卡</div>
-          <div class="ic-sub">插入螢幕下方讀卡機</div>
+          <div class="ic-title serif" data-i18n="kiosk.insert">插入健保卡</div>
+          <div class="ic-sub" data-i18n="kiosk.insertSub">插入螢幕下方讀卡機</div>
         </div>
         <!-- 箭頭帶：指向螢幕外的讀卡機 -->
         <div class="ic-band">
@@ -1695,17 +1775,17 @@
         <div class="dlg-icon" aria-hidden="true">
           <i class="ti ti-moon"></i>
         </div>
-        <h2 class="dlg-title serif" id="sbTitle">進入待機</h2>
-        <p class="dlg-body" id="sbBody">畫面會關閉，影片暫停播放。</p>
+        <h2 class="dlg-title serif" id="sbTitle" data-i18n="kiosk.sbTitle">進入待機</h2>
+        <p class="dlg-body" id="sbBody" data-i18n="kiosk.sbBody">畫面會關閉，影片暫停播放。</p>
         <div class="dlg-hint">
           <i class="ti ti-hand-click" aria-hidden="true"></i
-          >要喚醒時，請在螢幕上連續點兩下
+          ><span data-i18n="kiosk.sbHint">要喚醒時，請在螢幕上連續點兩下</span>
         </div>
         <div class="dlg-actions">
-          <button class="btn btn-ghost" id="sbCancel" type="button">
+          <button class="btn btn-ghost" id="sbCancel" type="button" data-i18n="kiosk.sbCancel">
             取消
           </button>
-          <button class="btn btn-primary" id="sbOk" type="button">
+          <button class="btn btn-primary" id="sbOk" type="button" data-i18n="kiosk.sbOk">
             進入待機
           </button>
         </div>
@@ -1714,8 +1794,8 @@
 
     <!-- 待機畫面 -->
     <div class="standby" id="standby" aria-hidden="true">
-      <div class="standby-title serif">待機中</div>
-      <div class="standby-sub">點兩下螢幕喚醒</div>
+      <div class="standby-title serif" data-i18n="kiosk.standby">待機中</div>
+      <div class="standby-sub" data-i18n="kiosk.standbySub">點兩下螢幕喚醒</div>
     </div>
 
     <script>
@@ -1723,16 +1803,14 @@
        * 設定
        * ========================================================= */
       // 版本：'a' 影片版／'b' 輪播版／'c' 合併版（跑馬燈＋輪播）。網址 ?layout=a｜b｜c 可覆寫，並記在 sessionStorage「kf.kioskLayout」
-      // 沒有網址參數時：先用 sessionStorage 記住的版本（專家首頁「回到一體機」會回到上次的版本），沒有才用這個設定
+      // 沒有網址參數時：先用 sessionStorage 記住的版本（專家首頁的「首頁」會回到上次的版本），沒有才用這個設定
       const LAYOUT = "c";
       // 展示用：true 時點一下 Logo 就開啟「進入待機」視窗（正式為長按 2 秒）
       const DEMO_MODE = false;
       // A 版：衛教影片網址；空字串時顯示佔位畫面
       const VIDEO_SRC = "";
-      // A 版：跑馬燈文字
-      const MARQUEE_TEXT = "AI跌倒風險檢測";
-      // 天氣（之後改接天氣資料）
-      const WEATHER = { temp: 26, icon: "ti-temperature-sun" };
+      // A、C 版：跑馬燈文字；空字串時用預設文字（跟著語系，js/app-i18n.js 的 kiosk.title），自訂文字不翻譯
+      const MARQUEE_TEXT = "";
 
       const LONG_PRESS_MS = 2000; // 長按 Logo 開啟待機視窗
       const DOUBLE_TAP_MS = 400; // 待機時連點兩下的間隔
@@ -1763,25 +1841,27 @@
       // 輪播第 1 頁：C 版是「使用步驟」，B 版是「自我檢查」；移除這個版本不用的那一頁（要在建立輪播之前）
       if (layout === "c") {
         $("#slideCheck").remove();
-        $("#csLabel0").textContent = "使用步驟";
+        $("#csLabel0").dataset.i18n = "kiosk.tabUse";
       } else $("#slideUse").remove();
 
       // 一體機：關閉長按系統選單
       document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-      /* ===== 天氣 ===== */
-      function renderWeather(w) {
-        $("#weather .ti").className = "ti " + w.icon;
-        $("#temp").textContent = `${w.temp}°C`;
-        $("#weather").setAttribute("aria-label", `氣溫 ${w.temp} 度`);
-      }
-
-      /* ===== 日期時間：「11/18 週三 14:32」，每秒更新 ===== */
-      function renderClock() {
-        const d = new Date();
+      /* ===== 日期時間（頂部列中間），每 15 秒更新 =====
+       * 繁中「11/24 週二 15:04」／日文「11/24（火）15:04」／英文「Tue 11/24 15:04」
+       */
+      function formatDateTime(d = new Date()) {
         const p = (n) => String(n).padStart(2, "0");
-        const text = `${d.getMonth() + 1}/${d.getDate()} 週${"日一二三四五六"[d.getDay()]} ${p(d.getHours())}:${p(d.getMinutes())}`;
+        const md = `${d.getMonth() + 1}/${d.getDate()}`;
+        const time = `${p(d.getHours())}:${p(d.getMinutes())}`;
+        const w = d.getDay();
+        if (AppI18n.lang === "ja") return `${md}（${"日月火水木金土"[w]}）${time}`;
+        if (AppI18n.lang === "en") return `${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][w]} ${md} ${time}`;
+        return `${md} 週${"日一二三四五六"[w]} ${time}`;
+      }
+      function renderClock() {
         const el = $("#clock");
+        const text = formatDateTime();
         if (el.textContent !== text) el.textContent = text;
       }
 
@@ -1814,15 +1894,16 @@
       function buildMarquee() {
         const box = $("#marquee");
         const track = $("#mqTrack");
-        box.setAttribute("aria-label", MARQUEE_TEXT);
-        $("#mqStatic").textContent = MARQUEE_TEXT;
+        const text = MARQUEE_TEXT || t("kiosk.title");
+        box.setAttribute("aria-label", text);
+        $("#mqStatic").textContent = text;
         const group = document.createElement("span");
         group.className = "mq-group";
         track.replaceChildren(group);
         const add = () => {
           const it = document.createElement("span");
           it.className = "mq-item";
-          it.textContent = MARQUEE_TEXT;
+          it.textContent = text;
           group.append(it);
         };
         add();
@@ -2066,20 +2147,38 @@
       }
 
       /* =========================================================
-       * 插入健保卡：前往健保卡流程頁（讀取中 → 成功／失敗）
+       * 插入健保卡：先到同意頁，同意後前往健保卡流程頁（讀取中 → 成功／失敗）
        * 目前由點擊指示卡模擬；之後讀卡機服務偵測到插卡時呼叫同一個入口
-       * data：讀卡機回傳的資料（目前未使用，讀卡由 kiosk-card.html 處理）
-       * 版本（A／B）記在 sessionStorage「kf.kioskLayout」，回到 kiosk.html 時維持原本的版本
+       * data：讀卡機回傳的卡片資料 { name, gender, birth: { rocYear, month, day }, id }；
+       *   暫存在 sessionStorage「kf.cardPending」（身分證只存遮罩後的值），同意後由 kiosk-card.html 使用，不同意由同意頁清掉
+       *   沒有卡片資料（點擊模擬）時不暫存，由 kiosk-card.html 自己讀卡
+       * 版本（A／B／C）記在 sessionStorage「kf.kioskLayout」，回到 kiosk.html 時維持原本的版本
        * ========================================================= */
-      // eslint-disable-next-line no-unused-vars
       function onCardInserted(data) {
-        location.href = "kiosk-card.html";
+        try {
+          sessionStorage.removeItem("kf.cardPending");
+          if (data?.name && data.birth) {
+            const { name, gender, birth, id = "" } = data;
+            const idMasked = id.length > 6 ? id.slice(0, 3) + "*".repeat(id.length - 6) + id.slice(-3) : "";
+            sessionStorage.setItem("kf.cardPending", JSON.stringify({ name, gender, birth, idMasked }));
+          }
+        } catch {}
+        location.href = "kiosk-consent.html?next=card";
       }
 
+      /* ===== 語系切換：文字由 js/app-i18n.js 就地替換（輪播、計時不中斷），這裡更新由程式產生的部分 ===== */
+      document.addEventListener("app:langchange", () => {
+        renderClock();
+        if (layout !== "b") buildMarquee();
+      });
+      document.addEventListener("app:fontsready", () => {
+        if (layout !== "b") buildMarquee();
+      });
+
       /* ===== 啟動 ===== */
-      renderWeather(WEATHER);
+      $("#langBtn").outerHTML = LangPicker.buttonHTML("light", { iconOnly: true });
       renderClock();
-      setInterval(renderClock, 1000);
+      setInterval(renderClock, 15000);
       initLogo();
       initDialog();
       initStandby();

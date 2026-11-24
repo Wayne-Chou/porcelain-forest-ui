@@ -1,0 +1,21 @@
+/* =========================================================
+ * iPad 端多語系（js/app-i18n.js）：字型
+ * 各頁自己的字級、換行調整寫在各頁的 html:lang(ja)／html:lang(en)
+ * ========================================================= */
+/* 日文：JP 字型優先（切到日文時才載入）；其他頁只有導覽列、測驗完成彈窗是日文 */
+html:lang(ja),
+.nav[lang="ja"],
+.fin-mask[lang="ja"] {
+  --font-sans: "Noto Sans JP", "Noto Sans TC", "Hiragino Sans", sans-serif;
+  --font-serif: "Noto Serif JP", "Noto Serif TC", "Hiragino Mincho ProN", serif;
+}
+/* 還沒翻譯的中文區塊（場域面板、免責聲明、上傳面板）：維持 TC 字型 */
+body [lang="zh-Hant"] {
+  --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+  --font-serif: "Noto Serif TC", "Songti TC", serif;
+  font-family: var(--font-sans);
+}
+/* 公司名稱：不翻譯，維持 TC 字型 */
+body .i18n-co[lang="zh-Hant"] {
+  font-family: var(--font-serif);
+}

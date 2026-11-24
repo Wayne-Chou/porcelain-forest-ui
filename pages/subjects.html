@@ -24,7 +24,13 @@
     <script src="../js/field-sheet.js"></script>
     <!-- 共用底部導覽（鑑測｜紀錄｜上傳｜受測者｜設定） -->
     <link rel="stylesheet" href="../css/nav.css" />
+    <!-- 多語系（導覽列文字也用它，要在 nav.js 之前） -->
+    <link rel="stylesheet" href="../css/app-i18n.css" />
+    <script src="../js/app-i18n.js"></script>
     <script src="../js/nav.js"></script>
+    <!-- 健保卡自動帶入（新增人員面板）：受測名單、受測者頁共用 -->
+    <link rel="stylesheet" href="../css/card-fill.css" />
+    <script src="../js/card-fill.js"></script>
     <style>
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
@@ -1284,7 +1290,7 @@
 
       <footer class="sheet-foot">
         <button class="primary-btn" id="addSubmit" type="submit" form="addForm">
-          <span id="submitText">新增人員</span> <i class="ti ti-plus" id="submitIcon"></i>
+          <span id="submitText">確認新增</span> <i class="ti ti-plus" id="submitIcon"></i>
         </button>
       </footer>
     </section>
@@ -1878,12 +1884,14 @@
         A.mode = mode;
         A.subject = subject;
         const edit = mode === "edit";
+        cardFill.reset();
+        cardFill.show(!edit); // 編輯人員不顯示健保卡帶入
 
         $("#sheetTitle").textContent = edit ? "編輯人員" : "新增人員";
         $("#sheetSub").textContent = edit
           ? field.name
           : `加入 ${field.name} 的受測名單`;
-        $("#submitText").textContent = edit ? "儲存變更" : "新增人員";
+        $("#submitText").textContent = edit ? "儲存變更" : "確認新增";
         $("#submitIcon").className = `ti ${edit ? "ti-check" : "ti-plus"}`;
         $("#fCode").hidden = !(edit && subject.code);
         $("#fCodeText").textContent = edit && subject.code ? `編號 ${subject.code}` : "";
@@ -1919,6 +1927,7 @@
       function closeSheet() {
         if (!A.open) return;
         A.open = false;
+        cardFill.reset();
         document.activeElement?.blur?.();
         sheet.style.transform = "";
         sheet.classList.remove("is-open");
@@ -2025,6 +2034,56 @@
         showToast(`已更新 ${name}`);
       }
 
+      function pickGender(btn) {
+        A.gender = btn.dataset.gender;
+        setSeg(
+          genderSeg,
+          [...genderSeg.querySelectorAll(".seg-btn")].indexOf(btn),
+        );
+      }
+
+      /* ── 健保卡自動帶入（js/card-fill.js） ── */
+      const cardFill = CardFill.create({
+        sheet,
+        before: $("#fName"),
+        lock: [...form.querySelectorAll(".f-field"), sheet.querySelector(".sheet-foot")],
+        canInsert: () => A.open && A.mode === "add",
+        steps: [
+          {
+            flash: $("#fName .f-input-wrap"),
+            apply({ name }) {
+              if (!name) return;
+              inName.value = name;
+              $("#fName").classList.remove("has-error");
+            },
+          },
+          {
+            flash: genderSeg,
+            apply({ gender }) {
+              const btn = [...genderSeg.querySelectorAll(".seg-btn")].find((b) => b.dataset.gender === gender);
+              if (btn) pickGender(btn);
+            },
+          },
+          {
+            flash: $("#birthBtn"),
+            apply({ birth }) {
+              if (!birth) return;
+              // 滾輪打開時會定位到 A.birth
+              A.birth = toIso({ y: birth.rocYear, m: birth.month, d: birth.day });
+              renderBirthField();
+              $("#fBirth").classList.remove("has-error");
+            },
+          },
+        ],
+      });
+      // 讀卡機插卡時呼叫（TODO：串接真正讀卡機）：新增面板開啟時帶入資料，其他時候不動作；回傳是否有帶入
+      // data：{ name, gender: "男"|"女", birth: { rocYear, month, day } }
+      function onCardInserted(data) {
+        const ok = cardFill.insert(data);
+        if (ok && P.open) closePicker(false); // 正在選日期：關掉選擇視窗，以卡片資料為準
+        return ok;
+      }
+
       function initSheet() {
         $("#addBtn").addEventListener("click", onAddClick);
         $("#sheetClose").addEventListener("click", requestCloseSheet);
@@ -2047,12 +2106,7 @@
 
         genderSeg.addEventListener("click", (e) => {
           const btn = e.target.closest(".seg-btn");
-          if (!btn) return;
-          A.gender = btn.dataset.gender;
-          setSeg(
-            genderSeg,
-            [...genderSeg.querySelectorAll(".seg-btn")].indexOf(btn),
-          );
+          if (btn) pickGender(btn);
         });
 
         // 拖曳把手區：往下拖跟手移動，放開時超過 120px 關閉（有資料先確認），否則彈回

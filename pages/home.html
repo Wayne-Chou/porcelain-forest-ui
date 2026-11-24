@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-TW" data-app-i18n>
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" href="../img/logo.png" />
     <link rel="apple-touch-icon" href="../img/logo.png" />
-    <title>建豐健康科技 - 鑑測首頁</title>
+    <title data-i18n="home.docTitle">建豐健康科技 - 鑑測首頁</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
@@ -24,6 +24,9 @@
     <script src="../js/field-sheet.js"></script>
     <!-- 共用底部導覽（鑑測｜紀錄｜上傳｜受測者｜設定） -->
     <link rel="stylesheet" href="../css/nav.css" />
+    <!-- 多語系（導覽列文字也用它，要在 nav.js 之前） -->
+    <link rel="stylesheet" href="../css/app-i18n.css" />
+    <script src="../js/app-i18n.js"></script>
     <script src="../js/nav.js"></script>
     <!-- 共用語系選擇（Language 按鈕＋滾輪彈窗）：與詳細頁共用 -->
     <link rel="stylesheet" href="../css/wheel.css" />
@@ -186,7 +189,7 @@
         }
       }
 
-      /* 頂部：第一列 Logo＋日期（左）、Language 按鈕（右，js/lang-picker.js）；第二列問候語 */
+      /* 頂部：第一列 Logo＋日期（左）、首頁與語系按鈕（右，js/lang-picker.js）；第二列問候語 */
       .hero {
         padding: 0 var(--pad);
       }
@@ -239,7 +242,7 @@
         text-align: center;
         letter-spacing: 0;
       }
-      /* 右側按鈕：「回到一體機」＋ Language（同樣的淺底膠囊） */
+      /* 右側按鈕：「首頁」膠囊＋語系圓鈕（同樣的淺底、同高） */
       .hero-actions {
         flex-shrink: 0;
         display: flex;
@@ -249,7 +252,7 @@
       .kiosk-back {
         text-decoration: none;
       }
-      /* 窄螢幕：「回到一體機」只顯示圖示（保留 aria-label） */
+      /* 窄螢幕：「首頁」只顯示圖示（保留 aria-label） */
       @media (max-width: 599px) {
         .kiosk-back {
           width: 44px;
@@ -380,6 +383,44 @@
       }
       .test-card .start i {
         font-size: 1.0588em;
+      }
+
+      /* 日文、英文：名稱較長，縮小字級；「產出」那行可換行 */
+      html:lang(ja) .test-card .name {
+        font-size: max(16px, calc(68 * var(--u)));
+      }
+      html:lang(en) .test-card .name {
+        font-size: max(16px, calc(50 * var(--u)));
+      }
+      html:lang(ja) .test-card .no,
+      html:lang(en) .test-card .no {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        white-space: normal;
+        word-break: keep-all;
+        line-height: 1.25;
+      }
+      html:lang(ja) .test-card .no em,
+      html:lang(en) .test-card .no em {
+        flex: none;
+      }
+      html:lang(en) .test-card .no {
+        font-size: max(16px, var(--fs-small));
+      }
+      html:lang(en) .hero-date {
+        letter-spacing: 0.02em;
+      }
+      html:not(:lang(zh)) .hero-date-in {
+        --sep: 0.3em;
+      }
+      html:not(:lang(zh)) .hero-date-part::before {
+        content: "";
+      }
+      @media (max-width: 599px) {
+        html:lang(en) .test-card .name {
+          font-size: max(16px, calc(62 * var(--u)));
+        }
       }
 
       /* 選取的卡：森林綠 */
@@ -868,9 +909,9 @@
               <div class="hero-date" id="heroDate"></div>
             </div>
             <div class="hero-actions">
-              <!-- 回到一體機：kiosk.html 依 sessionStorage「kf.kioskLayout」顯示上次的版本 -->
-              <a class="lp-btn lp-btn--light kiosk-back" href="kiosk.html" aria-label="回到一體機"><i class="ti ti-device-desktop" aria-hidden="true"></i><span class="kiosk-back-text">回到一體機</span></a>
-              <!-- 語系選擇（js/lang-picker.js）：目前首頁尚未翻譯，按確定只寫入 sessionStorage「kf.lang」 -->
+              <!-- 首頁（一體機歡迎頁）：kiosk.html 依 sessionStorage「kf.kioskLayout」顯示上次的版本 -->
+              <a class="lp-btn lp-btn--light kiosk-back" href="kiosk.html" aria-label="首頁" data-i18n-attr="aria-label:home.kiosk"><i class="ti ti-home" aria-hidden="true"></i><span class="kiosk-back-text" data-i18n="home.kiosk">首頁</span></a>
+              <!-- 語系選擇（js/lang-picker.js，僅圖示）：按確定後由 js/app-i18n.js 立即切換 -->
               <div id="heroLang"></div>
             </div>
           </div>
@@ -891,13 +932,14 @@
 
     <!-- 選擇場域：底部面板（內容由 js/field-sheet.js 產生） -->
     <div class="sheet-mask" id="sheetMask"></div>
-    <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true"></section>
+    <section class="sheet" id="sheet" lang="zh-Hant" role="dialog" aria-modal="true" aria-hidden="true"></section>
 
     <!-- 影像上傳：底部面板 -->
     <div class="up-mask" id="upMask"></div>
     <section
       class="sheet up-sheet"
       id="upSheet"
+      lang="zh-Hant"
       role="dialog"
       aria-modal="true"
       aria-labelledby="upTitle"
@@ -938,12 +980,11 @@
           { date: isoDaysAgo(6), failOnce: false },
         ],
 
-        // 測驗項目：新增測驗只要在這裡加一筆
+        // 測驗項目：新增測驗只要在這裡加一筆（翻譯在 js/app-i18n.js 的 test.<id>.*；場域面板、免責聲明用這裡的中文）
         tests: [
           {
             id: "sppb",
             name: "簡易身體功能評估",
-            wrapAt: 4, // 放不下時只在第 4 字後換行：簡易身體／功能評估
             desc: "SPPB",
             output: "跌倒風險評估",
             icon: "ti-activity",
@@ -994,15 +1035,37 @@
        * ========================================================= */
       function renderHero() {
         const now = new Date();
-        const week = "日一二三四五六"[now.getDay()];
-        // 阿拉伯數字、不補零，例如 1月5日；「·」由 CSS 產生，放不下時只在這裡換行
-        $("#heroDate").innerHTML =
-          `<span class="hero-date-in"><span class="hero-date-part">${now.getMonth() + 1}月${now.getDate()}日</span> <span class="hero-date-part">星期${week}</span></span>`;
+        // 阿拉伯數字、不補零，例如 1月5日；分段之間的「·」由 CSS 產生（只有中文），放不下時只在分段處換行
+        const md = `${now.getMonth() + 1}月${now.getDate()}日`;
+        const enFmt = (o) => now.toLocaleDateString("en-US", o);
+        const parts = {
+          "zh-TW": [md, `星期${"日一二三四五六"[now.getDay()]}`],
+          ja: [`${md}（${"日月火水木金土"[now.getDay()]}）`],
+          en: [enFmt({ weekday: "long" }) + ",", enFmt({ month: "long", day: "numeric" })],
+        }[AppI18n.lang];
+        $("#heroDate").innerHTML = `<span class="hero-date-in">${parts.map((p) => `<span class="hero-date-part">${p}</span>`).join(" ")}</span>`;
 
         const h = now.getHours();
-        const greet = h < 11 ? "早安" : h < 18 ? "午安" : "晚安";
-        $("#heroTitle").innerHTML = `${greet}，<br>${CONFIG.unitName}`;
+        const greet = t(h < 11 ? "home.morning" : h < 18 ? "home.afternoon" : "home.evening");
+        $("#heroTitle").innerHTML = `${greet}<br><span class="i18n-co" lang="zh-Hant">${CONFIG.unitName}</span>`;
       }
+
+      // 測驗卡文字：依語系（js/app-i18n.js 的 test.<id>.*），字典沒有的測驗用 CONFIG.tests 的中文；切換語系時不重建卡片
+      function renderTestTexts() {
+        CONFIG.tests.forEach((test, i) => {
+          const card = $("#testList").children[i];
+          const tx = (k) => (AppI18n.has(`test.${test.id}.${k}`) ? t(`test.${test.id}.${k}`) : test[k]);
+          card.querySelector("em").textContent = t("home.output");
+          card.querySelector('[data-f="start"]').textContent = t("home.start");
+          ["output", "name", "desc"].forEach((k) => (card.querySelector(`[data-f="${k}"]`).innerHTML = tx(k)));
+        });
+      }
+      document.addEventListener("app:langchange", () => {
+        renderHero();
+        renderTestTexts();
+        fitCards();
+      });
+      document.addEventListener("app:fontsready", () => fitCards());
 
       function renderTests() {
         const list = $("#testList");
@@ -1010,13 +1073,14 @@
           .map(
             (t, i) => `
       <button class="test-card${i === 0 ? " is-active" : ""}" type="button" data-index="${i}" aria-pressed="${i === 0}">
-        <div class="top"><span class="no"><em>產出</em>${t.output}</span><i class="ti ${t.icon}"></i></div>
-        <div class="name serif">${t.wrapAt ? t.name.slice(0, t.wrapAt) + "<wbr>" + t.name.slice(t.wrapAt) : t.name}</div>
-        <div class="desc">${t.desc}</div>
-        <span class="start" data-start="${t.id}">開始測驗 <i class="ti ti-arrow-right"></i></span>
+        <div class="top"><span class="no"><em></em><span data-f="output"></span></span><i class="ti ${t.icon}"></i></div>
+        <div class="name serif" data-f="name"></div>
+        <div class="desc" data-f="desc"></div>
+        <span class="start" data-start="${t.id}"><span data-f="start"></span> <i class="ti ti-arrow-right"></i></span>
       </button>`,
           )
           .join("");
+        renderTestTexts();
 
         // 兩段式：點未選取的卡 → 變成選取（配色過渡、按鈕出現），不開面板；
         // 點已選取的卡或「開始測驗」→ 開啟場域選擇。卡片是 <button>，鍵盤 Enter／Space 同點擊
@@ -1078,8 +1142,19 @@
 
       /* =========================================================
        * 選擇場域：共用面板（js/field-sheet.js；場域資料 js/fields.js）
-       * 選好測驗後開啟；確認場域（或新增場域成功）→ 設為目前場域、加入最近使用、進入該測驗的受測名單
+       * 選好測驗後開啟；確認場域（或新增場域成功）→ 免責聲明 → 同意並開始 → 設為目前場域、加入最近使用、進入該測驗的受測名單
        * ========================================================= */
+      // 免責聲明內文：key 為測驗 id，每個字串一段；沒有設定的測驗不顯示
+      const DISCLAIMERS = {
+        sppb: [
+          "簡易身體功能評估（SPPB）包含平衡、五次起坐與步行速度三項測驗，用來了解長者的下肢肌力、平衡與行動能力，並推估跌倒風險。測驗過程會進行錄影，影像僅用於 AI 動作分析。",
+          "測驗結果僅供健康參考，不能取代醫師的診斷。測驗中如感到頭暈、疼痛或任何不適，請立即停止並告知現場人員；如有健康上的疑慮，請諮詢專業醫療人員。",
+        ],
+        gait: [
+          "行走測驗請受測者以平常的速度行走一段距離，系統透過 AI 分析步行速度與身體晃動程度，了解行走能力並推估跌倒風險。測驗過程會進行錄影，影像僅用於 AI 動作分析。",
+          "測驗結果僅供健康參考，不能取代醫師的診斷。行走時請注意安全，必要時請使用輔具或由他人陪同；如有健康上的疑慮，請諮詢專業醫療人員。",
+        ],
+      };
       let pickTest = null;
       const fieldSheet = FieldSheet.create({
         sheet: $("#sheet"),
@@ -1090,6 +1165,7 @@
         confirmLabel: "開始測驗",
         confirmIcon: "ti-arrow-right",
         toast: showToast,
+        disclaimer: () => DISCLAIMERS[pickTest.id],
         onConfirm(field) {
           KFFields.setCurrent(field.id);
           fieldSheet.close();
@@ -1414,7 +1490,7 @@
 
       /* ===== 啟動 ===== */
       renderNav();
-      $("#heroLang").outerHTML = LangPicker.buttonHTML("light");
+      $("#heroLang").outerHTML = LangPicker.buttonHTML("light", { iconOnly: true });
       if ($("#testList")) {
         renderHero();
         renderTests();

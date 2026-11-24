@@ -20,6 +20,9 @@
     />
     <!-- 共用場域資料（預設場域＋使用者新增的自訂場域，用 id 對應名稱） -->
     <script src="../js/fields.js"></script>
+    <!-- 多語系：測驗完成彈窗 -->
+    <link rel="stylesheet" href="../css/app-i18n.css" />
+    <script src="../js/app-i18n.js"></script>
     <style>
       /* =========================================================
        * 瓷白森林 Porcelain Forest — 專為 iPad 13 吋直式（1032 × 1376）設計
@@ -669,7 +672,193 @@
         transform: translate(-50%, 0);
       }
 
+      /* ===== 測驗完成彈窗（瓷盤金邊）：高於確認對話框 410、低於 toast 600 ===== */
+      .fin-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        display: grid;
+        place-items: center;
+        background: rgba(26, 36, 32, 0.58);
+        font-family: var(--font-sans);
+        opacity: 0;
+        visibility: hidden;
+        touch-action: none;
+        transition:
+          opacity 0.22s var(--ease-out),
+          visibility 0s 0.22s;
+      }
+      .fin-mask.is-open {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.22s var(--ease-out);
+      }
+      .fin {
+        width: min(max(calc(560 * var(--u)), 340px), calc(100vw - 48px));
+        max-height: calc(100dvh - 48px);
+        overflow-y: auto;
+        padding: calc(8 * var(--u));
+        border: 1px solid #d9cfbe;
+        border-radius: calc(28 * var(--u));
+        background: #fffdf9;
+        transform: scale(0.96);
+        transition: transform 0.22s var(--ease-out);
+      }
+      .fin-mask.is-open .fin {
+        transform: none;
+      }
+      .fin-in {
+        padding: calc(40 * var(--u)) calc(28 * var(--u)) calc(28 * var(--u));
+        border: max(1px, calc(1.5 * var(--u))) solid var(--brass);
+        border-radius: calc(22 * var(--u));
+      }
+      /* 標題區靠左：小標＋（金色直條｜問題） */
+      .fin-title {
+        margin: 0 0 calc(22 * var(--u));
+        font-family: var(--font-serif);
+        font-size: max(18px, calc(28 * var(--u)));
+        font-weight: 600;
+        line-height: 1.25;
+        letter-spacing: calc(6 * var(--u));
+        color: var(--brass-text);
+      }
+      .fin-ask {
+        --bar: calc(10 * var(--u));
+        --bar-gap: calc(22 * var(--u));
+        position: relative;
+        display: flex;
+        gap: var(--bar-gap);
+        margin-bottom: max(26px, calc(36 * var(--u)));
+      }
+      .fin-ask::before {
+        content: "";
+        flex: none;
+        align-self: stretch;
+        width: var(--bar);
+        border-radius: calc(5 * var(--u));
+        background: var(--brass);
+      }
+      /* 換行在翻譯字串裡（換行字元）；英文自然換行 */
+      .fin-q {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: max(26px, calc(56 * var(--u)));
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--forest);
+        white-space: pre-line;
+        text-wrap: balance;
+      }
+      /* 提示：放在問題與圓盤之間的空隙裡（絕對定位），出現時版面不動；左邊對齊問題文字 */
+      .fin-hint {
+        position: absolute;
+        top: calc(100% + 2px);
+        left: calc(var(--bar) + var(--bar-gap));
+        margin: 0;
+        font-size: max(16px, calc(22 * var(--u)));
+        line-height: 1.4;
+        color: var(--brass-text);
+        white-space: nowrap;
+      }
+      .fin-discs {
+        display: flex;
+        justify-content: center;
+        gap: calc(38 * var(--u));
+      }
+      .fin-disc {
+        flex: none;
+        width: max(110px, calc(170 * var(--u)));
+        height: max(110px, calc(170 * var(--u)));
+        border-radius: 50%;
+        border: 2px solid #d9cfbe;
+        background: #f7f4ee;
+        box-shadow:
+          inset 0 0 0 calc(12 * var(--u)) #fffdf9,
+          inset 0 0 0 calc(13.5 * var(--u)) #e4dccd;
+        color: var(--muted);
+        font-family: var(--font-serif);
+        font-size: max(22px, calc(40 * var(--u)));
+        font-weight: 600;
+        line-height: 1;
+        white-space: nowrap;
+        transition:
+          background 0.2s,
+          border-color 0.2s,
+          color 0.2s,
+          box-shadow 0.2s;
+      }
+      .fin-disc[aria-checked="true"] {
+        border-color: var(--brass);
+        background: var(--forest);
+        box-shadow:
+          inset 0 0 0 calc(12 * var(--u)) var(--forest),
+          inset 0 0 0 calc(14 * var(--u)) var(--brass);
+        color: var(--on-forest);
+      }
+      .fin-discs.is-shake {
+        animation: finShake 0.3s ease-in-out;
+      }
+      @keyframes finShake {
+        20%,
+        60% {
+          transform: translateX(calc(-8 * var(--u)));
+        }
+        40%,
+        80% {
+          transform: translateX(calc(8 * var(--u)));
+        }
+      }
+      .fin-btn {
+        display: block;
+        width: 100%;
+        border-radius: 999px;
+        font-size: max(18px, calc(28 * var(--u)));
+        font-weight: 700;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          transform 0.2s var(--ease-out);
+      }
+      .fin-btn:active {
+        transform: scale(0.98);
+      }
+      .fin-submit {
+        height: max(48px, calc(92 * var(--u)));
+        margin-top: calc(36 * var(--u));
+        background: var(--forest);
+        color: var(--on-forest);
+      }
+      .fin-submit[aria-disabled="true"] {
+        background: #d9d2c4;
+        color: #8a8070;
+      }
+      .fin-retake {
+        height: max(44px, calc(80 * var(--u)));
+        margin-top: calc(14 * var(--u));
+        border: 2px solid #e4dccd;
+        background: transparent;
+        color: var(--brass-text);
+      }
+      .fin-disc:focus-visible,
+      .fin-btn:focus-visible {
+        outline: 3px solid var(--brass);
+        outline-offset: 3px;
+      }
+
       @media (prefers-reduced-motion: reduce) {
+        /* 完成彈窗：只淡入 */
+        .fin-mask,
+        .fin-mask.is-open {
+          transition-duration: 0.22s !important;
+        }
+        .fin {
+          transform: none;
+        }
+        .fin-discs.is-shake {
+          animation: none;
+        }
         *,
         *::before,
         *::after {
@@ -770,6 +959,25 @@
         <button class="dlg-btn secondary" id="dlgCancel" type="button"></button>
         <button class="dlg-btn primary" id="dlgOk" type="button"></button>
       </div>
+    </div>
+
+    <!-- 測驗完成彈窗：只能按「送出結果」或「重測」離開 -->
+    <div class="fin-mask" id="finMask" aria-hidden="true" data-html2canvas-ignore>
+      <section class="fin" role="dialog" aria-modal="true" aria-labelledby="finTitle" aria-describedby="finQ">
+        <div class="fin-in">
+          <h2 class="fin-title" id="finTitle" data-i18n="finish.title">完成檢測</h2>
+          <div class="fin-ask">
+            <p class="fin-q" id="finQ" data-i18n="finish.question">步行時是否使用輔具？</p>
+            <p class="fin-hint" id="finHint" role="alert"></p>
+          </div>
+          <div class="fin-discs" id="finDiscs" role="radiogroup" aria-labelledby="finQ">
+            <button class="fin-disc" type="button" role="radio" aria-checked="false" data-aid="false" data-i18n="finish.no">沒有</button>
+            <button class="fin-disc" type="button" role="radio" aria-checked="false" data-aid="true" data-i18n="finish.yes">有</button>
+          </div>
+          <button class="fin-btn fin-submit" id="finSubmit" type="button" aria-disabled="true" data-i18n="finish.submit">送出結果</button>
+          <button class="fin-btn fin-retake" id="finRetake" type="button" data-i18n="finish.retake">重測</button>
+        </div>
+      </section>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -932,7 +1140,7 @@
         }
       }
 
-      // 一體機健保卡：{ name, gender, birth: { rocYear, month, day }, idMasked, readAt }
+      // 一體機健保卡：{ name, gender, birth: { rocYear, month, day }, idMasked, phone, readAt }
       function kioskCard() {
         try {
           const v = JSON.parse(sessionStorage.getItem("kf.kioskCard"));
@@ -944,6 +1152,7 @@
             gender: v.gender,
             birth: `${rocYear + 1911}-${pad2(month)}-${pad2(day)}`,
             idMasked: v.idMasked || "",
+            phone: v.phone || "",
             card: true,
           };
         } catch (e) {
@@ -1081,10 +1290,99 @@
         return String(n).padStart(2, "0");
       }
 
+      /* =========================================================
+       * 測驗完成彈窗：最後一項按「完成測驗」時開啟；點遮罩、Esc 都不會關閉
+       * 送出結果 → finish()：輔具答案（assistiveDevice）存進紀錄，再進入結果頁
+       * 重測 → 清掉這次的資料，回到第一項
+       * ========================================================= */
+      const Fin = { open: false, aid: null }; // aid：null 未選／true 有／false 沒有
+      const finDiscs = [...document.querySelectorAll(".fin-disc")];
+      function setAid(v) {
+        Fin.aid = v;
+        finDiscs.forEach((d, i) => {
+          const on = v !== null && d.dataset.aid === String(v);
+          d.setAttribute("aria-checked", String(on));
+          d.tabIndex = on || (v === null && i === 0) ? 0 : -1; // 群組只佔一個 Tab 停留點，方向鍵切換
+        });
+        $("#finSubmit").setAttribute("aria-disabled", String(v === null));
+        $("#finHint").textContent = "";
+      }
+      function toggleFinish(v) {
+        Fin.open = v;
+        $("#finMask").classList.toggle("is-open", v);
+        $("#finMask").setAttribute("aria-hidden", String(!v));
+        $("#stage").inert = v;
+      }
+      function openFinish() {
+        setAid(null);
+        toggleFinish(true);
+        finDiscs[0].focus({ preventScroll: true });
+      }
+      function submitFinish() {
+        if (finishing) return;
+        if (Fin.aid === null) {
+          const box = $("#finDiscs");
+          box.classList.remove("is-shake");
+          void box.offsetWidth; // 重新觸發動畫
+          box.classList.add("is-shake");
+          $("#finHint").textContent = t("finish.hint");
+          return;
+        }
+        finish(Fin.aid);
+      }
+      function retake() {
+        if (finishing) return;
+        toggleFinish(false);
+        clearTestData();
+        if (T.index > 0) {
+          T.index = 0;
+          renderSteps();
+          updatePrev();
+          swap(swapTargets(), renderItem, -1);
+        }
+        $("#startBtn").focus({ preventScroll: true });
+      }
+      // 清掉這次檢測的資料（所有項目）
+      // TODO：之後接鏡頭偵測時，在這裡清除各項目的偵測結果與計時；目前只有送出時才會存資料，沒有要清的內容
+      function clearTestData() {}
+
+      function initFinish() {
+        $("#finMask").lang = AppI18n.lang === "zh-TW" ? "zh-Hant" : AppI18n.lang;
+        finDiscs.forEach((d) => d.addEventListener("click", () => !finishing && setAid(d.dataset.aid === "true")));
+        $("#finSubmit").addEventListener("click", submitFinish);
+        $("#finRetake").addEventListener("click", retake);
+        $("#finDiscs").addEventListener("animationend", (e) => e.currentTarget.classList.remove("is-shake"));
+        document.addEventListener("keydown", (e) => {
+          if (!Fin.open) return;
+          const i = finDiscs.indexOf(document.activeElement);
+          if (/^Arrow/.test(e.key) && i >= 0) {
+            e.preventDefault();
+            const d = finDiscs[1 - i];
+            if (!finishing) setAid(d.dataset.aid === "true");
+            d.focus({ preventScroll: true });
+          } else if (e.key === "Tab") {
+            // 焦點只在彈窗裡循環
+            e.preventDefault();
+            const stops = [finDiscs.find((d) => d.tabIndex === 0), $("#finSubmit"), $("#finRetake")];
+            const k = stops.indexOf(document.activeElement);
+            const n = e.shiftKey ? (k <= 0 ? stops.length - 1 : k - 1) : (k + 1) % stops.length;
+            stops[n].focus({ preventScroll: true });
+          }
+        });
+        // 點到彈窗空白處時，焦點留在彈窗裡
+        $("#finMask").addEventListener("mousedown", (e) => !e.target.closest("button") && e.preventDefault());
+        // 從結果頁按上一頁回來（頁面快取）：不要停在已送出的彈窗
+        window.addEventListener("pageshow", (e) => {
+          if (!e.persisted) return;
+          finishing = false;
+          toggleFinish(false);
+        });
+      }
+
       // 下一項／完成測驗
       let finishing = false;
       function next() {
-        if (finishing) return;
+        if (finishing || Fin.open) return;
         if (T.index < T.items.length - 1) {
           T.index += 1;
           renderSteps(); // 圓點狀態以 0.4s 過場切換
@@ -1093,9 +1391,14 @@
           swap(swapTargets(), renderItem, 1);
           return;
         }
+        openFinish();
+      }
+
+      // 送出結果：存紀錄、進入結果頁；assistiveDevice：步行時是否使用輔具
+      function finish(assistiveDevice) {
         finishing = true;
         const now = new Date();
-        if (KIOSK) return finishKiosk(now);
+        if (KIOSK) return finishKiosk(now, assistiveDevice);
         // 完成：寫入 kf.subjects.<fieldId>.done[人員 id][測驗 id] = "HH:MM"
         const local = loadLocal();
         local.done[T.subject.id] = {
@@ -1119,6 +1422,7 @@
           date: `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`,
           time: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
           retest: params.get("retest") === "1",
+          assistiveDevice,
         };
         // 行走測驗：風險等級 0–4（低／稍低／中／高／危險）；TODO：之後改成分析結果，現在用隨機值方便測試
         if (test.id === "gait") record.riskLevel = Math.floor(Math.random() * 5);
@@ -1127,9 +1431,18 @@
         setTimeout(() => (location.href = `${resultPage}?record=${record.id}&from=assess`), 1200);
       }
 
+      // 一體機同意頁（kiosk-consent.html）的版本；沒有經過同意頁時為 null
+      function consentVersion() {
+        try {
+          return JSON.parse(sessionStorage.getItem("kf.consent"))?.version ?? null;
+        } catch (e) {
+          return null;
+        }
+      }
+
       // 一體機完成：紀錄存到 kf.records.kiosk（附上訪客或讀卡資料，結果頁不必查名單；身分證只存遮罩後的值），再進入結果頁
       // TODO：一體機版的 SPPB 結果頁之後再設計；目前只有行走測驗
-      function finishKiosk(now) {
+      function finishKiosk(now, assistiveDevice) {
         const s = T.subject;
         showToast(`已完成 ${s.name} 的 ${test.name}`);
         const record = {
@@ -1137,11 +1450,13 @@
           fieldId: "kiosk",
           subjectId: s.id,
           ...(s.card
-            ? { card: { name: s.name, gender: s.gender, birth: s.birth, idMasked: s.idMasked } }
+            ? { card: { name: s.name, gender: s.gender, birth: s.birth, idMasked: s.idMasked, phone: s.phone } }
             : { visitor: { name: s.name, gender: s.gender, birth: s.birth } }),
           test: test.id,
           date: `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`,
           time: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
+          assistiveDevice,
+          consentVersion: consentVersion(),
         };
         // 行走測驗：風險等級 0–4；TODO：之後改成分析結果，現在用隨機值方便測試
         if (test.id === "gait") record.riskLevel = Math.floor(Math.random() * 5);
@@ -1209,8 +1524,8 @@
         const visitor = KIOSK ? (FROM_CARD ? kioskCard() : kioskVisitor()) : null;
         if (!test || (!field && !KIOSK) || !ITEMS[test.id] || (KIOSK && !visitor)) {
           showToast(KIOSK && !visitor ? (FROM_CARD ? "找不到健保卡資料" : "找不到訪客資料") : "找不到測驗資料");
-          // 少了健保卡資料：回到一體機歡迎頁；少了訪客資料：回到訪客頁
-          setTimeout(() => (location.href = KIOSK ? (FROM_CARD ? "kiosk.html" : "kiosk-guest.html") : "home.html"), 1500);
+          // 少了健保卡資料：回到一體機歡迎頁；少了訪客資料：從同意頁重新開始
+          setTimeout(() => (location.href = KIOSK ? (FROM_CARD ? "kiosk.html" : "kiosk-consent.html?next=guest") : "home.html"), 1500);
           return;
         }
         T.items = ITEMS[test.id];
@@ -1230,6 +1545,7 @@
         $("#restartBtn").addEventListener("click", restartItem);
         $("#nextBtn").addEventListener("click", next);
         $("#prevBtn").addEventListener("click", prev);
+        initFinish();
         document.addEventListener("keydown", (e) => {
           if (e.key === "Escape" && dialogResolve) closeDialog(false);
         });
