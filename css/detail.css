@@ -1715,6 +1715,56 @@ button {
   }
 }
 
+/* ===== 推薦商品（元件外觀在 css/recommend.css，與鑑測結果頁共用）：手機上下排、≥ 768px 左右兩欄 ===== */
+.rec-blk {
+  --ru: 0.62px; /* css/recommend.css 的尺寸單位：手機 */
+  --fmin: 15px;
+  padding: 20px;
+}
+.rec-body {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.rec-body .rec-media {
+  width: 100%;
+  aspect-ratio: 1;
+}
+.rec-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.rec-info .rec-desc {
+  white-space: pre-line;
+}
+.rec-info .ticket {
+  margin-top: 16px;
+}
+@media (min-width: 768px) {
+  .rec-blk {
+    --ru: 0.72px;
+    padding: 24px 28px 28px;
+  }
+  .rec-body {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 24px;
+  }
+  .rec-body .rec-media {
+    flex: 0 0 40%;
+    width: 40%;
+    align-self: flex-start;
+  }
+  .rec-info .ticket {
+    margin-top: auto;
+  }
+  .rec-info .rec-desc {
+    margin-bottom: 18px;
+  }
+}
+
 /* ===== ⑥ 最新消息：樣式在 css/news.css（與鑑測結果頁共用） ===== */
 
 /* ===== ⑦ 推薦影片：點擊縮圖才載入播放器 ===== */

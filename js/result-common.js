@@ -1,27 +1,53 @@
 /* =========================================================
  * 鑑測結果頁共用程式（result.html SPPB、result-gait.html 行走測驗）；樣式在 css/result.css
  * 內容：共用小工具、資料讀取（紀錄、受測者，含一體機）、風險等級與五色半圓圖、頁首（返回、「報告」QR）、
- *      三張卡片的輪迴輪播（拖曳、圓點、閒置提醒、進場）、同齡常模、依風險推薦（商品＋優惠券）、最新消息
+ *      卡片輪迴輪播（拖曳、圓點、閒置提醒、進場）、同齡比較、推薦商品（js/recommend.js）、最新消息、風險切換示範鈕
  * 各頁在載入本檔後定義 CONFIG（subjects、records），再呼叫這裡的函式
  * 注意：<script> 內字串裡的結束標籤一律寫成 <\/body>、<\/html>、<\/script>
  * ========================================================= */
 
 /* =========================================================
- * 依風險等級推薦（result-gait.html 第 2 張卡）：level 1–5 對應 低、稍低、中、高、危險
- * 欄位對應之後的後台：images（0～3 張）、name（≤16 字）、desc（≤60 字）、discount（選填，1～99 的整數：9 = 9 折、85 = 85 折）、expire（選填）
- * 讀取用 getRecommend(level)：先讀 localStorage「kf.admin.recommends」（之後的後台寫入；這次不做寫入），沒有就用這裡的預設值
- * TODO：優惠券目前只做外觀，券號、QR 都是示範，沒有核銷、沒有防重複
+ * 風險切換示範（展示用；兩個結果頁共用）：頁首下方一排「低｜稍低｜中｜高｜危險」，只切換畫面，不寫回紀錄
+ * DEMO_RISK_SWITCH：正式上線改成 false（整排不顯示）
+ * DEMO.gait[i]、DEMO.sppb[i]：i = 0–4 依序為 低、稍低、中、高、危險
+ *   SPPB：平衡三個站姿（秒；null = 沒有做）、4 公尺步行（秒）、五次起坐（秒；null = 無法完成），各項分數依 SPPB 標準計分，總分 = 平衡＋步行＋起坐
+ *   VIVIFRAIL、風險等級由頁面原本的規則從總分算出（與下表一致：12 D 低｜9 C 稍低｜7 C 中｜5 B 高｜2 A 危險）
  * ========================================================= */
-const RECOMMENDS = [
-  { level: 1, name: "彈力帶訓練組", desc: "三種阻力由輕到重，坐著也能做腿部運動，輕巧好收納，在家隨時練。", images: [], discount: 85, expire: "2026/12/31" },
-  { level: 2, name: "平衡訓練軟墊", desc: "軟墊表面可以練習腳踝穩定，底部防滑不易移動，搭配椅背扶著，在家就能練習。", images: [], discount: 9, expire: "2026/12/31" },
-  { level: 3, name: "感應式小夜燈", desc: "人靠近自動亮燈，暖黃光不刺眼，磁吸黏貼免鑽孔，床邊、走道都適合。", images: [], discount: 9, expire: "2026/12/31" },
-  { level: 4, name: "床邊起身扶手", desc: "壓在床墊下固定不用打牆，起身坐下有地方扶。選購前建議請專業人員評估。", images: [], discount: 9, expire: "" },
-  { level: 5, name: "跌倒偵測緊急呼叫器", desc: "隨身配戴，偵測到跌倒自動通知家人，也可一鍵求救。建議盡快請專業人員評估。", images: [], discount: 85, expire: "" },
-];
-// 優惠券 QR：和結果總覽的報告 QR 同一種做法（目前是固定的示範圖片）
-// TODO：之後依券號產生（或由後台提供）QR 圖片
-const COUPON_QR_SRC = "../img/qrcode-demo.png";
+const DEMO_RISK_SWITCH = true;
+const DEMO = {
+  gait: [{ riskLevel: 0 }, { riskLevel: 1 }, { riskLevel: 2 }, { riskLevel: 3 }, { riskLevel: 4 }],
+  // 秒數用字串，照表格的寫法顯示（15.0 秒顯示「15.0」）
+  sppb: [
+    { stand: { side: "10", semi: "10", tandem: "10" }, walk: "4.2", chair: "10.5", items: { balance: 4, walk: 4, chair: 4 }, score: 12 },
+    { stand: { side: "10", semi: "10", tandem: "10" }, walk: "5.5", chair: "15.0", items: { balance: 4, walk: 3, chair: 2 }, score: 9 },
+    { stand: { side: "10", semi: "10", tandem: "6.0" }, walk: "7.5", chair: "16.0", items: { balance: 3, walk: 2, chair: 2 }, score: 7 },
+    { stand: { side: "10", semi: "10", tandem: "2.0" }, walk: "8.0", chair: "20.0", items: { balance: 2, walk: 2, chair: 1 }, score: 5 },
+    { stand: { side: "10", semi: "5.0", tandem: null }, walk: "10.5", chair: null, items: { balance: 1, walk: 1, chair: 0 }, score: 2 },
+  ],
+};
+// 示範鈕：current = 目前等級（0–4）；onPick(level) 由各頁重畫
+function initDemoRisk(current, onPick) {
+  const bar = $("#demoRisk");
+  if (!bar) return;
+  if (!DEMO_RISK_SWITCH) return bar.remove();
+  bar.innerHTML =
+    `<span class="demo-tag">示範</span>` +
+    SEG_ORDER.map((key, i) => {
+      const r = RISK[key];
+      return `<button class="demo-btn" type="button" data-level="${i}" aria-pressed="${i === current}" style="--risk-bg:${r.bg};--risk-border:${r.border};--risk-text:${r.text}">${r.short}</button>`;
+    }).join("");
+  bar.hidden = false;
+  bar.addEventListener("click", (e) => {
+    const b = e.target.closest(".demo-btn");
+    if (!b) return;
+    const level = Number(b.dataset.level);
+    onPick(level);
+    setDemoPressed(level);
+  });
+}
+function setDemoPressed(level) {
+  document.querySelectorAll(".demo-btn").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.level) === level)));
+}
 
 /* ===== 共用小工具 ===== */
 const $ = (sel) => document.querySelector(sel);
@@ -293,43 +319,11 @@ function renderPeer(box, key) {
 }
 
 /* =========================================================
- * 依風險等級推薦（RECOMMENDS 在本檔最上方）：五個等級都是同一種商品卡
+ * 依風險等級推薦（資料、圖片區、優惠券條共用 js/recommend.js）：五個等級都是同一種商品卡
  * 圖片區｜名稱｜說明（最多 3 行）｜優惠券條（有 discount 才顯示）
  * 優惠券條加 data-html2canvas-ignore（之後若加存圖，不要把券存進圖片）
  * ========================================================= */
-function getRecommend(level) {
-  let list = null;
-  try {
-    const v = JSON.parse(localStorage.getItem("kf.admin.recommends"));
-    if (Array.isArray(v)) list = v;
-  } catch (e) {}
-  return (list ?? RECOMMENDS).find((r) => r && Number(r.level) === level) || null;
-}
-/* 券號（8 碼，例如 A7K2-0915）：由紀錄 id 和等級算出，同一筆紀錄每次打開都一樣
- * TODO：之後由系統發券產生 */
-function couponCode(seed, level) {
-  let h = 2166136261;
-  for (const c of `${seed}|${level}`) h = Math.imul(h ^ c.codePointAt(0), 16777619) >>> 0;
-  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 去掉容易看錯的 I、O、0、1
-  let head = "";
-  for (let i = 0, x = h; i < 4; i++, x = Math.floor(x / 32)) head += A[x % 32];
-  const tail = String(Math.imul(h, 2654435761) >>> 0).padStart(4, "0").slice(-4);
-  return `${head}-${tail}`;
-}
-// discount：1～99 的整數才顯示優惠券條；不合法時每個值只警告一次
-const warnedDiscount = new Set();
-function discountOf(rec) {
-  const d = rec.discount;
-  if (d === undefined || d === null || d === "") return null;
-  if (Number.isInteger(Number(d)) && Number(d) >= 1 && Number(d) <= 99 && String(d).trim() !== "") return Number(d);
-  const key = `${rec.level}:${d}`;
-  if (!warnedDiscount.has(key)) {
-    warnedDiscount.add(key);
-    console.warn(`[推薦商品] discount 不合法（需為 1～99 的整數），不顯示優惠券：level ${rec.level}、discount ${JSON.stringify(d)}`);
-  }
-  return null;
-}
-// seed：產生券號用（紀錄 id）
+// seed：產生券號用（紀錄 id）；圖片區、優惠券條、左右滑都在 js/recommend.js
 function renderRecommend(card, level, seed = "") {
   const rec = getRecommend(level);
   const head = `<div class="card-head"><h2 class="card-title serif">推薦商品</h2></div>`;
@@ -337,75 +331,11 @@ function renderRecommend(card, level, seed = "") {
     card.innerHTML = `${head}<p class="rec-empty">目前沒有推薦內容</p>`;
     return;
   }
-  const images = (Array.isArray(rec.images) ? rec.images.filter(Boolean) : []).slice(0, 3);
-  const slides = images.length
-    ? images.map((src) => `<div class="rec-slide"><img src="${esc(src)}" alt="${esc(rec.name)}" draggable="false" /></div>`).join("")
-    : `<div class="rec-slide rec-ph"><i class="ti ti-photo" aria-hidden="true"></i><span>商品圖片</span></div>`; // 還沒有商品圖：統一的占位
-  const discount = discountOf(rec);
-  const code = couponCode(seed, level);
-  card.innerHTML = `${head}
-    <div class="rec-media">
-      <div class="rec-track">${slides}</div>
-      <span class="rec-tag">依您的結果推薦</span>
-      ${images.length > 1 ? `<div class="rec-dots" aria-hidden="true">${images.map((_, i) => `<span class="${i ? "" : "is-on"}"></span>`).join("")}</div>` : ""}
-    </div>
-    <div class="rec-name">${esc(rec.name)}</div>
-    ${rec.desc ? `<div class="rec-desc">${esc(rec.desc)}</div>` : ""}
-    ${
-      discount
-        ? `<div class="ticket" data-html2canvas-ignore>
-        <div class="ticket-l">
-          <div class="ticket-k">店內優惠</div>
-          <div class="ticket-title">本商品 ${discount} 折</div>
-          <div class="ticket-code">券號 ${esc(code)}${rec.expire ? `・至 ${esc(rec.expire)}` : ""}</div>
-        </div>
-        <div class="ticket-r">
-          <img class="qr-mini" src="${COUPON_QR_SRC}" alt="優惠券 ${esc(code)} 的 QR Code" draggable="false" />
-          <span class="ticket-use">憑此畫面至櫃檯</span>
-        </div>
-      </div>`
-        : ""
-    }`;
-  if (images.length > 1) initMediaSlider(card.querySelector(".rec-media"), images.length);
-}
-
-/* 商品大圖左右滑：只換圖，不觸發外層卡片的切換（pointerdown 不往上傳）；放開時超過寬度 18% 換一張 */
-function initMediaSlider(box, count) {
-  const track = box.querySelector(".rec-track");
-  const dots = [...box.querySelectorAll(".rec-dots span")];
-  let index = 0;
-  let drag = null;
-  const go = (i) => {
-    index = Math.max(0, Math.min(count - 1, i));
-    track.style.transform = `translateX(${-index * 100}%)`;
-    dots.forEach((d, k) => d.classList.toggle("is-on", k === index));
-    box.dataset.index = index;
-  };
-  box.addEventListener("pointerdown", (e) => {
-    e.stopPropagation();
-    drag = { x: e.clientX, dx: 0, id: e.pointerId };
-    box.setPointerCapture(e.pointerId);
-    track.classList.add("is-dragging");
-  });
-  box.addEventListener("pointermove", (e) => {
-    if (!drag || e.pointerId !== drag.id) return;
-    e.stopPropagation();
-    drag.dx = e.clientX - drag.x;
-    track.style.transform = `translateX(calc(${-index * 100}% + ${drag.dx}px))`;
-  });
-  const end = (e) => {
-    if (!drag) return;
-    e.stopPropagation();
-    const { dx } = drag;
-    drag = null;
-    track.classList.remove("is-dragging");
-    const w = box.clientWidth * 0.18;
-    go(dx < -w ? index + 1 : dx > w ? index - 1 : index);
-  };
-  box.addEventListener("pointerup", end);
-  box.addEventListener("pointercancel", end);
-  box.addEventListener("click", (e) => e.stopPropagation()); // 點圖片區不算點卡片
-  go(0);
+  card.innerHTML = `${head}${recMediaHTML(rec)}
+    <div class="rec-name">${recEsc(rec.name)}</div>
+    ${rec.desc ? `<div class="rec-desc">${recEsc(rec.desc)}</div>` : ""}
+    ${recTicketHTML(rec, level, seed)}`;
+  recInit(card);
 }
 
 /* =========================================================
@@ -428,9 +358,9 @@ function renderNewsOne(card, news) {
 }
 
 /* =========================================================
- * 輪迴卡片輪播（三張一圈）
+ * 輪迴卡片輪播（N 張一圈：行走頁 3 張、SPPB 5 張）
  * pos：連續的位置（每轉一張 ±1，可以一直累加）；目前頁 = pos 除以 3 的餘數
- * d：卡片與目前頁的距離，以三張為一圈換算到 −1.5～1.5（停住時是 −1、0、1）
+ * d：卡片與目前頁的距離，以 N 張為一圈換算到 −N/2～N/2（只顯示 −1、0、1 三張，其他透明）
  * 位移跟卡片寬度 W 連動：translateX = d × W × 0.81；translateZ = −min(|d|, 1.5) × W × 0.51
  * 三張卡片同一個高度（依舞台計算），內容不足留白、超出不捲動
  *   initCarousel({ pages: ["總覽", …], onMeasure })  pages：頁數圓點的 aria-label；onMeasure：卡片大小改變後呼叫
@@ -553,9 +483,10 @@ function initCarousel({ pages, onMeasure = () => {} }) {
     layout(C.pos, true);
     renderDots();
   }
-  // 頁數圓點：走最短的方向（三張一圈，最多轉一張）
+  // 頁數圓點：走最短的方向
   function goToPage(k) {
-    turn(mod(k - indexOf(C.pos) + 1, N) - 1); // −1、0、1
+    const half = Math.floor(N / 2);
+    turn(mod(k - indexOf(C.pos) + half, N) - half);
   }
 
   $("#dots").innerHTML = pages

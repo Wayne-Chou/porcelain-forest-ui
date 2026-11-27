@@ -628,9 +628,12 @@ button {
 }
 
 /* =========================================================
- * 第 2 張：依風險等級推薦（js/result-common.js renderRecommend）
- * 五個等級同一種商品卡：圖片區｜名稱｜說明｜優惠券條（有 discount 才顯示）
+ * 第 2 張：推薦商品（元件外觀在 css/recommend.css，這裡是卡片內的排版）
+ * 圖片區｜名稱｜說明｜優惠券條（有 discount 才顯示，推到卡片底部）
  * ========================================================= */
+.card {
+  --ru: var(--cu); /* css/recommend.css 的尺寸單位 */
+}
 .rec-empty {
   margin: auto 0;
   text-align: center;
@@ -638,175 +641,80 @@ button {
   color: var(--muted);
 }
 /* 商品圖片區：約 400，放不下時先縮這裡（最低 300） */
-.rec-media {
-  position: relative;
+.card > .rec-media {
   flex: 0 1 calc(400 * var(--cu));
   min-height: calc(300 * var(--cu));
   margin-top: calc(22 * var(--cu));
-  overflow: hidden;
-  border-radius: calc(24 * var(--cu));
-  border: 2px solid #e4dccd;
-  background: radial-gradient(70% 80% at 50% 45%, #fffdf9, #efe9de);
-  touch-action: pan-y; /* 左右滑由這裡處理（只換圖，不換卡） */
 }
-.rec-track {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  transition: transform 0.35s var(--ease-out);
-}
-.rec-track.is-dragging {
-  transition: none;
-}
-.rec-slide {
-  flex: 0 0 100%;
-  display: grid;
-  place-items: center;
-  padding: calc(16 * var(--cu));
-}
-.rec-slide img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  -webkit-user-drag: none;
-  pointer-events: none;
-}
-/* 還沒有商品圖：統一占位（圖示＋「商品圖片」） */
-.rec-ph {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: calc(10 * var(--cu));
-}
-.rec-ph .ti {
-  font-size: calc(80 * var(--cu));
-  line-height: 1;
-  color: #c7bba6;
-}
-.rec-ph span {
-  font-size: max(var(--fmin), calc(26 * var(--cu)));
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--muted);
-}
-/* 左上角膠囊：固定「依您的結果推薦」（系統帶入） */
-.rec-tag {
-  position: absolute;
-  left: calc(16 * var(--cu));
-  top: calc(16 * var(--cu));
-  padding: calc(6 * var(--cu)) calc(16 * var(--cu));
-  border-radius: 999px;
-  background: var(--forest);
-  color: #e6cd9c;
-  font-size: max(var(--fmin), calc(20 * var(--cu)));
-  font-weight: 700;
-  line-height: 1.3;
-}
-.rec-dots {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(14 * var(--cu));
-  display: flex;
-  justify-content: center;
-  gap: calc(8 * var(--cu));
-}
-.rec-dots span {
-  width: calc(8 * var(--cu));
-  height: calc(8 * var(--cu));
-  border-radius: 999px;
-  background: #d9cfbe;
-  transition: width 0.3s var(--ease-out);
-}
-.rec-dots span.is-on {
-  width: calc(22 * var(--cu));
-  background: var(--forest);
-}
-.rec-name {
+.card > .rec-name {
   margin-top: calc(22 * var(--cu));
-  font-family: var(--font-serif);
-  font-size: max(var(--fmin), calc(40 * var(--cu)));
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--forest);
 }
-/* 商品說明：最多 3 行 */
-.rec-desc {
-  margin-top: calc(10 * var(--cu));
+/* 說明：最多 3 行 */
+.card > .rec-desc {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   line-clamp: 3;
   overflow: hidden;
-  font-size: max(var(--fmin), calc(25 * var(--cu)));
-  line-height: 1.7;
-  color: #3e463f;
 }
-/* 優惠券條：左區文字｜撕線｜右區 QR */
-/* 推到卡片底部 */
-.ticket {
+.card > .ticket {
   margin-top: auto;
+}
+
+/* =========================================================
+ * 風險切換示範鈕（js/result-common.js initDemoRisk；DEMO_RISK_SWITCH）：頁首下方一排小按鈕，不擋卡片舞台
+ * ========================================================= */
+.demo-risk {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  margin-top: calc(14 * var(--u));
+  padding: 0 calc(var(--pad-x) + var(--gutter));
   display: flex;
   align-items: center;
-  padding: calc(18 * var(--cu)) calc(22 * var(--cu));
-  border-radius: calc(20 * var(--cu));
-  background: var(--forest);
+  justify-content: center;
+  gap: max(6px, calc(10 * var(--u)));
 }
-.ticket-l {
-  flex: 1;
-  min-width: 0;
-  padding-right: calc(20 * var(--cu));
-}
-.ticket-k {
-  font-size: max(var(--fmin), calc(18 * var(--cu)));
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: calc(3 * var(--cu));
-  color: #e6cd9c;
-}
-.ticket-title {
-  margin-top: calc(2 * var(--cu));
-  font-family: var(--font-serif);
-  font-size: max(var(--fmin), calc(32 * var(--cu)));
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--on-forest);
-}
-.ticket-code {
-  margin-top: calc(4 * var(--cu));
-  font-size: max(var(--fmin), calc(18 * var(--cu)));
-  line-height: 1.4;
-  color: rgba(246, 241, 232, 0.7);
-  font-variant-numeric: tabular-nums;
-}
-.ticket-r {
+.demo-tag {
   flex: none;
-  display: flex;
-  flex-direction: column;
+  padding: 0 max(8px, calc(12 * var(--u)));
+  height: max(24px, calc(34 * var(--u)));
+  display: inline-flex;
   align-items: center;
-  gap: calc(6 * var(--cu));
-  padding-left: calc(20 * var(--cu));
-  border-left: 2px dashed rgba(201, 164, 106, 0.6);
-}
-.qr-mini {
-  display: block;
-  box-sizing: content-box;
-  width: calc(96 * var(--cu));
-  height: calc(96 * var(--cu));
-  padding: calc(6 * var(--cu));
-  border-radius: calc(8 * var(--cu));
-  background: #fff;
-  image-rendering: pixelated;
-  -webkit-user-drag: none;
-  pointer-events: none;
-}
-.ticket-use {
-  font-size: max(var(--fmin), calc(16 * var(--cu)));
+  border-radius: 999px;
+  border: 1.5px dashed var(--line-soft);
+  color: var(--muted);
+  font-size: max(13px, calc(20 * var(--u)));
   font-weight: 700;
-  line-height: 1.3;
-  color: #e6cd9c;
   white-space: nowrap;
+}
+.demo-btn {
+  flex: none;
+  min-width: max(44px, calc(76 * var(--u)));
+  height: max(32px, calc(44 * var(--u)));
+  padding: 0 max(8px, calc(14 * var(--u)));
+  border-radius: 999px;
+  border: 2px solid var(--risk-border);
+  background: var(--risk-bg);
+  color: var(--risk-text);
+  font-size: max(14px, calc(22 * var(--u)));
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.2s var(--ease-out);
+}
+.demo-btn[aria-pressed="true"] {
+  border-width: 4px;
+  transform: scale(1.08);
+}
+@media (max-width: 599px) {
+  .demo-risk {
+    gap: 4px;
+    padding: 0 12px;
+  }
+  .demo-btn {
+    min-width: 0;
+    padding: 0 8px;
+  }
 }
 
 /* =========================================================

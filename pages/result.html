@@ -20,6 +20,11 @@
     />
     <!-- 鑑測結果頁共用（與 result-gait.html 共用版面、卡片、半圓圖、輪播） -->
     <link rel="stylesheet" href="../css/result.css" />
+    <!-- 推薦商品（與行走頁、詳細報告共用）、最新消息資料（與詳細報告共用） -->
+    <link rel="stylesheet" href="../css/recommend.css" />
+    <link rel="stylesheet" href="../css/news.css" />
+    <script src="../js/recommend.js"></script>
+    <script src="../js/news.js"></script>
     <script src="../js/result-common.js"></script>
     <style>
       /* =========================================================
@@ -181,6 +186,13 @@
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
       }
+      /* 「無法完成」「—」：文字，較小、不顯示單位 */
+      .measure-v.is-text {
+        font-family: var(--font-sans);
+        font-size: max(var(--fmin), calc(40 * var(--cu)));
+        font-weight: 700;
+        color: var(--muted);
+      }
       .measure-v small {
         margin-left: calc(8 * var(--cu));
         font-family: var(--font-sans);
@@ -223,7 +235,10 @@
         </a>
       </header>
 
-      <!-- 卡片舞台：三張排成一圈 -->
+      <!-- 風險切換示範鈕（js/result-common.js；DEMO_RISK_SWITCH）：只切換畫面，不寫回紀錄 -->
+      <div class="demo-risk" id="demoRisk" role="group" aria-label="示範：切換風險等級" hidden data-html2canvas-ignore></div>
+
+      <!-- 卡片舞台：五張排成一圈 -->
       <main class="stage" id="stage" aria-roledescription="輪播">
         <!-- 卡片 1：結果總覽 -->
         <section class="card" data-i="0" aria-label="結果總覽">
@@ -284,6 +299,12 @@
           <div class="sub">測量數據</div>
           <div id="measures"></div>
         </section>
+
+        <!-- 卡片 4：推薦商品（js/recommend.js，與行走頁相同） -->
+        <section class="card" data-i="3" id="recCard" aria-label="推薦商品"></section>
+
+        <!-- 卡片 5：最新消息（getLatestNews()，與行走頁相同） -->
+        <section class="card" data-i="4" id="newsCard" aria-label="最新消息"></section>
       </main>
 
       <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
@@ -375,14 +396,22 @@
       const RESULT = {
         score: 9, // SPPB 總分 0～12
         items: { balance: 3, chair: 3, walk: 3 }, // 三項分數 0～4
-        measures: [
-          { label: "步行速度", value: "4.82", unit: "秒" },
-          { label: "五次起坐測試", value: "12.5", unit: "秒" },
-          { label: "並排站立", value: "10", unit: "秒" },
-          { label: "半並排站立", value: "10", unit: "秒" },
-          { label: "直線站立", value: "10", unit: "秒" },
-        ],
+        // 測量數值（秒）：站姿 null = 沒有做；起坐 null = 無法完成
+        stand: { side: 10, semi: 10, tandem: 10 },
+        walk: 4.82,
+        chair: 12.5,
       };
+      // 測量數據卡的五列：秒數一位小數照原本格式（10 → "10"）；沒有做「—」；起坐、步行無法完成「無法完成」
+      function buildMeasures(d) {
+        const sec = (v, none) => (v === null || v === undefined ? { value: none, unit: "", text: true } : { value: String(v), unit: "秒" });
+        return [
+          { label: "步行速度", ...sec(d.walk, "無法完成") },
+          { label: "五次起坐測試", ...sec(d.chair, "無法完成") },
+          { label: "並排站立", ...sec(d.stand.side, "—") },
+          { label: "半並排站立", ...sec(d.stand.semi, "—") },
+          { label: "直線站立", ...sec(d.stand.tandem, "—") },
+        ];
+      }
 
       /* SPPB 總分 → 跌倒風險等級（key 對應 js/result-common.js 的 RISK；文字和顏色在那裡，不可更改）；min～max 為各等級的分數區間 */
       const RISK_RANGES = [
@@ -401,7 +430,7 @@
       const riskOf = (score) => RISK_RANGES.find((l) => score <= l.max);
       const viviOf = (score) => VIVIFRAIL.find((l) => score <= l.max);
 
-      const PAGES = ["總覽", "圖表", "數據"]; // 頁數圓點的 aria-label
+      const PAGES = ["總覽", "圖表", "數據", "推薦", "最新消息"]; // 頁數圓點的 aria-label
 
       // 共用小工具、資料讀取（紀錄、受測者含一體機）、半圓圖、頁首、輪播：js/result-common.js
 
@@ -440,9 +469,9 @@
       /* =========================================================
        * 填入內容
        * ========================================================= */
-      function renderResult(subject, date, record) {
-        const { score } = RESULT;
-        renderWho(subject, date);
+      /* data：RESULT（紀錄）或 DEMO.sppb[i]（示範鈕）；norm：同齡比較分類 */
+      function renderResult(data, norm) {
+        const { score } = data;
 
         const v = viviOf(score);
         const vivi = $("#vivi");
@@ -456,10 +485,10 @@
         setNeedle($("#gauge"), needleAngle(score));
         renderRiskBlock(riskOf(score).key);
         // 同齡比較：讀紀錄的 norm；沒有時依風險等級推示範值（TODO：之後改成 API 回傳的值）
-        renderPeer($("#peerBox"), normOf(record, riskOf(score).key));
+        renderPeer($("#peerBox"), norm);
         $("#score1").textContent = score;
 
-        drawRadar(RESULT.items);
+        drawRadar(data.items);
         $("#score2").innerHTML = `${score} <small>/12</small>`;
         const ITEMS = [
           { key: "balance", name: "平衡", icon: "ti-stretching" },
@@ -471,20 +500,24 @@
           <div class="item-row">
             <span class="item-ico"><i class="ti ${it.icon}"></i></span>
             <span class="item-name">${it.name}</span>
-            <span class="item-score serif">${RESULT.items[it.key]}<small>/4</small></span>
+            <span class="item-score serif">${data.items[it.key]}<small>/4</small></span>
           </div>`,
         ).join("");
 
-        $("#measures").innerHTML = RESULT.measures
+        $("#measures").innerHTML = buildMeasures(data)
           .map(
             (m) => `
           <div class="measure">
             <span class="measure-k">${esc(m.label)}</span>
-            <span class="measure-v serif">${esc(m.value)}<small>${esc(m.unit)}</small></span>
+            <span class="measure-v serif${m.text ? " is-text" : ""}">${esc(m.value)}${m.unit ? `<small>${esc(m.unit)}</small>` : ""}</span>
           </div>`,
           )
           .join("");
+        // 推薦商品：依風險等級（1–5）
+        renderRecommend($("#recCard"), SEG_ORDER.indexOf(riskOf(score).key) + 1, recordSeed);
+        fitVivi();
       }
+      let recordSeed = "";
 
 
       // 「結果總覽」標題列：標題＋VIVIFRAIL 放不下（標題會被擠壓）時，VIVIFRAIL 改放在標題下方一行、靠左
@@ -521,7 +554,12 @@
         // 左上角：從測驗完成進入是「‹ 受測名單」（回到這個場域的 SPPB 名單）；一體機回到歡迎頁（js/result-common.js）
         initHeader("sppb", record, params);
         initQrLink(REPORT_QR_SRC, REPORT_DETAIL_URL);
-        renderResult(subject, date, record);
+        renderWho(subject, date);
+        recordSeed = record?.id || "preview"; // 產生示範券號用：同一筆紀錄每次打開都一樣
+        renderResult(RESULT, normOf(record, riskOf(RESULT.score).key));
+        renderNewsOne($("#newsCard"), getLatestNews());
+        // 風險切換示範鈕：換成該等級的示範數據（最新消息不變）；不寫回紀錄
+        initDemoRisk(SEG_ORDER.indexOf(riskOf(RESULT.score).key), (lv) => renderResult(DEMO.sppb[lv], demoNorm(SEG_ORDER[lv])));
         showPage(fitVivi); // 字型載入後寬度會變，再量一次
         initCarousel({ pages: PAGES, onMeasure: fitVivi });
       }

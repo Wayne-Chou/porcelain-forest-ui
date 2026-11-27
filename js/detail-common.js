@@ -2,7 +2,7 @@
  * 詳細報告共用程式（detail-gait.html、detail-sppb.html）
  * 各頁在載入本檔前先設定 window.PAGE_KEY = "gait" | "sppb"
  * 內容：推薦影片設定、倒數與過期、過期／無權限頁、API 共用函式、頂帶、半圓儀表（沿用 result.html 幾何與指針算法）、
- *      測驗數值（大數字、區間條）、行動力狀態、行動建議、最新消息、推薦影片、進場動畫、儲存視窗與存圖、預覽框
+ *      測驗數值（大數字、區間條）、行動力狀態、行動建議、推薦商品（js/recommend.js）、最新消息、推薦影片、進場動畫、儲存視窗與存圖、預覽框
  * 文字一律用 t(key)（js/detail-i18n.js）
  * ========================================================= */
 
@@ -521,7 +521,56 @@ function renderAdvice(level, list = I18N.actions(window.PAGE_KEY, level)) {
   });
   ol.hidden = rest.length === 0;
   card.classList.toggle("is-single", rest.length === 0);
+  renderRecommendBlock(level);
 }
+
+/* =========================================================
+ * 推薦商品（行動建議之後、最新消息之前）：依風險等級，資料與元件共用 js/recommend.js
+ * 找不到對應等級時整個區塊隱藏；商品名稱與說明不翻譯
+ * 存圖：優惠券條不存（data-html2canvas-ignore）；跨網域的商品圖片在存圖時暫時換成占位，避免整張存圖失敗
+ * ========================================================= */
+const REC_LEVEL = { low2: 1, low: 2, medium: 3, high: 4, danger: 5 };
+function renderRecommendBlock(level) {
+  const sec = $("#secRec");
+  if (!sec) return;
+  const n = REC_LEVEL[level];
+  const rec = n ? getRecommend(n) : null;
+  sec.hidden = !rec || !rec.name;
+  if (sec.hidden) return;
+  const box = $("#recBox");
+  // 券號：同一份報告每次打開都一樣（TODO：之後由系統發券）
+  const seed = getExamTokenFromUrl() || "preview";
+  box.innerHTML = `${recMediaHTML(rec)}
+    <div class="rec-info">
+      <div class="rec-name">${recEsc(rec.name)}</div>
+      ${rec.desc ? `<div class="rec-desc">${recEsc(rec.desc)}</div>` : ""}
+      ${recTicketHTML(rec, n, seed)}
+    </div>`;
+  recInit(box);
+}
+const isCrossOrigin = (src) => {
+  try {
+    return new URL(src, location.href).origin !== location.origin;
+  } catch (e) {
+    return true;
+  }
+};
+document.addEventListener("capturestart", () =>
+  document.querySelectorAll("#secRec .rec-slide img").forEach((img) => {
+    if (!isCrossOrigin(img.currentSrc || img.src)) return;
+    const slide = img.closest(".rec-slide");
+    slide.dataset.html = slide.innerHTML;
+    slide.classList.add("rec-ph");
+    slide.innerHTML = '<i class="ti ti-photo" aria-hidden="true"></i><span>商品圖片</span>';
+  }),
+);
+document.addEventListener("captureend", () =>
+  document.querySelectorAll("#secRec .rec-slide[data-html]").forEach((slide) => {
+    slide.innerHTML = slide.dataset.html;
+    slide.classList.remove("rec-ph");
+    delete slide.dataset.html;
+  }),
+);
 
 /* =========================================================
  * 最新消息（森林封面；沒有消息時整個區塊隱藏，預覽時保留預覽框；標題與內容不翻譯）

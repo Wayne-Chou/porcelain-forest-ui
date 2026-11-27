@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="../css/detail.css" />
     <!-- 最新消息（與鑑測結果頁共用） -->
     <link rel="stylesheet" href="../css/news.css" />
+    <!-- 推薦商品（與鑑測結果頁共用） -->
+    <link rel="stylesheet" href="../css/recommend.css" />
     <!-- 共用語系選擇（Language 按鈕＋滾輪彈窗）：與首頁共用 -->
     <link rel="stylesheet" href="../css/wheel.css" />
     <link rel="stylesheet" href="../css/lang-picker.css" />
@@ -220,6 +222,15 @@
         </article>
       </section>
 
+      <!-- 推薦商品：依風險等級（js/recommend.js，與鑑測結果頁共用）；找不到對應等級時整個區塊隱藏；優惠券條不存進圖片 -->
+      <section class="wrap blk" id="secRec" hidden>
+        <article class="blk-card reveal rec-blk">
+          <div class="blk-eyebrow" data-i18n="blk.recEyebrow"></div>
+          <h2 class="blk-title" data-i18n="blk.rec"></h2>
+          <div class="rec-body" id="recBox"></div>
+        </article>
+      </section>
+
       <!-- ⑦ 衛教資訊：ICOPE banner 當封面＋4 則列表（SPPB 版內容） -->
       <section class="wrap blk" id="secEdu">
         <article class="blk-card reveal">
@@ -322,6 +333,7 @@
       window.PAGE_KEY = "sppb";
     </script>
     <script src="../js/news.js"></script>
+    <script src="../js/recommend.js"></script>
     <script src="../js/detail-common.js"></script>
     <script>
       /* =========================================================

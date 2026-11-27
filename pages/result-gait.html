@@ -21,6 +21,8 @@
     <!-- 鑑測結果頁共用（與 result.html 共用版面、卡片、半圓圖、同齡比較、輪播）；最新消息資料與詳細報告共用 -->
     <link rel="stylesheet" href="../css/result.css" />
     <link rel="stylesheet" href="../css/news.css" />
+    <link rel="stylesheet" href="../css/recommend.css" />
+    <script src="../js/recommend.js"></script>
     <script src="../js/result-common.js"></script>
     <script src="../js/news.js"></script>
     <style>
@@ -153,60 +155,6 @@
           transition: none;
         }
       }
-
-      /* 風險切換示範鈕（DEMO_RISK_SWITCH）：頁首下方一排小按鈕，不擋卡片舞台 */
-      .demo-risk {
-        position: relative;
-        z-index: 2;
-        flex: 0 0 auto;
-        margin-top: calc(14 * var(--u));
-        padding: 0 calc(var(--pad-x) + var(--gutter));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: max(6px, calc(10 * var(--u)));
-      }
-      .demo-tag {
-        flex: none;
-        padding: 0 max(8px, calc(12 * var(--u)));
-        height: max(24px, calc(34 * var(--u)));
-        display: inline-flex;
-        align-items: center;
-        border-radius: 999px;
-        border: 1.5px dashed var(--line-soft);
-        color: var(--muted);
-        font-size: max(13px, calc(20 * var(--u)));
-        font-weight: 700;
-        white-space: nowrap;
-      }
-      .demo-btn {
-        flex: none;
-        min-width: max(44px, calc(76 * var(--u)));
-        height: max(32px, calc(44 * var(--u)));
-        padding: 0 max(8px, calc(14 * var(--u)));
-        border-radius: 999px;
-        border: 2px solid var(--risk-border);
-        background: var(--risk-bg);
-        color: var(--risk-text);
-        font-size: max(14px, calc(22 * var(--u)));
-        font-weight: 700;
-        white-space: nowrap;
-        transition: transform 0.2s var(--ease-out);
-      }
-      .demo-btn[aria-pressed="true"] {
-        border-width: 4px;
-        transform: scale(1.08);
-      }
-      @media (max-width: 599px) {
-        .demo-risk {
-          gap: 4px;
-          padding: 0 12px;
-        }
-        .demo-btn {
-          min-width: 0;
-          padding: 0 8px;
-        }
-      }
     </style>
   </head>
   <body>
@@ -293,8 +241,6 @@
       const REPORT_QR_SRC = "../img/qrcode-demo.png";
       // 點 QR Code 小卡開啟的詳細報告（之後接 API 時換成帶 token 的網址）
       const REPORT_DETAIL_URL = "detail-gait.html?preview=1&from=result";
-      // 風險切換示範鈕（展示用）：頁首下方一排「低｜稍低｜中｜高｜危險」；正式上線改成 false
-      const DEMO_RISK_SWITCH = true;
 
       /* =========================================================
        * 設定區：受測人員、鑑測紀錄與其他頁重複，之後改成共用設定或 API
@@ -353,26 +299,7 @@
         renderRiskBlock(key);
         renderPeerScale($("#peerBox"), norm);
         renderRecommend($("#recCard"), level + 1, recordSeed);
-        document.querySelectorAll(".demo-btn").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.level) === level)));
-      }
-
-      /* 風險切換示範鈕：只切換畫面，不寫回紀錄（重新整理後回到紀錄原本的等級） */
-      function initDemoRisk(current) {
-        const bar = $("#demoRisk");
-        if (!DEMO_RISK_SWITCH) return bar.remove();
-        bar.innerHTML =
-          `<span class="demo-tag">示範</span>` +
-          SEG_ORDER.map((key, i) => {
-            const r = RISK[key];
-            return `<button class="demo-btn" type="button" data-level="${i}" aria-pressed="${i === current}" style="--risk-bg:${r.bg};--risk-border:${r.border};--risk-text:${r.text}">${r.short}</button>`;
-          }).join("");
-        bar.hidden = false;
-        bar.addEventListener("click", (e) => {
-          const b = e.target.closest(".demo-btn");
-          if (!b) return;
-          const level = Number(b.dataset.level);
-          renderLevel(level, demoNorm(SEG_ORDER[level]), false);
-        });
+        setDemoPressed(level);
       }
 
       /* =========================================================
@@ -407,7 +334,8 @@
         drawGauge($("#gauge"));
         const level = riskLevelOf(record);
         recordSeed = record?.id || "preview"; // 產生示範券號用：同一筆紀錄每次打開都一樣
-        initDemoRisk(level);
+        // 風險切換示範鈕（js/result-common.js；DEMO_RISK_SWITCH）：只切換畫面，不寫回紀錄
+        initDemoRisk(level, (lv) => renderLevel(DEMO.gait[lv].riskLevel, demoNorm(SEG_ORDER[lv]), false));
         renderLevel(level, normOf(record, SEG_ORDER[level]));
         renderNewsOne($("#newsCard"), getLatestNews());
         showPage();

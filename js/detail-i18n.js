@@ -386,6 +386,8 @@
     "blk.eduEyebrow": ["防跌知識", "転倒予防の知識", "Fall prevention"],
     "blk.videoEyebrow": ["影音衛教", "動画で学ぶ", "Watch & learn"],
     "blk.video": ["推薦影片", "おすすめ動画", "Recommended video"],
+    "blk.recEyebrow": ["依您的結果", "あなたの結果から", "Based on your result"],
+    "blk.rec": ["推薦商品", "おすすめ商品", "Recommended product"],
     "mob.badge": ["身體晃動", "体の揺れ", "Body sway"],
     "video.open": ["在 YouTube 開啟", "YouTubeで開く", "Open in YouTube"],
     "video.play": ["播放影片", "動画を再生", "Play video"],

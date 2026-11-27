@@ -1,0 +1,166 @@
+/* =========================================================
+ * 推薦商品（共用元件，js/recommend.js）：商品圖片區、名稱、說明、優惠券條
+ * 鑑測結果頁（css/result.css：--ru = 卡片單位 --cu，並決定卡片內的排版）、詳細報告（css/detail.css：--ru 依螢幕寬度）
+ * 這裡只管元件本身的外觀；圖片區的大小、各區塊的上下間距由各頁決定
+ * 存圖：優惠券條有 data-html2canvas-ignore，不存進圖片
+ * ========================================================= */
+/* 商品圖片區：大小由各頁決定 */
+.rec-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(24 * var(--ru, 1px));
+  border: 2px solid #e4dccd;
+  background: radial-gradient(70% 80% at 50% 45%, #fffdf9, #efe9de);
+  touch-action: pan-y; /* 左右滑由這裡處理（只換圖，不換卡） */
+}
+.rec-track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  transition: transform 0.35s var(--ease-out);
+}
+.rec-track.is-dragging {
+  transition: none;
+}
+.rec-slide {
+  flex: 0 0 100%;
+  display: grid;
+  place-items: center;
+  padding: calc(16 * var(--ru, 1px));
+}
+.rec-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+/* 還沒有商品圖：統一占位（圖示＋「商品圖片」） */
+.rec-ph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--ru, 1px));
+}
+.rec-ph .ti {
+  font-size: calc(80 * var(--ru, 1px));
+  line-height: 1;
+  color: #c7bba6;
+}
+.rec-ph span {
+  font-size: max(var(--fmin, 0px), calc(26 * var(--ru, 1px)));
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--muted);
+}
+/* 左上角膠囊：固定「依您的結果推薦」（系統帶入） */
+.rec-tag {
+  position: absolute;
+  left: calc(16 * var(--ru, 1px));
+  top: calc(16 * var(--ru, 1px));
+  padding: calc(6 * var(--ru, 1px)) calc(16 * var(--ru, 1px));
+  border-radius: 999px;
+  background: var(--forest);
+  color: #e6cd9c;
+  font-size: max(var(--fmin, 0px), calc(20 * var(--ru, 1px)));
+  font-weight: 700;
+  line-height: 1.3;
+}
+.rec-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(14 * var(--ru, 1px));
+  display: flex;
+  justify-content: center;
+  gap: calc(8 * var(--ru, 1px));
+}
+.rec-dots span {
+  width: calc(8 * var(--ru, 1px));
+  height: calc(8 * var(--ru, 1px));
+  border-radius: 999px;
+  background: #d9cfbe;
+  transition: width 0.3s var(--ease-out);
+}
+.rec-dots span.is-on {
+  width: calc(22 * var(--ru, 1px));
+  background: var(--forest);
+}
+.rec-name {
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin, 0px), calc(40 * var(--ru, 1px)));
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--forest);
+}
+/* 商品說明：行數由各頁決定（結果頁最多 3 行、詳細頁完整顯示） */
+.rec-desc {
+  margin-top: calc(10 * var(--ru, 1px));
+  font-size: max(var(--fmin, 0px), calc(25 * var(--ru, 1px)));
+  line-height: 1.7;
+  color: #3e463f;
+}
+/* 優惠券條：左區文字｜撕線｜右區 QR */
+.ticket {
+  display: flex;
+  align-items: center;
+  padding: calc(18 * var(--ru, 1px)) calc(22 * var(--ru, 1px));
+  border-radius: calc(20 * var(--ru, 1px));
+  background: var(--forest);
+}
+.ticket-l {
+  flex: 1;
+  min-width: 0;
+  padding-right: calc(20 * var(--ru, 1px));
+}
+.ticket-k {
+  font-size: max(var(--fmin, 0px), calc(18 * var(--ru, 1px)));
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: calc(3 * var(--ru, 1px));
+  color: #e6cd9c;
+}
+.ticket-title {
+  margin-top: calc(2 * var(--ru, 1px));
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin, 0px), calc(32 * var(--ru, 1px)));
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--on-forest);
+}
+.ticket-code {
+  margin-top: calc(4 * var(--ru, 1px));
+  font-size: max(var(--fmin, 0px), calc(18 * var(--ru, 1px)));
+  line-height: 1.4;
+  color: rgba(246, 241, 232, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+.ticket-r {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(6 * var(--ru, 1px));
+  padding-left: calc(20 * var(--ru, 1px));
+  border-left: 2px dashed rgba(201, 164, 106, 0.6);
+}
+.qr-mini {
+  display: block;
+  box-sizing: content-box;
+  width: calc(96 * var(--ru, 1px));
+  height: calc(96 * var(--ru, 1px));
+  padding: calc(6 * var(--ru, 1px));
+  border-radius: calc(8 * var(--ru, 1px));
+  background: #fff;
+  image-rendering: pixelated;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.ticket-use {
+  font-size: max(var(--fmin, 0px), calc(16 * var(--ru, 1px)));
+  font-weight: 700;
+  line-height: 1.3;
+  color: #e6cd9c;
+  white-space: nowrap;
+}
