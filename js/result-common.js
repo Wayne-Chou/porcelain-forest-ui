@@ -299,7 +299,8 @@ function fitName() {
 /* =========================================================
  * 同齡比較（兩頁結果總覽卡）：結果句用依語系的整句模板組字（res.peer.*，{n} = 百分比；日文、英文語序不同）
  *   above50 →「優於 50% 同齡長者」；below50 →「低於 50% 同齡長者」；behind80 →「落後 80% 同齡長者」
- *   SPPB：一行「前文｜大數字｜後文」（放不下時換行）；行走頁 B1：結果句＋位置尺（pos：「您」標記的位置 %）
+ *   SPPB：兩行，上面大字百分比（.big-peer），下面一行說明（.split-k，res.peerLabel.*）；
+ *   行走頁 B1：整句模板的結果句＋位置尺（pos：「您」標記的位置 %）
  * 讀 record.norm；沒有時依風險等級推示範值；值不合法時整段隱藏
  * TODO：之後改成 API 回傳的值（record.norm）
  * ========================================================= */
@@ -322,13 +323,13 @@ function peerParts(key) {
   const [before, after = ""] = t(p.tpl).split("{n}");
   return { before: before.trim(), num: p.n, after: after.trim(), text: t(p.tpl, { n: p.n }), pos: p.pos };
 }
-// SPPB：box 內放「前文｜大數字｜後文」
+// SPPB：上面大字百分比、下面一行說明（box 裡要有 .big-peer 和 .split-k）
 function renderPeer(box, key) {
-  const p = peerParts(key);
+  const p = Object.hasOwn(PEERS, key ?? "") ? PEERS[key] : null;
   box.hidden = !p;
   if (!p) return;
-  const w = (s) => (s ? `<span class="peer-w">${esc(s)}</span>` : "");
-  box.innerHTML = `<div class="peer-flow">${w(p.before)}<span class="big big-peer serif">${esc(p.num)}</span>${w(p.after)}</div>`;
+  box.querySelector(".big-peer").textContent = p.n;
+  box.querySelector(".split-k").textContent = t(`res.peerLabel.${key}`);
   box.dataset.norm = key;
 }
 

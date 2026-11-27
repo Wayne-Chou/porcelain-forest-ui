@@ -3,6 +3,7 @@
  *   引用：result.html、result-gait.html（js/result-common.js 之前）、detail-gait.html、detail-sppb.html（js/detail-common.js 之前）
  * RISK：name 完整名稱（繁中）、short 短名稱（繁中）、arc 半圓圖色段、bg／border／text 膠囊底、框、字、desc 風險說明（結果頁）
  * SEG_ORDER：半圓圖由左到右（低 → 危險）；行走測驗的 riskLevel 0–4 也是這個順序
+ * SPPB_TERMS／sppbTerm(key, lang)：SPPB 用詞（VIVIFRAIL 等級、平衡三種站姿），結果頁與詳細頁讀同一份
  * riskLevelText(key, lang)：半圓圖下方的「風險等級：短名稱」；riskShortName、riskName、riskDesc：短名稱、完整名稱、風險說明（三語）
  * ========================================================= */
 const RISK = {
@@ -50,3 +51,17 @@ const riskDesc = (key, lang = "zh-TW") => RISK_DESC[key]?.[riskLangIdx(lang)] ??
 function riskLevelText(key, lang = "zh-TW") {
   return RISK_LEVEL_PREFIX[riskLangIdx(lang)] + riskShortName(key, lang);
 }
+
+/* SPPB 用詞 [繁中, 日, 英]：結果頁（result.html）與詳細頁（detail-sppb.html）共用，兩邊不要各寫一份
+ *   vivi.A～D：VIVIFRAIL 等級（字母＋名稱；四色在各頁，不可更改）
+ *   stand.*：平衡測驗的三種站姿 */
+const SPPB_TERMS = {
+  "vivi.A": ["A 失能者", "A 要介護", "A Disabled"],
+  "vivi.B": ["B 衰弱者", "B フレイル", "B Frail"],
+  "vivi.C": ["C 衰弱前期者", "C プレフレイル", "C Pre-frail"],
+  "vivi.D": ["D 健康者", "D 健常", "D Robust"],
+  "stand.side": ["並排站立", "閉脚立位", "Side-by-side"],
+  "stand.semi": ["半前後站立", "セミタンデム", "Semi-tandem"],
+  "stand.tandem": ["前後站立", "タンデム", "Tandem"],
+};
+const sppbTerm = (key, lang = "zh-TW") => SPPB_TERMS[key]?.[riskLangIdx(lang)] ?? "";

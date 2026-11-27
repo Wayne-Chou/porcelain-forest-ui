@@ -428,9 +428,11 @@
         if (unit) u.textContent = unit;
       }
 
-      /* ── ② 平衡（0–4）：並排 ≥10 秒 1 分 → 半並排 ≥10 秒 1 分 → 直線 ≥10 秒 2 分、3–9.99 秒 1 分、<3 秒 0 分
+      /* ── ② 平衡（0–4）：並排 ≥10 秒 1 分 → 半前後 ≥10 秒 1 分 → 前後 ≥10 秒 2 分、3–9.99 秒 1 分、<3 秒 0 分
        * 前一項未達 10 秒（或沒有資料），後面的項目視為「未進行」 ── */
       const BAL_STAGES = ["sideBySide", "semiTandem", "tandem"];
+      // 站姿名稱：js/risk.js 的 SPPB_TERMS（與結果頁共用）
+      const STAND_TERM = { sideBySide: "stand.side", semiTandem: "stand.semi", tandem: "stand.tandem" };
       function getBalanceResult(balance) {
         let score = 0;
         let stopped = false;
@@ -466,7 +468,7 @@
               ? `<span class="brow-v is-skip">${t("bal.skipped")}</span>`
               : `<span class="brow-v">${t("sec", { v: fmt1(r.sec) })}${r.passed ? `<i class="ti ti-check" aria-label="${t("bal.passed")}"></i>` : ""}</span>`;
             return `<div class="brow${r.passed ? " is-pass" : ""}${r.skipped ? " is-skip" : ""}">
-              <span class="brow-k">${t("bal." + r.key)}</span>
+              <span class="brow-k">${sppbTerm(STAND_TERM[r.key], I18N.lang)}</span>
               <span class="brow-bar"><span class="brow-fill" style="--w:${w.toFixed(1)}%"></span></span>
               ${v}
             </div>`;
@@ -543,7 +545,7 @@
         col.style.setProperty("--vv-text", v.text || "#fff");
         col.dataset.grade = v.letter;
         $("#viviBadge").textContent = v.letter;
-        $("#viviName").textContent = t("vivi." + v.letter);
+        $("#viviName").textContent = sppbTerm("vivi." + v.letter, I18N.lang); // js/risk.js（與結果頁共用）
         $("#viviGrades").querySelectorAll("span").forEach((s) => s.classList.toggle("is-on", s.textContent === v.letter));
       }
 

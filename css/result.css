@@ -632,21 +632,6 @@ button {
 .split-k.ink {
   color: var(--ink);
 }
-/* SPPB 同齡比較：依語系的整句模板（例如「優於 {n} 同齡長者」「Better than {n} of peers」）排成一行，放不下時換行 */
-.peer-flow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: center;
-  column-gap: calc(10 * var(--cu));
-  row-gap: calc(4 * var(--cu));
-}
-.peer-w {
-  font-size: max(var(--fmin), var(--fs-small));
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--ink);
-}
 
 /* =========================================================
  * 第 2 張：推薦商品（元件外觀在 css/recommend.css，這裡是卡片內的排版）
@@ -661,16 +646,20 @@ button {
   font-size: max(var(--fmin), var(--fs-body));
   color: var(--muted);
 }
-/* 商品圖片區：約 400，放不下時先縮這裡（最低 240；日文、英文的優惠券條較高） */
+/* 商品圖片區：約 400（平板上至少約 360），放不下時先縮這裡（最低 240；日文、英文的優惠券條較高）；圖片內距 16（css/recommend.css） */
 .card > .rec-media {
   flex: 0 1 calc(400 * var(--cu));
   min-height: calc(240 * var(--cu));
-  margin-top: calc(22 * var(--cu));
+  margin-top: calc(18 * var(--cu));
 }
 .card > .rec-name {
-  margin-top: calc(22 * var(--cu));
+  margin-top: calc(18 * var(--cu));
 }
-/* 說明：最多 3 行 */
+/* 說明：最多 3 行；英文較長（一定排滿 3 行），字級與行高略小，讓圖片區保持約 360 以上 */
+html:lang(en) .card > .rec-desc {
+  font-size: max(var(--fmin), calc(24 * var(--cu)));
+  line-height: 1.55;
+}
 .card > .rec-desc {
   display: -webkit-box;
   -webkit-box-orient: vertical;

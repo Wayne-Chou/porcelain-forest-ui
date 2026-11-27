@@ -281,8 +281,11 @@
               <div class="split-k" data-i18n="res.outOf12">滿分 12 分</div>
             </div>
             <span class="split-line"></span>
-            <!-- 同齡比較（js/result-common.js renderPeer）：依語系的整句模板「前文｜大數字｜後文」 -->
-            <div id="peerBox"></div>
+            <!-- 同齡比較（js/result-common.js renderPeer）：上面大字百分比、下面一行說明（三語） -->
+            <div id="peerBox">
+              <div class="big big-peer serif" id="peer"></div>
+              <div class="split-k ink"></div>
+            </div>
           </div>
         </section>
 
@@ -421,9 +424,10 @@
         return [
           { label: t("res.m.walk"), ...sec(d.walk, unable) },
           { label: t("res.m.chair"), ...sec(d.chair, unable) },
-          { label: t("res.m.side"), ...sec(d.stand.side, "—") },
-          { label: t("res.m.semi"), ...sec(d.stand.semi, "—") },
-          { label: t("res.m.tandem"), ...sec(d.stand.tandem, "—") },
+          // 三種站姿的名稱：js/risk.js 的 SPPB_TERMS（與詳細頁共用）
+          { label: sppbTerm("stand.side", AppI18n.lang), ...sec(d.stand.side, "—") },
+          { label: sppbTerm("stand.semi", AppI18n.lang), ...sec(d.stand.semi, "—") },
+          { label: sppbTerm("stand.tandem", AppI18n.lang), ...sec(d.stand.tandem, "—") },
         ];
       }
 
@@ -436,7 +440,7 @@
         { key: "vlow", min: 12, max: 12 },
       ];
       const VIVIFRAIL = [
-        // 等級文字依語系：js/app-i18n.js 的 res.vivi.A～D（四色不可更改）
+        // 等級文字依語系：js/risk.js 的 SPPB_TERMS（與詳細頁共用；四色不可更改）
         { letter: "A", max: 3, color: "#DC3545" },
         { letter: "B", max: 6, color: "#FFC107", letterColor: "#3a2a00" }, // 黃底用深色字母
         { letter: "C", max: 9, color: "#0D6EFD" },
@@ -494,7 +498,7 @@
         const vivi = $("#vivi");
         vivi.style.setProperty("--level", v.color);
         vivi.style.setProperty("--letter", v.letterColor || "#fff");
-        $("#viviText").textContent = t(`res.vivi.${v.letter}`);
+        $("#viviText").textContent = sppbTerm(`vivi.${v.letter}`, AppI18n.lang);
         $("#viviLetter").textContent = v.letter;
 
         // 跌倒風險：半圓圖、「風險等級：短名稱」、風險說明（完整名稱）

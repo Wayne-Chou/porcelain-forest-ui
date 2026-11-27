@@ -221,22 +221,16 @@
 
     /* ── SPPB ── */
     "sppb.total": ["SPPB 總分", "SPPB 合計点", "SPPB total"],
-    "vivi.A": ["失能者", "障害あり", "Disabled"],
-    "vivi.B": ["衰弱者", "フレイル", "Frail"],
-    "vivi.C": ["衰弱前期者", "プレフレイル", "Pre-frail"],
-    "vivi.D": ["健康者", "健常", "Robust"],
+    /* VIVIFRAIL 等級、平衡三種站姿的名稱：js/risk.js 的 SPPB_TERMS（與結果頁共用） */
     "sec.sppb": ["SPPB 項目", "SPPB の項目", "SPPB tests"],
     "card.sppb": ["三項測驗結果", "3つのテスト結果", "Results of the 3 tests"],
     "test.balance": ["平衡", "バランス", "Balance"],
     "test.chair": ["起坐", "椅子立ち上がり", "Chair stand"],
     "test.walk": ["步行", "歩行", "Walking"],
-    "bal.sideBySide": ["並排站立", "閉脚立位", "Side-by-side stand"],
-    "bal.semiTandem": ["半並排站立", "セミタンデム立位", "Semi-tandem stand"],
-    "bal.tandem": ["直線站立", "タンデム立位", "Tandem stand"],
     "sppb.tests": ["三項測驗", "3つのテスト", "The three tests"],
     "unit.sideBySide": ["秒・並排", "秒・閉脚", "s · side-by-side"],
-    "unit.semiTandem": ["秒・半並排", "秒・セミタンデム", "s · semi-tandem"],
-    "unit.tandem": ["秒・直線", "秒・タンデム", "s · tandem"],
+    "unit.semiTandem": ["秒・半前後", "秒・セミタンデム", "s · semi-tandem"],
+    "unit.tandem": ["秒・前後", "秒・タンデム", "s · tandem"],
     "unit.chair": ["秒・五次", "秒・5回", "s · 5 stands"],
     "bal.skipped": ["未進行", "未実施", "Not done"],
     "bal.passed": ["達 10 秒", "10秒達成", "Reached 10 s"],
@@ -252,12 +246,12 @@
       "You met the standard in all three stances, showing good standing balance. Keep doing balance exercises such as one-leg stands or tai chi twice a week to maintain this.",
     ],
     "bal.desc.3": [
-      "直線站立未達 10 秒，靜態平衡略有下降。建議每日扶椅練習直線站立，逐步延長維持時間。",
+      "前後站立未達 10 秒，靜態平衡略有下降。建議每日扶椅練習前後站立，逐步延長維持時間。",
       "タンデム立位が10秒に届かず、立っているときのバランスが少し低下しています。毎日いすにつかまってタンデム立位を練習し、少しずつ時間を延ばしましょう。",
       "You could not hold the tandem stand for 10 seconds, so standing balance has declined slightly. Practice the tandem stand daily while holding a chair, and gradually hold it longer.",
     ],
     "bal.desc.2": [
-      "窄站姿難以維持，平衡能力明顯下降。建議在穩固支撐旁每日練習半並排與直線站立，並檢視居家防滑與扶手。",
+      "窄站姿難以維持，平衡能力明顯下降。建議在穩固支撐旁每日練習半前後與前後站立，並檢視居家防滑與扶手。",
       "足幅の狭い立ち方を保つのが難しく、バランス能力がはっきり低下しています。しっかりした支えのそばで、毎日セミタンデム立位とタンデム立位を練習し、住まいの滑り止めや手すりも見直しましょう。",
       "Narrow stances are hard to hold, showing a clear decline in balance. Practice the semi-tandem and tandem stands daily next to a sturdy support, and check your home for non-slip floors and handrails.",
     ],
@@ -527,7 +521,7 @@
       low: A(
         [
           ["加強下肢肌力", "每週 2～3 次椅子坐站、踮腳尖練習，每次 10～15 下 × 2 組。"],
-          ["每日平衡練習 10 分鐘", "扶著椅背練習半並排與直線站立，逐步延長維持時間。"],
+          ["每日平衡練習 10 分鐘", "扶著椅背練習半前後與前後站立，逐步延長維持時間。"],
           ["檢視居家環境", "確認常用動線照明充足、地面防滑，浴室建議加裝扶手。"],
           ["每 3 個月回測 SPPB", "追蹤三項分數變化，提早介入避免風險等級上升。"],
         ],
