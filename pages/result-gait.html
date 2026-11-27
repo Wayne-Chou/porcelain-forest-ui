@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-app-i18n>
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -19,9 +19,17 @@
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
     <!-- 鑑測結果頁共用（與 result.html 共用版面、卡片、半圓圖、同齡比較、輪播）；最新消息資料與詳細報告共用 -->
+    <!-- 語系選擇（地球圓鈕＋滾輪對話框，與首頁、一體機相同）、iPad 端多語系 -->
+    <link rel="stylesheet" href="../css/wheel.css" />
+    <link rel="stylesheet" href="../css/lang-picker.css" />
     <link rel="stylesheet" href="../css/result.css" />
     <link rel="stylesheet" href="../css/news.css" />
     <link rel="stylesheet" href="../css/recommend.css" />
+    <link rel="stylesheet" href="../css/app-i18n.css" />
+    <script src="../js/wheel.js"></script>
+    <script src="../js/lang-picker.js"></script>
+    <script src="../js/app-i18n.js"></script>
+    <script src="../js/pick-lang.js"></script>
     <script src="../js/recommend.js"></script>
     <script src="../js/risk.js"></script>
     <script src="../js/result-common.js"></script>
@@ -77,7 +85,7 @@
         --tag-fs: max(var(--fmin), calc(34 * var(--cu)));
         --tag-py: calc(10 * var(--cu));
         --tag-h: calc(var(--tag-fs) * 1.3 + var(--tag-py) * 2 + 4px); /* 字高（行高 1.3）＋上下內距＋上下框 */
-        --tag-w: calc(var(--tag-fs) + 56 * var(--cu) + 4px); /* 「您」＋左右內距 28＋左右框 */
+        --tag-w: calc(var(--tag-fs) * var(--tag-em, 1) + 56 * var(--cu) + 4px); /* 「您」（依語系的文字寬，--tag-em 由 JS 量）＋左右內距 28＋左右框 */
         position: relative;
         height: var(--bar-h);
         margin-top: calc(var(--tag-h) + var(--tip-h) + var(--dot-over) + var(--tip-gap) + 28 * var(--cu));
@@ -134,6 +142,7 @@
         font-weight: 700;
         line-height: 1.3;
         text-align: center;
+        white-space: nowrap;
       }
       .peer-ends {
         position: relative;
@@ -168,7 +177,7 @@
           <i class="ti ti-home"></i>
         </button>
         <button class="back-pill press" id="backBtn" type="button" hidden>
-          <i class="ti ti-chevron-left"></i>受測名單
+          <i class="ti ti-chevron-left"></i><span data-i18n="res.back">受測名單</span>
         </button>
         <!-- 姓名（含稱謂）與檢測日期：暫時隱藏，保留原始碼，之後可能再打開（同 result.html）
         <div class="who">
@@ -176,11 +185,11 @@
           <div class="who-date">檢測日期 <b id="whoDate"></b></div>
         </div>
         -->
-        <a class="report" id="qrCard" href="detail-gait.html?preview=1&amp;from=result" aria-label="開啟行走測驗詳細報告" draggable="false">
+        <a class="report" id="qrCard" href="detail-gait.html?preview=1&amp;from=result" aria-label="開啟行走測驗詳細報告" data-i18n-attr="aria-label:res.reportAria.gait" draggable="false">
           <span class="report-hint" aria-hidden="true">
             <span class="report-text">
-              <span class="report-title serif">報告</span>
-              <span class="report-sub">手機掃描看詳細內容</span>
+              <span class="report-title serif" data-i18n="res.report">報告</span>
+              <span class="report-sub" data-i18n="res.reportSub">手機掃描看詳細內容</span>
             </span>
             <svg class="report-arrow" focusable="false">
               <line x1="4%" y1="50%" x2="94%" y2="50%" />
@@ -190,31 +199,33 @@
           </span>
           <span class="qr-card"><img id="reportQr" alt="" draggable="false" /></span>
         </a>
+        <!-- 語系選擇（js/lang-picker.js，僅圖示）：頁首最右邊；切換後由 js/result-common.js initResultI18n 立即重畫 -->
+        <span id="langBtn"></span>
       </header>
 
       <!-- 風險切換示範鈕（DEMO_RISK_SWITCH）：只切換畫面，不寫回紀錄 -->
       <div class="demo-risk" id="demoRisk" role="group" aria-label="示範：切換風險等級" hidden data-html2canvas-ignore></div>
 
       <!-- 卡片舞台：四張排成一圈 -->
-      <main class="stage" id="stage" aria-roledescription="輪播">
+      <main class="stage" id="stage" aria-roledescription="輪播" data-i18n-attr="aria-roledescription:kiosk.carouselRole">
         <!-- 卡片 1：結果總覽（版面同 result.html） -->
-        <section class="card card--overview" data-i="0" aria-label="結果總覽">
+        <section class="card card--overview" data-i="0" aria-label="結果總覽" data-i18n-attr="aria-label:res.overview">
           <div class="card-head">
-            <h2 class="card-title serif">結果總覽</h2>
+            <h2 class="card-title serif" data-i18n="res.overview">結果總覽</h2>
           </div>
-          <div class="sub">跌倒風險評估</div>
-          <svg class="gauge" id="gauge" viewBox="0 0 760 362" role="img" aria-label="跌倒風險半圓圖"></svg>
+          <div class="sub" data-i18n="res.riskSub">跌倒風險評估</div>
+          <svg class="gauge" id="gauge" viewBox="0 0 760 362" role="img" aria-label="跌倒風險半圓圖" data-i18n-attr="aria-label:res.gaugeAria"></svg>
           <div class="gauge-text" id="gaugeText"></div>
           <!-- 同齡比較（B1 位置尺；資料規則同 result.html：js/result-common.js normOf） -->
           <div class="peer" id="peerBox" role="img">
-            <div class="peer-line" aria-hidden="true"><span class="peer-word" data-f="pre"></span><span class="peer-num" data-f="num"></span><span class="peer-word">同齡長者</span></div>
+            <div class="peer-line" aria-hidden="true"><span class="peer-word" data-f="before"></span><span class="peer-num" data-f="num"></span><span class="peer-word" data-f="after"></span></div>
             <div class="peer-ruler" aria-hidden="true">
               <span class="peer-mid"></span>
-              <span class="peer-tag">您</span>
+              <span class="peer-tag" data-i18n="res.you">您</span>
               <span class="peer-tip"></span>
               <span class="peer-dot"></span>
             </div>
-            <div class="peer-ends" aria-hidden="true"><span>表現較弱</span><span class="peer-c">中間</span><span>表現較好</span></div>
+            <div class="peer-ends" aria-hidden="true"><span data-i18n="res.weaker">表現較弱</span><span class="peer-c" data-i18n="res.middle">中間</span><span data-i18n="res.stronger">表現較好</span></div>
           </div>
         </section>
 
@@ -230,11 +241,11 @@
 
       <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
       <footer class="foot">
-        <nav class="pager" aria-label="頁面切換">
+        <nav class="pager" aria-label="頁面切換" data-i18n-attr="aria-label:res.pager">
           <div class="dots" id="dots" role="tablist" data-html2canvas-ignore></div>
           <div class="hint" id="hint" aria-hidden="true" data-html2canvas-ignore>
             <i class="ti ti-hand-finger hand"></i>
-            <i class="ti ti-chevrons-left chev to-left"></i>左右滑動查看<i class="ti ti-chevrons-right chev to-right"></i>
+            <i class="ti ti-chevrons-left chev to-left"></i><span data-i18n="res.swipe">左右滑動查看</span><i class="ti ti-chevrons-right chev to-right"></i>
           </div>
         </nav>
       </footer>
@@ -266,12 +277,6 @@
         ],
       };
       const DEFAULT_RISK = 1;
-      // 同齡比較（B1 位置尺）：結果句與「您」標記的位置（%）
-      const PEER_SCALE = {
-        above50: { pre: "優於", num: "50%", pos: 65 },
-        below50: { pre: "低於", num: "50%", pos: 35 },
-        behind80: { pre: "落後", num: "80%", pos: 12 },
-      };
 
       // 共用小工具、資料讀取（紀錄、受測者含一體機）、半圓圖、同齡比較、推薦、消息、頁首、輪播：js/result-common.js
       // riskLevel：0–4（依序為低、稍低、中、高、危險，對應 SEG_ORDER）的整數才採用，其他一律預設 1
@@ -280,22 +285,39 @@
         return record?.riskLevel !== undefined && record?.riskLevel !== null && Number.isInteger(v) && v >= 0 && v <= 4 ? v : DEFAULT_RISK;
       }
 
-      // 同齡比較：分類不合法時整區隱藏；標記位置改變時有 0.3 秒位移（減少動態時直接定位）
+      // 同齡比較（B1 位置尺）：結果句依語系的整句模板組字（js/result-common.js peerParts：前文｜數字｜後文）；
+      // 分類不合法時整區隱藏；標記位置改變時有 0.3 秒位移（減少動態時直接定位）
       function renderPeerScale(box, key) {
-        const p = Object.hasOwn(PEER_SCALE, key ?? "") ? PEER_SCALE[key] : null;
+        const p = peerParts(key);
         box.hidden = !p;
         if (!p) return;
-        box.querySelector('[data-f="pre"]').textContent = p.pre;
-        box.querySelector('[data-f="num"]').textContent = p.num;
+        for (const k of ["before", "num", "after"]) {
+          const el = box.querySelector(`[data-f="${k}"]`);
+          el.textContent = p[k];
+          el.hidden = !p[k];
+        }
+        box.querySelector(".peer-tag").textContent = t("res.you");
         box.querySelector(".peer-ruler").style.setProperty("--pos", `${p.pos}%`);
-        box.setAttribute("aria-label", `${p.pre} ${p.num} 同齡長者`);
+        box.setAttribute("aria-label", p.text);
         box.dataset.norm = key;
+        fitPeerTag();
+      }
+      // 「您」標籤的寬：量文字寬 ÷ 字級（和卡片大小無關，縮放時不用重量；字型載入後再量一次）
+      function fitPeerTag() {
+        const tag = $(".peer-tag");
+        const r = document.createRange();
+        r.selectNodeContents(tag);
+        const em = r.getBoundingClientRect().width / parseFloat(getComputedStyle(tag).fontSize);
+        if (em > 0) $(".peer-ruler").style.setProperty("--tag-em", Math.max(1, em).toFixed(3));
       }
 
       /* 依風險等級更新：半圓圖指針、「風險等級：短名稱」、同齡比較、第 2 張卡（推薦）
        * norm：同齡比較分類；示範鈕切換時依示範規則（不讀紀錄） */
       let recordSeed = "";
+      const CUR = { level: 0, norm: null }; // 目前顯示的等級與同齡比較（切換語系時用它重畫）
       function renderLevel(level, norm, sweep = true) {
+        CUR.level = level;
+        CUR.norm = norm;
         const key = SEG_ORDER[level];
         $(".card--overview").dataset.level = level;
         const angle = 180 - 36 * level - 18; // 指針在該等級色段的中央
@@ -313,6 +335,8 @@
        * 沒有 record 時（預覽）：第一位受測者、今天、風險等級預設 1（可用 ?risk=0–4 切換）
        * ========================================================= */
       function init() {
+        // 語系（js/result-common.js）：先套用固定文字，再產生卡片；切換語系時用目前的等級重畫
+        initResultI18n({ titleKey: "res.docTitle.gait", rerender: () => renderLevel(CUR.level, CUR.norm, false), refit: fitPeerTag });
         const params = new URLSearchParams(location.search);
         const recordId = params.get("record");
         let record = null;
@@ -322,7 +346,7 @@
           record = allRecords().find((r) => r.id === recordId && r.test === "gait");
           subject = record && findSubject(record);
           if (!record || !subject) {
-            showToast("找不到鑑測紀錄");
+            showToast(t("res.notFound"));
             setTimeout(() => (location.href = "report.html"), 1500);
             return;
           }
@@ -345,7 +369,7 @@
         renderLevel(level, normOf(record, SEG_ORDER[level]));
         renderNewsOne($("#newsCard"), getLatestNews());
         renderVideoCard($("#videoCard"));
-        showPage();
+        showPage(fitPeerTag);
         initCarousel();
       }
       init();

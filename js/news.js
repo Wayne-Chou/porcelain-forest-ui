@@ -7,7 +7,7 @@
  *   newsText(news)             詳細頁用的內文：body（相容 API 的 content）
  *   buildNewsContent(box, text) 依換行切行：含「：」或「:」的行拆成「項目／內容」；沒有冒號的行接在上一項內容後面換行，
  *                               前面還沒有項目時獨立成一段。一律用 textContent。半形冒號在數字之間（9:00）或網址（https://）不當作分隔
- * 標題與內容不翻譯
+ * 標題與內容是店家輸入的內容，不翻譯；欄位可以是字串，或多語物件 { "zh-TW", ja, en }（js/pick-lang.js 的 pickLang，缺的語系退回 zh-TW）
  * ========================================================= */
 
 // 預設消息（之後由後台維護）：{ title（≤30 字）, body（≤300 字，可換行）, image（選填，一張）, date（系統帶入發布時間）, published }
@@ -33,7 +33,7 @@ function getLatestNews() {
   } catch (e) {}
   return (
     (list ?? KF_NEWS)
-      .filter((n) => n && n.published === true && n.title)
+      .filter((n) => n && n.published === true && pickLang(n.title))
       .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))[0] || null
   );
 }
@@ -41,7 +41,7 @@ function getLatestNews() {
 // 詳細頁的內文：只用 body（標題另外顯示）；也相容 API 回傳的 content 字串
 function newsText(news) {
   if (typeof news?.content === "string") return news.content;
-  return String(news?.body ?? "");
+  return pickLang(news?.body);
 }
 
 function newsKeyIndex(line) {

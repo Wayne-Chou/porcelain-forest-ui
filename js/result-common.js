@@ -3,6 +3,8 @@
  * 內容：共用小工具、資料讀取（紀錄、受測者，含一體機）、風險等級與五色半圓圖、頁首（返回、「報告」QR）、
  *      卡片輪迴輪播（拖曳、圓點、閒置提醒、進場）、同齡比較、推薦商品（js/recommend.js）、最新消息、影片（js/video.js）、風險切換示範鈕
  * 各頁在載入本檔後定義 CONFIG（subjects、records），再呼叫這裡的函式
+ * 語系：js/app-i18n.js（t()、AppI18n.lang；文字 key 為 res.*）、js/lang-picker.js（頁首最右邊的地球圓鈕）；
+ *      切換後 initResultI18n 立即重畫所有卡片（停在原本那張卡）。後台資料的文字欄位用 js/pick-lang.js 的 pickLang
  * 注意：<script> 內字串裡的結束標籤一律寫成 <\/body>、<\/html>、<\/script>
  * ========================================================= */
 
@@ -25,28 +27,36 @@ const DEMO = {
     { stand: { side: "10", semi: "5.0", tandem: null }, walk: "10.5", chair: null, items: { balance: 1, walk: 1, chair: 0 }, score: 2 },
   ],
 };
-// 示範鈕：current = 目前等級（0–4）；onPick(level) 由各頁重畫
+// 示範鈕：current = 目前等級（0–4）；onPick(level) 由各頁重畫；按鈕文字跟著語系（renderDemoRisk）
+const DEMO_STATE = { level: 0 };
 function initDemoRisk(current, onPick) {
   const bar = $("#demoRisk");
   if (!bar) return;
   if (!DEMO_RISK_SWITCH) return bar.remove();
-  bar.innerHTML =
-    `<span class="demo-tag">示範</span>` +
-    SEG_ORDER.map((key, i) => {
-      const r = RISK[key];
-      return `<button class="demo-btn" type="button" data-level="${i}" aria-pressed="${i === current}" style="--risk-bg:${r.bg};--risk-border:${r.border};--risk-text:${r.text}">${r.short}</button>`;
-    }).join("");
+  DEMO_STATE.level = current;
+  renderDemoRisk();
   bar.hidden = false;
   bar.addEventListener("click", (e) => {
     const b = e.target.closest(".demo-btn");
     if (!b) return;
     const level = Number(b.dataset.level);
-    stopVideoCard(); // 切換等級：影片換回封面
     onPick(level);
     setDemoPressed(level);
   });
 }
+function renderDemoRisk() {
+  const bar = $("#demoRisk");
+  if (!bar || !DEMO_RISK_SWITCH) return;
+  bar.setAttribute("aria-label", t("res.demoAria"));
+  bar.innerHTML =
+    `<span class="demo-tag">${esc(t("res.demo"))}</span>` +
+    SEG_ORDER.map((key, i) => {
+      const r = RISK[key];
+      return `<button class="demo-btn" type="button" data-level="${i}" aria-pressed="${i === DEMO_STATE.level}" style="--risk-bg:${r.bg};--risk-border:${r.border};--risk-text:${r.text}">${esc(riskShortName(key, AppI18n.lang))}</button>`;
+    }).join("");
+}
 function setDemoPressed(level) {
+  DEMO_STATE.level = level;
   document.querySelectorAll(".demo-btn").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.level) === level)));
 }
 
@@ -129,10 +139,11 @@ function sweepNeedle(svg, target) {
   };
   requestAnimationFrame(step);
 }
-// 結果總覽卡的「風險等級：短名稱」與風險說明（固定配色；行走頁沒有風險說明框）
+// 結果總覽卡的「風險等級：短名稱」與風險說明（固定配色；行走頁沒有風險說明框；文字依語系，js/risk.js）
 function renderRiskBlock(key) {
   const r = RISK[key];
-  $("#gaugeText").textContent = riskLevelText(key);
+  const lang = AppI18n.lang;
+  $("#gaugeText").textContent = riskLevelText(key, lang);
   const risk = $("#risk");
   if (!risk) return;
   risk.style.setProperty("--risk-bg", r.bg);
@@ -140,8 +151,8 @@ function renderRiskBlock(key) {
   risk.style.setProperty("--risk-text", r.text);
   risk.style.setProperty("--risk-arc", r.arc);
   risk.dataset.level = key;
-  $("#riskTitle").textContent = `目前風險等級：${r.name}`;
-  $("#riskDesc").textContent = r.desc;
+  $("#riskTitle").textContent = t("res.riskTitle", { name: riskName(key, lang) });
+  $("#riskDesc").textContent = riskDesc(key, lang);
 }
 
 /* =========================================================
@@ -211,13 +222,18 @@ function renderWho(subject, date) {
  * ========================================================= */
 /* 左上角：從測驗完成進入（from=assess）→「‹ 受測名單」回到這個場域的名單；
  * 從一體機測驗進入（from=kiosk）→ 首頁鍵回到一體機歡迎頁；其他 → 首頁鍵回到專家首頁 */
+const HEADER = { fromKiosk: false };
+function labelHeader() {
+  $("#homeBtn").setAttribute("aria-label", t(HEADER.fromKiosk ? "res.homeKiosk" : "res.home"));
+}
 function initHeader(testId, record, params) {
   const fromAssess = params.get("from") === "assess";
   const fromKiosk = params.get("from") === "kiosk";
+  HEADER.fromKiosk = fromKiosk;
   $("#homeBtn").hidden = fromAssess;
   $("#backBtn").hidden = !fromAssess;
   document.querySelector(".header").classList.toggle("has-back", fromAssess);
-  if (fromKiosk) $("#homeBtn").setAttribute("aria-label", "回到一體機");
+  labelHeader();
   $("#homeBtn").addEventListener("click", () => (location.href = fromKiosk ? "kiosk.html" : "home.html"));
   $("#backBtn").addEventListener("click", () => {
     const fid = record?.fieldId || currentFieldId() || "";
@@ -256,7 +272,8 @@ function fitReport() {
   const gap = r.left - left.getBoundingClientRect().right;
   // 頁首內容的右邊界（扣掉右側內距）：整組被擠出去也算放不下
   const rightEdge = header.getBoundingClientRect().right - parseFloat(getComputedStyle(header).paddingRight);
-  if (gap < 24 * u - 0.5 || r.right > rightEdge + 0.5) report.classList.add("is-below");
+  const last = header.querySelector(".lp-btn") || report; // 地球圓鈕在最右邊
+  if (gap < 24 * u - 0.5 || last.getBoundingClientRect().right > rightEdge + 0.5) report.classList.add("is-below");
   // 「‹ 受測名單」：和 QR 小卡的垂直中心對齊（「報告」放到小卡下方時，頁首變高，置中會偏低）
   if (back && !back.hidden) {
     const qr = report.querySelector(".qr-card").getBoundingClientRect();
@@ -280,15 +297,16 @@ function fitName() {
 }
 
 /* =========================================================
- * 同齡比較（兩頁結果總覽卡，沿用 SPPB 原本的「50% 優於同齡長者」顯示）
- *   above50 →「50%」＋「優於同齡長者」；below50 →「50%」＋「低於同齡長者」；behind80 →「80%」＋「落後同齡長者」
+ * 同齡比較（兩頁結果總覽卡）：結果句用依語系的整句模板組字（res.peer.*，{n} = 百分比；日文、英文語序不同）
+ *   above50 →「優於 50% 同齡長者」；below50 →「低於 50% 同齡長者」；behind80 →「落後 80% 同齡長者」
+ *   SPPB：一行「前文｜大數字｜後文」（放不下時換行）；行走頁 B1：結果句＋位置尺（pos：「您」標記的位置 %）
  * 讀 record.norm；沒有時依風險等級推示範值；值不合法時整段隱藏
  * TODO：之後改成 API 回傳的值（record.norm）
  * ========================================================= */
 const PEERS = {
-  above50: { value: "50%", label: "優於同齡長者" },
-  below50: { value: "50%", label: "低於同齡長者" },
-  behind80: { value: "80%", label: "落後同齡長者" },
+  above50: { n: "50%", tpl: "res.peer.above", pos: 65 },
+  below50: { n: "50%", tpl: "res.peer.below", pos: 35 },
+  behind80: { n: "80%", tpl: "res.peer.behind", pos: 12 },
 };
 // 示範規則：低、稍低 → above50；中 → below50；高、危險 → behind80
 const demoNorm = (riskKey) => ({ vlow: "above50", low: "above50", mid: "below50", high: "behind80", danger: "behind80" })[riskKey] ?? null;
@@ -297,13 +315,20 @@ function normOf(record, riskKey) {
   if (record && record.norm !== undefined && record.norm !== null) return Object.hasOwn(PEERS, record.norm) ? record.norm : null;
   return demoNorm(riskKey);
 }
-// box 裡面要有 .big-peer（數字）和 .split-k（文字）
-function renderPeer(box, key) {
+// 結果句：模板在 {n} 前後切開 → { before, num, after, text（整句） }；分類不合法時 null
+function peerParts(key) {
   const p = Object.hasOwn(PEERS, key ?? "") ? PEERS[key] : null;
+  if (!p) return null;
+  const [before, after = ""] = t(p.tpl).split("{n}");
+  return { before: before.trim(), num: p.n, after: after.trim(), text: t(p.tpl, { n: p.n }), pos: p.pos };
+}
+// SPPB：box 內放「前文｜大數字｜後文」
+function renderPeer(box, key) {
+  const p = peerParts(key);
   box.hidden = !p;
   if (!p) return;
-  box.querySelector(".big-peer").textContent = p.value;
-  box.querySelector(".split-k").textContent = p.label;
+  const w = (s) => (s ? `<span class="peer-w">${esc(s)}</span>` : "");
+  box.innerHTML = `<div class="peer-flow">${w(p.before)}<span class="big big-peer serif">${esc(p.num)}</span>${w(p.after)}</div>`;
   box.dataset.norm = key;
 }
 
@@ -313,16 +338,19 @@ function renderPeer(box, key) {
  * 優惠券條加 data-html2canvas-ignore（之後若加存圖，不要把券存進圖片）
  * ========================================================= */
 // seed：產生券號用（紀錄 id）；圖片區、優惠券條、左右滑都在 js/recommend.js
+// 名稱、說明依語系（js/pick-lang.js；缺的語系退回繁中，並標 lang="zh-Hant" 維持繁中字型）
 function renderRecommend(card, level, seed = "") {
   const rec = getRecommend(level);
-  const head = `<div class="card-head"><h2 class="card-title serif">推薦商品</h2></div>`;
-  if (!rec || !rec.name) {
-    card.innerHTML = `${head}<p class="rec-empty">目前沒有推薦內容</p>`;
+  card.setAttribute("aria-label", t("res.rec"));
+  const head = `<div class="card-head"><h2 class="card-title serif">${esc(t("res.rec"))}</h2></div>`;
+  if (!rec) {
+    card.innerHTML = `${head}<p class="rec-empty">${esc(t("res.recEmpty"))}</p>`;
     return;
   }
+  const desc = recDesc(rec);
   card.innerHTML = `${head}${recMediaHTML(rec)}
-    <div class="rec-name">${recEsc(rec.name)}</div>
-    ${rec.desc ? `<div class="rec-desc">${recEsc(rec.desc)}</div>` : ""}
+    <div class="rec-name"${langAttr(rec.name)}>${recEsc(recName(rec))}</div>
+    ${desc ? `<div class="rec-desc"${langAttr(rec.desc)}>${recEsc(desc)}</div>` : ""}
     ${recTicketHTML(rec, level, seed)}`;
   recInit(card);
 }
@@ -331,88 +359,141 @@ function renderRecommend(card, level, seed = "") {
  * 最新消息（只放一則：getLatestNews()，js/news.js）
  * 由上而下：標題｜圖片（有才顯示）｜日期 YYYY.MM.DD｜消息標題｜內容（保留換行，太長時自己捲動）｜底部提示（固定文字，不能點）
  * ========================================================= */
+// 標題、內容是店家輸入的內容（不翻譯；多語物件時依語系，js/pick-lang.js）；其他固定文字依語系
+const NEWS_STATE = { card: null, news: null };
 function renderNewsOne(card, news) {
-  const head = `<div class="card-head"><h2 class="card-title serif">最新消息</h2></div>`;
+  NEWS_STATE.card = card;
+  NEWS_STATE.news = news;
+  card.setAttribute("aria-label", t("res.news"));
+  const head = `<div class="card-head"><h2 class="card-title serif">${esc(t("res.news"))}</h2></div>`;
   if (!news) {
-    card.innerHTML = `${head}<p class="rec-empty">目前沒有最新消息</p>`;
+    card.innerHTML = `${head}<p class="rec-empty">${esc(t("res.newsEmpty"))}</p>`;
     return;
   }
   const date = /^\d{4}-\d{2}-\d{2}/.test(news.date || "") ? news.date.slice(0, 10).replaceAll("-", ".") : "";
   card.innerHTML = `${head}
     ${news.image ? `<img class="nw-img" src="${esc(news.image)}" alt="" draggable="false" />` : ""}
     ${date ? `<div class="nw-date">${date}</div>` : ""}
-    <h3 class="nw-title${news.image ? " has-img" : ""}"><span>${esc(news.title)}</span></h3>
-    <div class="nw-body"><div class="nw-scroll" tabindex="0">${esc(news.body ?? "")}</div></div>
-    <div class="nw-cta"><i class="ti ti-building-store" aria-hidden="true"></i>詳情請洽門市櫃檯</div>`;
+    <h3 class="nw-title${news.image ? " has-img" : ""}"${langAttr(news.title)}><span>${esc(pickLang(news.title))}</span></h3>
+    <div class="nw-body"><div class="nw-scroll" tabindex="0"${langAttr(news.body)}>${esc(pickLang(news.body))}</div></div>
+    <div class="nw-cta"><i class="ti ti-building-store" aria-hidden="true"></i>${esc(t("res.newsCta"))}</div>`;
 }
 
 /* =========================================================
- * 影片卡（最後一張；資料共用 js/video.js 的 KF_VIDEO）：卡片整張不存進圖片
- * 一開始只顯示封面（YouTube 縮圖＋播放按鈕），在封面上左右滑照常換卡，「點一下」才換成 iframe 播放
- * 播放中的 iframe 會吃掉觸控：下方顯示「滑動影片以外的地方切換卡片」；換到別張卡、或示範鈕切換等級時，移除 iframe（影片停止）
- * 封面圖載入失敗（或 YouTube 回傳 120×90 的預設灰圖）：深綠漸層＋播放按鈕＋「點此播放影片」
+ * 影片卡（最後一張；資料共用 js/video.js 的 KF_VIDEO）：整張卡就是封面，卡片內不放播放器；整張不存進圖片
+ *   封面圖撐滿：maxresdefault.jpg → 失敗（或 YouTube 回傳 120×90 的預設灰圖）改 hqdefault.jpg → 再失敗用 --forest 漸層
+ *   「點一下」（按下到放開移動不超過 8px）開啟播放視窗；左右滑照常換卡；旁邊露出的卡片點了是轉過來，不開啟
  * ========================================================= */
 const VIDEO_CARD = { card: null };
+const ytThumb = (id, name) => `https://img.youtube.com/vi/${encodeURIComponent(id)}/${name}.jpg`;
 function renderVideoCard(card) {
   VIDEO_CARD.card = card;
   const v = typeof KF_VIDEO !== "undefined" ? KF_VIDEO : null;
-  const head = `<div class="card-head"><h2 class="card-title serif">推薦影片</h2></div>`;
+  card.setAttribute("aria-label", t("res.video"));
+  card.classList.toggle("card--video", !!v?.id);
+  card.classList.remove("is-fallback");
   if (!v?.id) {
-    card.innerHTML = `${head}<p class="rec-empty">目前沒有影片</p>`;
+    card.innerHTML = `<div class="card-head"><h2 class="card-title serif">${esc(t("res.video"))}</h2></div><p class="rec-empty">${esc(t("res.videoEmpty"))}</p>`;
     return;
   }
-  const title = videoTitleOf(v);
-  card.innerHTML = `${head}
-    <div class="vd-media">
-      <button class="vd-cover" type="button" aria-label="播放影片${title ? "：" + esc(title) : ""}">
-        <img class="vd-img" src="https://img.youtube.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg" alt="" draggable="false" />
-        <span class="vd-play"><i class="ti ti-player-play" aria-hidden="true"></i></span>
-        <span class="vd-fallback-text">點此播放影片</span>
-      </button>
-    </div>
-    <p class="vd-tip" hidden>滑動影片以外的地方切換卡片</p>
-    ${title ? `<h3 class="vd-title">${esc(title)}</h3>` : ""}
-    ${v.desc ? `<div class="vd-desc"><div class="vd-scroll" tabindex="0">${esc(v.desc)}</div></div>` : ""}`;
-  const media = card.querySelector(".vd-media");
+  const title = videoTitleOf(v, AppI18n.lang);
+  card.innerHTML = `
+    <button class="vd-hit" type="button" aria-haspopup="dialog" aria-label="${esc(t("res.videoAria") + (title ? "：" + title : ""))}">
+      <img class="vd-img" src="${ytThumb(v.id, "maxresdefault")}" alt="" draggable="false" />
+      <span class="vd-top"><span class="vd-head">${esc(t("res.video"))}</span></span>
+      <span class="vd-play" aria-hidden="true"><i class="ti ti-player-play"></i></span>
+      <span class="vd-bottom" aria-hidden="true"><span class="vd-cta"><i class="ti ti-player-play"></i>${esc(t("res.videoTap"))}</span></span>
+    </button>`;
   const img = card.querySelector(".vd-img");
-  const fallback = () => media.classList.add("is-fallback");
-  img.addEventListener("error", fallback);
-  img.addEventListener("load", () => img.naturalWidth <= 120 && fallback());
-  // 只有「點一下」才播放：按下到放開移動超過 8px 算滑動（交給外層換卡）；旁邊露出的卡片點了是轉過來，不播放
-  const cover = card.querySelector(".vd-cover");
+  const next = () => {
+    if (img.src.includes("/maxresdefault.")) img.src = ytThumb(v.id, "hqdefault");
+    else card.classList.add("is-fallback");
+  };
+  img.addEventListener("error", next);
+  img.addEventListener("load", () => img.naturalWidth <= 120 && next());
+  const hit = card.querySelector(".vd-hit");
   let start = null;
-  cover.addEventListener("pointerdown", (e) => (start = { x: e.clientX, y: e.clientY }));
-  cover.addEventListener("click", (e) => {
+  hit.addEventListener("pointerdown", (e) => (start = { x: e.clientX, y: e.clientY }));
+  hit.addEventListener("click", (e) => {
     const moved = start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8;
     start = null;
     if (moved || card.classList.contains("is-side") || card.getAttribute("aria-hidden") === "true") return;
     e.stopPropagation();
-    playVideoCard();
+    openVideoModal();
   });
 }
-function playVideoCard() {
-  const card = VIDEO_CARD.card;
-  const media = card?.querySelector(".vd-media");
-  if (!media || media.classList.contains("is-playing")) return;
+
+/* =========================================================
+ * 影片播放視窗：全螢幕遮罩｜標題列（「推薦影片」＋「關閉」）｜16:9 播放器（youtube-nocookie，自動播放）｜下方小字
+ * 關閉：「關閉」按鈕、點遮罩的深色區域（播放器以外）、Esc → 移除 iframe（影片完全停止），焦點回到影片卡
+ * 開啟期間：背後的 #page 設 inert（不能捲動、換卡、取得焦點），焦點只在視窗內（前後各一個哨兵把 Tab 繞回來）
+ * 一體機的閒置自動返回照常計時（不另外處理）
+ * ========================================================= */
+const VM = { root: null, open: false };
+function buildVideoModal() {
+  const root = document.createElement("div");
+  root.className = "vm-root";
+  root.hidden = true;
+  root.setAttribute("data-html2canvas-ignore", "");
+  root.innerHTML = `
+    <span class="vm-sentinel" tabindex="0"></span>
+    <div class="vm-dialog" role="dialog" aria-modal="true" aria-labelledby="vmTitle">
+      <div class="vm-head">
+        <h2 class="vm-title" id="vmTitle"></h2>
+        <button class="vm-close press" type="button"><i class="ti ti-x" aria-hidden="true"></i><span></span></button>
+      </div>
+      <div class="vm-player"></div>
+      <p class="vm-hint"></p>
+    </div>
+    <span class="vm-sentinel" tabindex="0"></span>`;
+  document.body.append(root);
+  // 點播放器以外的地方（遮罩、標題列空白、小字）都關閉；「關閉」按鈕也在這裡處理
+  root.addEventListener("click", (e) => {
+    if (!e.target.closest(".vm-player")) closeVideoModal();
+  });
+  const [first, last] = root.querySelectorAll(".vm-sentinel");
+  // Shift+Tab 從「關閉」往前 → 播放器；Tab 從播放器往後 → 「關閉」
+  first.addEventListener("focus", () => (root.querySelector(".vm-player iframe") || root.querySelector(".vm-close")).focus());
+  last.addEventListener("focus", () => root.querySelector(".vm-close").focus());
+  document.addEventListener("keydown", (e) => {
+    if (VM.open && e.key === "Escape") {
+      e.preventDefault();
+      closeVideoModal();
+    }
+  });
+  VM.root = root;
+}
+function openVideoModal() {
+  const v = typeof KF_VIDEO !== "undefined" ? KF_VIDEO : null;
+  if (!v?.id || VM.open) return;
+  if (!VM.root) buildVideoModal();
+  const root = VM.root;
+  const title = videoTitleOf(v, AppI18n.lang);
+  root.querySelector(".vm-title").textContent = t("res.video");
+  root.querySelector(".vm-close span").textContent = t("res.close");
+  root.querySelector(".vm-hint").textContent = t("res.videoHint");
   const f = document.createElement("iframe");
-  f.className = "vd-frame";
-  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(KF_VIDEO.id)}?autoplay=1&rel=0&playsinline=1`;
-  f.title = videoTitleOf(KF_VIDEO) || "推薦影片";
+  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}?autoplay=1&rel=0&playsinline=1`;
+  f.title = title || t("res.video");
   f.allow = "autoplay; encrypted-media; picture-in-picture";
   f.allowFullscreen = true;
   f.referrerPolicy = "strict-origin-when-cross-origin";
-  media.append(f);
-  media.classList.add("is-playing");
-  card.querySelector(".vd-tip").hidden = false;
+  root.querySelector(".vm-player").replaceChildren(f);
+  root.hidden = false;
+  VM.open = true;
+  document.body.classList.add("vm-open");
+  $("#page").inert = true;
+  root.querySelector(".vm-close").focus();
 }
-// 換回封面（移除 iframe，影片停止）
-function stopVideoCard() {
-  const card = VIDEO_CARD.card;
-  const media = card?.querySelector(".vd-media");
-  if (!media || !media.classList.contains("is-playing")) return;
-  media.querySelector(".vd-frame")?.remove();
-  media.classList.remove("is-playing");
-  card.querySelector(".vd-tip").hidden = true;
+function closeVideoModal() {
+  if (!VM.open) return;
+  const root = VM.root;
+  root.querySelector(".vm-player").replaceChildren(); // 移除 iframe：影片完全停止
+  root.hidden = true;
+  VM.open = false;
+  document.body.classList.remove("vm-open");
+  $("#page").inert = false;
+  VIDEO_CARD.card?.querySelector(".vd-hit")?.focus({ preventScroll: true }); // 回到原本那張卡
 }
 
 /* =========================================================
@@ -426,8 +507,8 @@ function renderCareCard(level) {
   if (!CARE.card) {
     CARE.card = document.createElement("section");
     CARE.card.className = "card card--care";
-    CARE.card.setAttribute("aria-label", "照護服務");
   }
+  CARE.card.setAttribute("aria-label", t("res.care"));
   const card = CARE.card;
   const shown = card.isConnected;
   if (!data) {
@@ -439,26 +520,26 @@ function renderCareCard(level) {
   }
   const key = SEG_ORDER[level - 1];
   const r = RISK[key];
-  const pill = level === 5 ? "危險等級建議" : level === 4 ? "高風險建議" : `${r.short}風險建議`;
+  const pill = level === 5 ? t("res.careDanger") : level === 4 ? t("res.careHigh") : t("res.careOther", { short: riskShortName(key, AppI18n.lang) });
   const url = referralUrlText(data.url);
   card.style.setProperty("--care-c", r.arc);
   card.innerHTML = `
     <div class="card-head care-head">
-      <h2 class="card-title serif">照護服務</h2>
+      <h2 class="card-title serif">${esc(t("res.care"))}</h2>
       <span class="care-pill">${esc(pill)}</span>
     </div>
-    <div class="care-headline">${esc(data.headline)}</div>
-    <div class="care-name">${esc(data.name)}</div>
-    <ul class="care-points">${(data.points || []).map((p) => `<li><i class="ti ti-check" aria-hidden="true"></i>${esc(p)}</li>`).join("")}</ul>
+    <div class="care-headline"${langAttr(data.headline)}>${esc(pickLang(data.headline))}</div>
+    <div class="care-name"${langAttr(data.name)}>${esc(pickLang(data.name))}</div>
+    <ul class="care-points">${(Array.isArray(data.points) ? data.points : []).map((p) => `<li${langAttr(p)}><i class="ti ti-check" aria-hidden="true"></i>${esc(pickLang(p))}</li>`).join("")}</ul>
     <div class="care-bar">
       <div class="care-l">
-        ${data.phone ? `<div class="care-k">諮詢專線</div><div class="care-phone">${esc(data.phone)}</div>` : ""}
-        ${data.hours ? `<div class="care-hours">${esc(data.hours)}</div>` : ""}
+        ${data.phone ? `<div class="care-k">${esc(t("res.hotline"))}</div><div class="care-phone">${esc(pickLang(data.phone))}</div>` : ""}
+        ${data.hours ? `<div class="care-hours"${langAttr(data.hours)}>${esc(pickLang(data.hours))}</div>` : ""}
       </div>
       <div class="care-r">
         <img class="care-qr" src="../img/qrcode-demo.png" alt="" draggable="false" />
         ${url ? `<div class="care-url">${esc(url)}</div>` : ""}
-        ${QR_DEMO ? `<div class="care-demo">示意 QR，<br>正式版可掃描前往網站</div>` : ""}
+        ${QR_DEMO ? `<div class="care-demo">${t("res.qrDemo")}</div>` : ""}
       </div>
     </div>`;
   if (!shown) {
@@ -476,7 +557,7 @@ function fitCareUrl() {
 }
 
 /* =========================================================
- * 輪迴卡片輪播（N 張一圈：行走頁 4 張、SPPB 6 張）
+ * 輪迴卡片輪播（N 張一圈：行走頁 4 張、SPPB 6 張；危險等級多一張照護服務卡）
  * pos：連續的位置（每轉一張 ±1，可以一直累加）；目前頁 = pos 除以 3 的餘數
  * d：卡片與目前頁的距離，以 N 張為一圈換算到 −N/2～N/2（只顯示 −1、0、1 三張，其他透明）
  * 位移跟卡片寬度 W 連動：translateX = d × W × 0.81；translateZ = −min(|d|, 1.5) × W × 0.51
@@ -566,6 +647,7 @@ function initCarousel({ onMeasure = () => {} } = {}) {
   const IDLE = { first: 6000, repeat: 8000, timer: null, anims: [] };
   function playNudge() {
     stopNudge();
+    if (VM.open) return (IDLE.timer = setTimeout(playNudge, IDLE.repeat)); // 播放視窗開著：不提醒
     const hint = $("#hint");
     const base = getComputedStyle(hint).getPropertyValue("--hint-shadow").trim();
     IDLE.anims.push(
@@ -600,11 +682,9 @@ function initCarousel({ onMeasure = () => {} } = {}) {
 
   // step：往右轉一張 +1（顯示右邊那張）、往左轉一張 −1、0 = 彈回
   function turn(step) {
-    const before = indexOf(C.pos);
     C.pos = Math.round(C.pos) + step;
     layout(C.pos, true);
     renderDots();
-    if (indexOf(C.pos) !== before) stopVideoCard(); // 換到別張卡：影片停止
   }
   // 頁數圓點：走最短的方向
   function goToPage(k) {
@@ -624,6 +704,7 @@ function initCarousel({ onMeasure = () => {} } = {}) {
     if (b) goToPage(Number(b.dataset.i));
   });
   document.addEventListener("keydown", (e) => {
+    if (VM.open) return; // 播放視窗開著：不換卡
     if (e.key === "ArrowRight") turn(1);
     if (e.key === "ArrowLeft") turn(-1);
   });
@@ -724,10 +805,39 @@ function initCarousel({ onMeasure = () => {} } = {}) {
     layout(C.pos);
     renderDots();
     requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.remove("no-anim")));
-    if (k < 0) stopVideoCard();
   }
   CAROUSEL = { refresh };
   return { measure, turn, goToPage, refresh, get index() { return indexOf(C.pos); } };
+}
+
+/* =========================================================
+ * 語系（js/app-i18n.js、js/lang-picker.js）：頁首最右邊的地球圓鈕（與首頁、一體機同一個元件，只有圖示）
+ * initResultI18n({ titleKey, rerender, refit })：各頁啟動時先呼叫（套用 data-i18n，再產生卡片與圓點）
+ *   切換語系（app:langchange）：標題、頁首、示範鈕、各頁的卡片（rerender：用目前的等級／資料重畫）、最新消息、影片、圓點名稱；
+ *   停在原本那張卡；語系存在 sessionStorage「kf.lang」，與詳細頁共用
+ *   日文字型載入完成（app:fontsready）：重新量測（refit）
+ * ========================================================= */
+function initResultI18n({ titleKey, rerender = () => {}, refit = () => {} }) {
+  AppI18n.apply();
+  document.title = t(titleKey);
+  const slot = $("#langBtn");
+  if (slot && window.LangPicker) slot.outerHTML = LangPicker.buttonHTML("light", { iconOnly: true });
+  const fit = () => {
+    fitReport();
+    fitCareUrl();
+    refit();
+  };
+  document.addEventListener("app:langchange", () => {
+    document.title = t(titleKey);
+    labelHeader();
+    renderDemoRisk();
+    rerender();
+    if (NEWS_STATE.card) renderNewsOne(NEWS_STATE.card, NEWS_STATE.news);
+    if (VIDEO_CARD.card) renderVideoCard(VIDEO_CARD.card);
+    CAROUSEL?.refresh(); // 圓點名稱；停在原本那張卡
+    fit();
+  });
+  document.addEventListener("app:fontsready", fit);
 }
 
 /* 頁面共用的啟動收尾：顯示頁面、量頁首、字型載入後再量一次 */

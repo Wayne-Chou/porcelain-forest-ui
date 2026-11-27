@@ -1,6 +1,8 @@
 /* =========================================================
  * 照護服務轉介（共用資料）：鑑測結果頁（危險等級時多一張「照護服務」卡）、詳細報告（行動建議下方的深綠橫幅）
  *   levels：要顯示的風險等級（1–5 = 低…危險），目前只有 5（危險）
+ *   文字欄位可以是字串，或多語物件 { "zh-TW", ja, en }（js/pick-lang.js 的 pickLang 取值，缺的語系退回 zh-TW）
+ *   headline 是固定的引導句，三語都有；name、points、hours 是合作平台提供的內容，目前只有繁中
  *   headline 可用 \n 換行；url 只在詳細頁做成按鈕，結果頁只顯示網址文字（一體機、專家 iPad 都不可以跳離檢測流程）
  * getReferral(level)：先讀 localStorage「kf.admin.referral」（之後的後台寫入；這次不做寫入），沒有就用預設值；
  *   level 不在 levels 裡時回傳 null
@@ -8,7 +10,7 @@
 const KF_REFERRAL = {
   levels: [5],
   name: "全台照護服務平台",
-  headline: "需要有人\n在旁照顧嗎？",
+  headline: { "zh-TW": "需要有人\n在旁照顧嗎？", ja: "そばで支えてくれる人が\n必要ですか？", en: "Need someone\nto help care for you?" },
   points: ["居家照護、醫院看護與陪伴", "照服員媒合，可快速安排", "線上照護日誌，家人隨時掌握"],
   url: "https://nurseaide.simpler.com.tw/",
   phone: "03-561-5265",

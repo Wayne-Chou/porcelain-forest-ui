@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-app-i18n>
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -19,10 +19,18 @@
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
     <!-- 鑑測結果頁共用（與 result-gait.html 共用版面、卡片、半圓圖、輪播） -->
+    <!-- 語系選擇（地球圓鈕＋滾輪對話框，與首頁、一體機相同）、iPad 端多語系 -->
+    <link rel="stylesheet" href="../css/wheel.css" />
+    <link rel="stylesheet" href="../css/lang-picker.css" />
     <link rel="stylesheet" href="../css/result.css" />
     <!-- 推薦商品（與行走頁、詳細報告共用）、最新消息資料（與詳細報告共用） -->
     <link rel="stylesheet" href="../css/recommend.css" />
     <link rel="stylesheet" href="../css/news.css" />
+    <link rel="stylesheet" href="../css/app-i18n.css" />
+    <script src="../js/wheel.js"></script>
+    <script src="../js/lang-picker.js"></script>
+    <script src="../js/app-i18n.js"></script>
+    <script src="../js/pick-lang.js"></script>
     <script src="../js/recommend.js"></script>
     <script src="../js/news.js"></script>
     <script src="../js/video.js"></script>
@@ -214,7 +222,7 @@
           <i class="ti ti-home"></i>
         </button>
         <button class="back-pill press" id="backBtn" type="button" hidden>
-          <i class="ti ti-chevron-left"></i>受測名單
+          <i class="ti ti-chevron-left"></i><span data-i18n="res.back">受測名單</span>
         </button>
         <!-- 姓名（含稱謂）與檢測日期：暫時隱藏，保留原始碼，之後可能再打開
         <div class="who">
@@ -222,11 +230,11 @@
           <div class="who-date">檢測日期 <b id="whoDate"></b></div>
         </div>
         -->
-        <a class="report" id="qrCard" href="detail-sppb.html?preview=1&amp;from=result" aria-label="開啟 SPPB 詳細報告" draggable="false">
+        <a class="report" id="qrCard" href="detail-sppb.html?preview=1&amp;from=result" aria-label="開啟 SPPB 詳細報告" data-i18n-attr="aria-label:res.reportAria.sppb" draggable="false">
           <span class="report-hint" aria-hidden="true">
             <span class="report-text">
-              <span class="report-title serif">報告</span>
-              <span class="report-sub">手機掃描看詳細內容</span>
+              <span class="report-title serif" data-i18n="res.report">報告</span>
+              <span class="report-sub" data-i18n="res.reportSub">手機掃描看詳細內容</span>
             </span>
             <svg class="report-arrow" focusable="false">
               <line x1="4%" y1="50%" x2="94%" y2="50%" />
@@ -236,27 +244,29 @@
           </span>
           <span class="qr-card"><img id="reportQr" alt="" draggable="false" /></span>
         </a>
+        <!-- 語系選擇（js/lang-picker.js，僅圖示）：頁首最右邊；切換後由 js/result-common.js initResultI18n 立即重畫 -->
+        <span id="langBtn"></span>
       </header>
 
       <!-- 風險切換示範鈕（js/result-common.js；DEMO_RISK_SWITCH）：只切換畫面，不寫回紀錄 -->
       <div class="demo-risk" id="demoRisk" role="group" aria-label="示範：切換風險等級" hidden data-html2canvas-ignore></div>
 
       <!-- 卡片舞台：六張排成一圈 -->
-      <main class="stage" id="stage" aria-roledescription="輪播">
+      <main class="stage" id="stage" aria-roledescription="輪播" data-i18n-attr="aria-roledescription:kiosk.carouselRole">
         <!-- 卡片 1：結果總覽 -->
-        <section class="card" data-i="0" aria-label="結果總覽">
+        <section class="card" data-i="0" aria-label="結果總覽" data-i18n-attr="aria-label:res.overview">
           <div class="card-head card-head--vivi" id="viviHead">
-            <h2 class="card-title serif">結果總覽</h2>
+            <h2 class="card-title serif" data-i18n="res.overview">結果總覽</h2>
             <div class="vivi" id="vivi">
               <div>
-                <div class="vivi-k">VIVIFRAIL 等級</div>
+                <div class="vivi-k" data-i18n="res.viviK">VIVIFRAIL 等級</div>
                 <div class="vivi-v" id="viviText"></div>
               </div>
               <div class="vivi-letter" id="viviLetter"></div>
             </div>
           </div>
-          <div class="sub">跌倒風險評估</div>
-          <svg class="gauge" id="gauge" viewBox="0 0 760 362" role="img" aria-label="跌倒風險半圓圖"></svg>
+          <div class="sub" data-i18n="res.riskSub">跌倒風險評估</div>
+          <svg class="gauge" id="gauge" viewBox="0 0 760 362" role="img" aria-label="跌倒風險半圓圖" data-i18n-attr="aria-label:res.gaugeAria"></svg>
           <div class="gauge-text" id="gaugeText"></div>
           <div class="risk" id="risk">
             <span class="risk-dot"></span>
@@ -268,38 +278,35 @@
           <div class="split">
             <div>
               <div class="big"><span class="big-score serif" id="score1"></span><span class="big-of"> /12</span></div>
-              <div class="split-k">滿分 12 分</div>
+              <div class="split-k" data-i18n="res.outOf12">滿分 12 分</div>
             </div>
             <span class="split-line"></span>
-            <!-- 同齡比較（js/result-common.js renderPeer）：與 result-gait.html 同一段 -->
-            <div id="peerBox">
-              <div class="big big-peer serif" id="peer"></div>
-              <div class="split-k ink">優於同齡長者</div>
-            </div>
+            <!-- 同齡比較（js/result-common.js renderPeer）：依語系的整句模板「前文｜大數字｜後文」 -->
+            <div id="peerBox"></div>
           </div>
         </section>
 
         <!-- 卡片 2：詳細數據 · 圖表 -->
-        <section class="card" data-i="1" aria-label="詳細數據 圖表">
+        <section class="card" data-i="1" aria-label="詳細數據 圖表" data-i18n-attr="aria-label:res.cardChart">
           <div class="card-head">
-            <h2 class="card-title serif">詳細數據</h2>
-            <span class="card-kind">· 圖表</span>
+            <h2 class="card-title serif" data-i18n="res.details">詳細數據</h2>
+            <span class="card-kind" data-i18n="res.kindChart">· 圖表</span>
           </div>
-          <svg class="radar" id="radar" viewBox="0 0 520 320" role="img" aria-label="三項分數雷達圖"></svg>
+          <svg class="radar" id="radar" viewBox="0 0 520 320" role="img" aria-label="三項分數雷達圖" data-i18n-attr="aria-label:res.radarAria"></svg>
           <div class="total">
             <div class="big serif" id="score2"></div>
-            <div class="total-k">滿分 12 分</div>
+            <div class="total-k" data-i18n="res.outOf12">滿分 12 分</div>
           </div>
           <div class="rows" id="itemRows"></div>
         </section>
 
         <!-- 卡片 3：詳細數據 · 數據 -->
-        <section class="card" data-i="2" aria-label="詳細數據 數據">
+        <section class="card" data-i="2" aria-label="詳細數據 數據" data-i18n-attr="aria-label:res.cardData">
           <div class="card-head">
-            <h2 class="card-title serif">詳細數據</h2>
-            <span class="card-kind">· 數據</span>
+            <h2 class="card-title serif" data-i18n="res.details">詳細數據</h2>
+            <span class="card-kind" data-i18n="res.kindData">· 數據</span>
           </div>
-          <div class="sub">測量數據</div>
+          <div class="sub" data-i18n="res.measures">測量數據</div>
           <div id="measures"></div>
         </section>
 
@@ -315,11 +322,11 @@
 
       <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
       <footer class="foot">
-        <nav class="pager" aria-label="頁面切換">
+        <nav class="pager" aria-label="頁面切換" data-i18n-attr="aria-label:res.pager">
           <div class="dots" id="dots" role="tablist" data-html2canvas-ignore></div>
           <div class="hint" id="hint" aria-hidden="true" data-html2canvas-ignore>
             <i class="ti ti-hand-finger hand"></i>
-            <i class="ti ti-chevrons-left chev to-left"></i>左右滑動查看<i class="ti ti-chevrons-right chev to-right"></i>
+            <i class="ti ti-chevrons-left chev to-left"></i><span data-i18n="res.swipe">左右滑動查看</span><i class="ti ti-chevrons-right chev to-right"></i>
           </div>
         </nav>
       </footer>
@@ -407,15 +414,16 @@
         walk: 4.82,
         chair: 12.5,
       };
-      // 測量數據卡的五列：秒數一位小數照原本格式（10 → "10"）；沒有做「—」；起坐、步行無法完成「無法完成」
+      // 測量數據卡的五列：秒數一位小數照原本格式（10 → "10"）；沒有做「—」；起坐、步行無法完成「無法完成」（文字依語系）
       function buildMeasures(d) {
-        const sec = (v, none) => (v === null || v === undefined ? { value: none, unit: "", text: true } : { value: String(v), unit: "秒" });
+        const unable = t("res.unable");
+        const sec = (v, none) => (v === null || v === undefined ? { value: none, unit: "", text: true } : { value: String(v), unit: t("res.sec") });
         return [
-          { label: "步行速度", ...sec(d.walk, "無法完成") },
-          { label: "五次起坐測試", ...sec(d.chair, "無法完成") },
-          { label: "並排站立", ...sec(d.stand.side, "—") },
-          { label: "半並排站立", ...sec(d.stand.semi, "—") },
-          { label: "直線站立", ...sec(d.stand.tandem, "—") },
+          { label: t("res.m.walk"), ...sec(d.walk, unable) },
+          { label: t("res.m.chair"), ...sec(d.chair, unable) },
+          { label: t("res.m.side"), ...sec(d.stand.side, "—") },
+          { label: t("res.m.semi"), ...sec(d.stand.semi, "—") },
+          { label: t("res.m.tandem"), ...sec(d.stand.tandem, "—") },
         ];
       }
 
@@ -428,10 +436,11 @@
         { key: "vlow", min: 12, max: 12 },
       ];
       const VIVIFRAIL = [
-        { letter: "A", max: 3, text: "A級 (失能者)", color: "#DC3545" },
-        { letter: "B", max: 6, text: "B級 (衰弱者)", color: "#FFC107", letterColor: "#3a2a00" }, // 黃底用深色字母
-        { letter: "C", max: 9, text: "C級 (衰弱前期者)", color: "#0D6EFD" },
-        { letter: "D", max: 12, text: "D級 (健康者)", color: "#198754" },
+        // 等級文字依語系：js/app-i18n.js 的 res.vivi.A～D（四色不可更改）
+        { letter: "A", max: 3, color: "#DC3545" },
+        { letter: "B", max: 6, color: "#FFC107", letterColor: "#3a2a00" }, // 黃底用深色字母
+        { letter: "C", max: 9, color: "#0D6EFD" },
+        { letter: "D", max: 12, color: "#198754" },
       ];
       const riskOf = (score) => RISK_RANGES.find((l) => score <= l.max);
       const viviOf = (score) => VIVIFRAIL.find((l) => score <= l.max);
@@ -475,14 +484,17 @@
        * 填入內容
        * ========================================================= */
       /* data：RESULT（紀錄）或 DEMO.sppb[i]（示範鈕）；norm：同齡比較分類 */
+      const CUR = { data: null, norm: null }; // 目前顯示的資料（切換語系時用它重畫）
       function renderResult(data, norm) {
+        CUR.data = data;
+        CUR.norm = norm;
         const { score } = data;
 
         const v = viviOf(score);
         const vivi = $("#vivi");
         vivi.style.setProperty("--level", v.color);
         vivi.style.setProperty("--letter", v.letterColor || "#fff");
-        $("#viviText").textContent = v.text;
+        $("#viviText").textContent = t(`res.vivi.${v.letter}`);
         $("#viviLetter").textContent = v.letter;
 
         // 跌倒風險：半圓圖、「風險等級：短名稱」、風險說明（完整名稱）
@@ -496,15 +508,15 @@
         drawRadar(data.items);
         $("#score2").innerHTML = `${score} <small>/12</small>`;
         const ITEMS = [
-          { key: "balance", name: "平衡", icon: "ti-stretching" },
-          { key: "chair", name: "起坐", icon: "ti-armchair" },
-          { key: "walk", name: "步行", icon: "ti-walk" },
+          { key: "balance", name: t("res.balance"), icon: "ti-stretching" },
+          { key: "chair", name: t("res.chair"), icon: "ti-armchair" },
+          { key: "walk", name: t("res.gait"), icon: "ti-walk" },
         ];
         $("#itemRows").innerHTML = ITEMS.map(
           (it) => `
           <div class="item-row">
             <span class="item-ico"><i class="ti ${it.icon}"></i></span>
-            <span class="item-name">${it.name}</span>
+            <span class="item-name">${esc(it.name)}</span>
             <span class="item-score serif">${data.items[it.key]}<small>/4</small></span>
           </div>`,
         ).join("");
@@ -537,6 +549,8 @@
        * 啟動
        * ========================================================= */
       function init() {
+        // 語系（js/result-common.js）：先套用固定文字，再產生卡片；切換語系時用目前的資料重畫
+        initResultI18n({ titleKey: "res.docTitle.sppb", rerender: () => renderResult(CUR.data, CUR.norm), refit: fitVivi });
         const params = new URLSearchParams(location.search);
         const recordId = params.get("record");
         let record = null;
@@ -546,7 +560,7 @@
           record = allRecords().find((r) => r.id === recordId && r.test === "sppb");
           subject = record && findSubject(record);
           if (!record || !subject) {
-            showToast("找不到鑑測紀錄");
+            showToast(t("res.notFound"));
             setTimeout(() => (location.href = "report.html"), 1500);
             return;
           }

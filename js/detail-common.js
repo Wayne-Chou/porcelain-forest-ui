@@ -546,15 +546,19 @@ function renderCareBlock(level) {
   // headline 的 \n：每行一個 <span>；手機換行、平板排成一行（不留空白，見 css/detail.css）
   const hl = $("#careHeadline");
   hl.textContent = "";
-  String(data.headline || "").split("\n").forEach((line) => {
+  // 英文等用空白分詞的語言：兩行接成一行時中間要有空白（中、日文不加；手機上每行是區塊，空白不影響）
+  let prev = "";
+  pickLang(data.headline).split("\n").forEach((line) => {
+    if (/[A-Za-z0-9,.?!]$/.test(prev) && /^[A-Za-z0-9]/.test(line)) hl.append(" ");
     const sp = document.createElement("span");
     sp.textContent = line;
     hl.append(sp);
+    prev = line;
   });
-  $("#careName").textContent = data.name;
+  $("#careName").textContent = pickLang(data.name);
   const ul = $("#carePoints");
   ul.textContent = "";
-  (data.points || []).forEach((p) => {
+  pickLang(data.points || []).forEach((p) => {
     const li = document.createElement("li");
     li.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i>';
     li.append(p);
@@ -575,15 +579,15 @@ function renderRecommendBlock(level) {
   if (!sec) return;
   const n = REC_LEVEL[level];
   const rec = n ? getRecommend(n) : null;
-  sec.hidden = !rec || !rec.name;
+  sec.hidden = !rec;
   if (sec.hidden) return;
   const box = $("#recBox");
   // 券號：同一份報告每次打開都一樣（TODO：之後由系統發券）
   const seed = getExamTokenFromUrl() || "preview";
   box.innerHTML = `${recMediaHTML(rec)}
     <div class="rec-info">
-      <div class="rec-name">${recEsc(rec.name)}</div>
-      ${rec.desc ? `<div class="rec-desc">${recEsc(rec.desc)}</div>` : ""}
+      <div class="rec-name"${langAttr(rec.name, I18N.lang)}>${recEsc(recName(rec))}</div>
+      ${recDesc(rec) ? `<div class="rec-desc"${langAttr(rec.desc, I18N.lang)}>${recEsc(recDesc(rec))}</div>` : ""}
       ${recTicketHTML(rec, n, seed)}
     </div>`;
   recInit(box);
@@ -601,7 +605,7 @@ document.addEventListener("capturestart", () =>
     const slide = img.closest(".rec-slide");
     slide.dataset.html = slide.innerHTML;
     slide.classList.add("rec-ph");
-    slide.innerHTML = '<i class="ti ti-photo" aria-hidden="true"></i><span>商品圖片</span>';
+    slide.innerHTML = REC_PH_HTML();
   }),
 );
 document.addEventListener("captureend", () =>
@@ -622,7 +626,7 @@ function renderNewsCard(news) {
   $("#newsCard").hidden = !has;
   $("#secNews").hidden = !has && !PREVIEW;
   if (!has) return;
-  $("#newsTitle").textContent = news.title ?? "—"; // 標題裡的 \n 由 css/news.css 的 white-space: pre-line 換行
+  $("#newsTitle").textContent = pickLang(news.title) || "—"; // 標題裡的 \n 由 css/news.css 的 white-space: pre-line 換行
   const box = $("#newsBox");
   buildNewsContent(box, newsText(news)); // js/news.js：body（相容 API 的 content）
   $("#newsBody").hidden = !box.childNodes.length;
