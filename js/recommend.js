@@ -15,7 +15,11 @@
  * 依風險等級推薦：level 1–5 對應 低、稍低、中、高、危險
  * 欄位對應之後的後台：images（0～3 張）、name（≤16 字）、desc（≤60 字）、discount（選填，1～99 的整數：9 = 9 折、85 = 85 折）、expire（選填）
  *   name、desc：多語物件 { "zh-TW", en, ja }（key 同 js/app-i18n.js；缺的語系退回 zh-TW）；也接受字串（舊資料、後台資料）
- *   images：相對於網站根目錄的路徑（例如 img/products/x.jpg），或完整網址；檔案不存在時自動改顯示「商品圖片」占位
+ *   images：每張圖 { src, fit, pos, detailFit }（也接受舊的字串寫法：字串 = src，其他用預設值）
+ *     src：相對於網站根目錄的路徑（例如 img/products/x.jpg），或完整網址；檔案不存在時自動改顯示「商品圖片」占位
+ *     fit：'contain' 完整顯示（預設；圖片區留 16 內距、白底用 multiply 融進底色）／'cover' 填滿裁切（不留內距、不 multiply）
+ *     pos：object-position，預設 '50% 50%'
+ *     detailFit：詳細頁（圖片區是正方形）要用的 fit；沒填就沿用 fit
  * 讀取用 getRecommend(level)：先讀 localStorage「kf.admin.recommends」（之後的後台寫入；這次不做寫入），沒有就用這裡的預設值
  * TODO：優惠券目前只做外觀，券號、QR 都是示範，沒有核銷、沒有防重複
  * ========================================================= */
@@ -24,27 +28,30 @@ const RECOMMENDS = [
     name: { "zh-TW": "彈力帶訓練組", en: "Resistance Band Set" },
     desc: { "zh-TW": "三種阻力由輕到重，坐著也能做腿部運動，輕巧好收納，在家隨時練。",
             en: "Three resistance levels from light to heavy. Do leg exercises even while seated. Light and easy to store, so you can train at home anytime." },
-    images: ["img/products/resistance-band.jpg"], discount: 85, expire: "2026/12/31" },
+    // 原圖 768×768、淺灰底 RGB 244，商品約在 x 91–678、y 205–629：填滿後灰底撐滿圖片區，商品不會被切到
+    images: [{ src: "img/products/resistance-band.jpg", fit: "cover", pos: "50% 55%" }], discount: 85, expire: "2026/12/31" },
   { level: 2,
     name: { "zh-TW": "平衡訓練軟墊", en: "Balance Training Pad" },
     desc: { "zh-TW": "軟墊表面可以練習腳踝穩定，底部防滑不易移動，搭配椅背扶著，在家就能練習。",
             en: "The soft surface helps you practice ankle stability. The non-slip base stays in place. Hold a chair back for support and practice at home." },
-    images: ["img/products/balance-pad.jpg"], discount: 9, expire: "2026/12/31" },
+    images: [{ src: "img/products/balance-pad.jpg", fit: "contain" }], discount: 9, expire: "2026/12/31" },
   { level: 3,
     name: { "zh-TW": "浴室止滑地墊", en: "Non-slip Bath Mat" },
     desc: { "zh-TW": "吸盤底面牢牢貼合地板，表面防滑紋路，淋浴時腳步更穩，可整片沖洗晾乾。",
             en: "Suction cups hold it firmly to the floor, and the textured surface helps you step steadily in the shower. Rinse and air-dry with ease." },
-    images: ["img/products/bath-mat.jpg"], discount: 9, expire: "2026/12/31" },
+    // 原圖 1000×1000 是滿版情境照（四周沒有白帶）：標題文字約 y 55–245、地墊約 y 365–905，
+    // 1.6:1 的圖片區用 cover 只看得到 625px 高，一定會切到文字或地墊，所以用 contain 完整顯示
+    images: [{ src: "img/products/bath-mat.jpg", fit: "contain" }], discount: 9, expire: "2026/12/31" },
   { level: 4,
     name: { "zh-TW": "床邊起身扶手", en: "Bedside Assist Rail" },
     desc: { "zh-TW": "壓在床墊下固定不用打牆，起身坐下有地方扶。選購前建議請專業人員評估。",
             en: "Secures under the mattress with no drilling. Gives you something to hold when getting up or sitting down. Please consult a professional before buying." },
-    images: ["img/products/bed-rail.jpg"], discount: 9, expire: "" },
+    images: [{ src: "img/products/bed-rail.jpg", fit: "contain" }], discount: 9, expire: "" },
   { level: 5,
     name: { "zh-TW": "跌倒偵測緊急呼叫器", en: "Fall Detection Alert Device" },
     desc: { "zh-TW": "隨身配戴，偵測到跌倒自動通知家人，也可一鍵求救。建議盡快請專業人員評估。",
             en: "A wearable device that automatically alerts your family when a fall is detected, with one-touch emergency calling. Please consult a professional soon." },
-    images: ["img/products/fall-alert.jpg"], discount: 85, expire: "" },
+    images: [{ src: "img/products/fall-alert.jpg", fit: "contain" }], discount: 85, expire: "" },
 ];
 // 優惠券 QR：和結果總覽的報告 QR 同一種做法（目前是固定的示範圖片）
 // TODO：之後依券號產生（或由後台提供）QR 圖片
@@ -80,10 +87,22 @@ const recDesc = (rec) => pickLang(rec?.desc);
 
 /* 圖片路徑：相對路徑以網站根目錄為準（本檔在 js/，所以根目錄 = 本檔的上一層）；完整網址、/ 開頭、./ ../ 開頭照原樣 */
 const REC_ROOT = new URL("../", document.currentScript?.src || location.href);
+// 版本號：網站內的商品圖網址加上 ?v=APP_VERSION；換了同檔名的圖片時改這裡，瀏覽器與 GitHub Pages 才不會用舊的快取
+const APP_VERSION = "2026.11.27-2";
 function recImgSrc(src) {
   const v = String(src || "");
-  if (/^([a-z][a-z0-9+.-]*:|\/|\.\.?\/)/i.test(v)) return v;
-  return new URL(v, REC_ROOT).href;
+  if (/^([a-z][a-z0-9+.-]*:|\/\/)/i.test(v)) return v; // 完整網址（外部圖片）照原樣
+  const url = /^(\/|\.\.?\/)/.test(v) ? new URL(v, location.href) : new URL(v, REC_ROOT);
+  if (url.origin === location.origin && !url.searchParams.has("v")) url.searchParams.set("v", APP_VERSION);
+  return url.href;
+}
+// 每張圖的設定：字串（舊寫法）當成 { src }；fit 只接受 contain／cover，pos 只接受數字、%、px 與方位詞
+function recImg(x, detail = false) {
+  const o = typeof x === "string" ? { src: x } : x && typeof x === "object" ? x : {};
+  const pick = (v) => (v === "cover" || v === "contain" ? v : null);
+  const fit = (detail && pick(o.detailFit)) || pick(o.fit) || "contain";
+  const pos = /^[\d.%\sa-z-]{1,40}$/i.test(String(o.pos ?? "")) ? String(o.pos) : "50% 50%";
+  return { src: String(o.src || ""), fit, pos };
 }
 const REC_PH_HTML = () => `<i class="ti ti-photo" aria-hidden="true"></i><span>${recText("ph")}</span>`;
 
@@ -122,12 +141,15 @@ function discountOf(rec) {
   }
   return null;
 }
-// 商品圖片區：最多 3 張；圖片載入失敗時由 recInit 換成占位（不出現破圖）
-function recMediaHTML(rec) {
-  const images = (Array.isArray(rec.images) ? rec.images.filter(Boolean) : []).slice(0, 3);
+// 商品圖片區：最多 3 張；每張依設定 object-fit／object-position（cover 時 .is-cover 拿掉內距與 multiply）；
+// detail：詳細頁（正方形圖片區，用 detailFit）；圖片載入失敗時由 recInit 換成占位（不出現破圖）
+function recMediaHTML(rec, { detail = false } = {}) {
+  const images = (Array.isArray(rec.images) ? rec.images : []).map((x) => recImg(x, detail)).filter((x) => x.src).slice(0, 3);
   const name = recName(rec);
   const slides = images.length
-    ? images.map((src) => `<div class="rec-slide"><img src="${recEsc(recImgSrc(src))}" alt="${recEsc(name)}" draggable="false" /></div>`).join("")
+    ? images
+        .map((im) => `<div class="rec-slide is-${im.fit}"><img src="${recEsc(recImgSrc(im.src))}" alt="${recEsc(name)}" draggable="false" style="object-fit:${im.fit};object-position:${recEsc(im.pos)}" /></div>`)
+        .join("")
     : `<div class="rec-slide rec-ph">${REC_PH_HTML()}</div>`; // 還沒有商品圖：統一的占位
   return `<div class="rec-media">
       <div class="rec-track">${slides}</div>
@@ -139,6 +161,7 @@ function recMediaHTML(rec) {
 function recImgFallback(img) {
   const slide = img.closest(".rec-slide");
   if (!slide || slide.classList.contains("rec-ph")) return;
+  slide.classList.remove("is-cover", "is-contain");
   slide.classList.add("rec-ph", "is-missing");
   slide.innerHTML = REC_PH_HTML();
 }

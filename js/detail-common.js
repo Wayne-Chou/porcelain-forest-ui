@@ -584,7 +584,7 @@ function renderRecommendBlock(level) {
   const box = $("#recBox");
   // 券號：同一份報告每次打開都一樣（TODO：之後由系統發券）
   const seed = getExamTokenFromUrl() || "preview";
-  box.innerHTML = `${recMediaHTML(rec)}
+  box.innerHTML = `${recMediaHTML(rec, { detail: true })}
     <div class="rec-info">
       <div class="rec-name"${langAttr(rec.name, I18N.lang)}>${recEsc(recName(rec))}</div>
       ${recDesc(rec) ? `<div class="rec-desc"${langAttr(rec.desc, I18N.lang)}>${recEsc(recDesc(rec))}</div>` : ""}

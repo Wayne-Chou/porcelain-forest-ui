@@ -22,20 +22,35 @@
 .rec-track.is-dragging {
   transition: none;
 }
+/* 每一張：--rec-pad 是圖片與圖片區邊緣的內距（contain 16、cover 0） */
 .rec-slide {
+  --rec-pad: calc(16 * var(--ru, 1px));
+  position: relative;
   flex: 0 0 100%;
   display: grid;
   place-items: center;
-  padding: calc(16 * var(--ru, 1px));
+  padding: var(--rec-pad);
 }
-/* 商品圖：完整顯示（contain）；白底的商品圖用 multiply 和底色漸層融合，去背圖不受影響 */
+/* 商品圖：預設完整顯示（contain，object-fit／object-position 由 js/recommend.js 依每張圖的設定寫在 style）；
+ * 白底的商品圖用 multiply 和底色漸層融合，去背圖不受影響
+ * 圖片框用絕對定位撐滿「圖片區扣掉內距」的範圍（grid 裡的 height: 100% 會變成圖片原本的比例，超出圖片區被裁掉） */
 .rec-slide img {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  left: var(--rec-pad);
+  top: var(--rec-pad);
+  width: calc(100% - 2 * var(--rec-pad));
+  height: calc(100% - 2 * var(--rec-pad));
   object-fit: contain;
   mix-blend-mode: multiply;
   -webkit-user-drag: none;
   pointer-events: none;
+}
+/* fit: 'cover'：圖片貼滿圖片區（不留內距，圓角由圖片區裁切），不套用 multiply；「依您的結果推薦」膠囊仍疊在上面 */
+.rec-slide.is-cover {
+  --rec-pad: 0px;
+}
+.rec-slide.is-cover img {
+  mix-blend-mode: normal;
 }
 /* 還沒有商品圖：統一占位（圖示＋「商品圖片」） */
 .rec-ph {
