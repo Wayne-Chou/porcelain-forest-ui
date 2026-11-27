@@ -6,9 +6,9 @@
  * 文字一律用 t(key)（js/detail-i18n.js）
  * ========================================================= */
 
-/* 推薦影片設定（兩頁共用）：可放多支，目前只顯示第一支
- * 陣列為空、或第一支沒有 youtubeId 時，整個區塊隱藏；title 為空字串時不顯示標題那一行 */
-const REPORT_VIDEOS = [{ youtubeId: "ugWW7nimKUI", title: { "zh-TW": "", ja: "", en: "" } }];
+/* 推薦影片：資料在 js/video.js 的 KF_VIDEO（與鑑測結果頁共用，網址只寫一次）
+ * 沒有 id 時整個區塊隱藏；標題為空字串時不顯示標題那一行 */
+const REPORT_VIDEOS = KF_VIDEO?.id ? [{ youtubeId: KF_VIDEO.id, title: KF_VIDEO.title }] : [];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -221,14 +221,17 @@ function renderBand(profile, examDate, isGuest) {
 /* =========================================================
  * 風險等級（固定配色）、半圓儀表
  * ========================================================= */
-/* color：儀表色段；bg／border／text：膠囊底、框、字 */
-const riskConfig = {
-  low2: { color: "#4ffa00", bg: "#f0fdf4", border: "#86efac", text: "#166534" },
-  low: { color: "#8cff00", bg: "#f7fee7", border: "#bef264", text: "#3f6212" },
-  medium: { color: "#ffd039", bg: "#fefce8", border: "#fde047", text: "#854d0e" },
-  high: { color: "#ffa203", bg: "#fff7ed", border: "#fdba74", text: "#c2410c" },
-  danger: { color: "#ff5757", bg: "#fef2f2", border: "#fca5a5", text: "#b91c1c" },
-};
+/* 等級資料與配色共用 js/risk.js（RISK、SEG_ORDER、riskLevelText）
+ * 詳細頁的等級 key（low2／low／medium／high／danger，i18n 與 API 用）依序對應 risk.js 的 SEG_ORDER
+ * color：儀表色段；bg／border／text：膠囊底、框、字 */
+const LEVEL_ORDER = ["low2", "low", "medium", "high", "danger"]; // 由左到右
+const riskKeyOf = (level) => SEG_ORDER[LEVEL_ORDER.indexOf(level)];
+const riskConfig = Object.fromEntries(
+  LEVEL_ORDER.map((level) => {
+    const r = RISK[riskKeyOf(level)];
+    return [level, { color: r.arc, bg: r.bg, border: r.border, text: r.text }];
+  })
+);
 /* 膠囊與文字用的三個顏色變數（--risk-bg／--risk-border／--risk-text） */
 function setRiskVars(el, level) {
   const c = riskConfig[level];
@@ -240,14 +243,13 @@ function setRiskVars(el, level) {
 /* 半圓儀表：幾何沿用 result.html（圓心 (380, 340)、半徑 300、線寬 76、五段等寬各 36°、段間留 0.9° 縫）
  * 色段由左到右：低、稍低、中、高、危險
  * 指針：在所屬色段內依分數擺放（區間 1 個分數 → 段中央；3 個分數 → 1/6、3/6、5/6），分數越高越靠左 */
-const SEG_ORDER = ["low2", "low", "medium", "high", "danger"]; // 由左到右
 const SEG_RANGE = { low2: [12, 12], low: [9, 11], medium: [6, 8], high: [3, 5], danger: [0, 2] };
 const G = { cx: 380, cy: 340, R: 300, angle: 180, target: null, raf: 0, played: false };
 const pt = (cx, cy, r, deg) => [cx + r * Math.cos((deg * Math.PI) / 180), cy - r * Math.sin((deg * Math.PI) / 180)];
 
 /* 指針角度（度，180 = 最左）。score 為 null（行走頁）或不在該段區間內時，放在段中央 */
 function needleAngle(level, score) {
-  const k = SEG_ORDER.indexOf(level);
+  const k = LEVEL_ORDER.indexOf(level);
   const [min, max] = SEG_RANGE[level];
   const count = max - min + 1;
   let f = 0.5;
@@ -264,7 +266,7 @@ function drawGauge() {
   const { cx, cy, R } = G;
   const GAP = 0.9; // 每段兩端各留的縫（度）
   let html = "";
-  SEG_ORDER.forEach((key, k) => {
+  LEVEL_ORDER.forEach((key, k) => {
     const a1 = 180 - 36 * k - (k > 0 ? GAP : 0); // 左端
     const a0 = 180 - 36 * (k + 1) + (k < 4 ? GAP : 0); // 右端
     const [x1, y1] = pt(cx, cy, R, a1);
@@ -338,13 +340,17 @@ function gaugeFinish() {
   if (G.target !== null) setNeedle(G.target);
 }
 
-/* 儀表下方：風險等級名稱（該等級字色）＋說明一行；指針依 score 擺放（null＝段中央） */
+/* 儀表下方：「風險等級：短名稱」（該等級字色；與結果頁同一份文字，js/risk.js）；指針依 score 擺放（null＝段中央） */
 function renderGaugeRisk(level, score) {
   const card = document.getElementById("resultCard");
   setRiskVars(card, level);
   card.dataset.level = level;
-  document.getElementById("gaugeValue").textContent = t("risk.name." + level);
-  document.getElementById("riskDesc").textContent = t("risk.desc." + level);
+  // 「風險等級：」和短名稱各包一個不換行的 <span>：窄螢幕（英、日）放不下時只在兩段之間換行
+  const key = riskKeyOf(level);
+  const short = riskShortName(key, I18N.lang);
+  const prefix = riskLevelText(key, I18N.lang).slice(0, -short.length);
+  const span = (txt) => Object.assign(document.createElement("span"), { textContent: txt });
+  document.getElementById("gaugeValue").replaceChildren(span(prefix.trimEnd()), prefix.endsWith(" ") ? " " : "", span(short));
   gaugeTo(needleAngle(level, score));
 }
 
@@ -521,7 +527,41 @@ function renderAdvice(level, list = I18N.actions(window.PAGE_KEY, level)) {
   });
   ol.hidden = rest.length === 0;
   card.classList.toggle("is-single", rest.length === 0);
+  renderCareBlock(level);
   renderRecommendBlock(level);
+}
+
+/* =========================================================
+ * 照護服務（D1 深綠橫幅；行動建議正下方、推薦商品之前）：getReferral(level) 有資料時才出現（js/referral.js）
+ * 服務內容（headline、name、points）不翻譯；區塊標題、按鈕、小字依語系
+ * 存圖時（.is-capturing）按鈕與「將在新分頁開啟」換成網址文字（css/detail.css）
+ * ========================================================= */
+function renderCareBlock(level) {
+  const sec = $("#secCare");
+  if (!sec) return;
+  const n = REC_LEVEL[level];
+  const data = n ? getReferral(n) : null;
+  sec.hidden = !data;
+  if (!data) return;
+  // headline 的 \n：每行一個 <span>；手機換行、平板排成一行（不留空白，見 css/detail.css）
+  const hl = $("#careHeadline");
+  hl.textContent = "";
+  String(data.headline || "").split("\n").forEach((line) => {
+    const sp = document.createElement("span");
+    sp.textContent = line;
+    hl.append(sp);
+  });
+  $("#careName").textContent = data.name;
+  const ul = $("#carePoints");
+  ul.textContent = "";
+  (data.points || []).forEach((p) => {
+    const li = document.createElement("li");
+    li.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i>';
+    li.append(p);
+    ul.append(li);
+  });
+  $("#careBtn").href = data.url;
+  $("#careUrl").textContent = referralUrlText(data.url);
 }
 
 /* =========================================================
@@ -589,13 +629,13 @@ function renderNewsCard(news) {
 }
 
 /* =========================================================
- * 推薦影片：點擊縮圖（或 Enter／Space）才換成 iframe；設定在本檔最上方 REPORT_VIDEOS
+ * 推薦影片：點擊縮圖（或 Enter／Space）才換成 iframe；資料在 js/video.js（KF_VIDEO）
  * 存圖時播放器暫時換回縮圖（CSS .is-capturing）、連結膠囊改顯示文字網址，存完還原
  * ========================================================= */
 let videoOn = true; // 預覽「有／無」
 let video = null; // 目前顯示的影片
 function videoTitle() {
-  return (video && video.title && video.title[I18N.lang]) || "";
+  return videoTitleOf(video, I18N.lang);
 }
 function stopVideo() {
   $("#vidMedia .vid-frame")?.remove();

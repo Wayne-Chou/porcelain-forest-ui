@@ -284,19 +284,6 @@ button {
   width: 100%;
   height: auto;
 }
-.gauge-ends {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 2px;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--faint);
-}
-.gauge-ends span {
-  width: 21%; /* 兩端色段寬度：文字置中在色段下方 */
-  text-align: center;
-}
 /* 儀表中央的數值：在指針圓心正下方 */
 .gauge-value {
   margin-top: -2px;
@@ -309,12 +296,8 @@ button {
   font-size: 36px;
   color: var(--risk-text, var(--ink));
 }
-.risk-desc {
-  margin-top: 8px;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
-  color: var(--risk-text, var(--muted));
+.gauge-value.is-level span {
+  white-space: nowrap;
 }
 .desc {
   margin-top: 12px;
@@ -1712,6 +1695,145 @@ button {
   }
   .edu2-row:nth-child(n + 3) {
     border-top: 1px solid var(--line);
+  }
+}
+
+/* ===== 照護服務（D1 深綠橫幅，js/referral.js）：手機上下排、≥ 768px 左右兩欄（約 1.5 : 1）
+ * 尺寸用 --ru（手機 0.62px、≥ 768px 0.72px）；存圖時按鈕換成網址文字 ===== */
+.care-blk {
+  --ru: 0.62px;
+  padding: 20px;
+}
+.care-title {
+  padding-left: 12px;
+  border-left: 4px solid #ff5757;
+}
+.care-title .blk-eyebrow {
+  color: #b93a3a;
+}
+.care-banner {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: calc(30 * var(--ru));
+  padding: calc(28 * var(--ru)) calc(34 * var(--ru));
+  border-radius: calc(28 * var(--ru));
+  border-top: calc(6 * var(--ru)) solid #ff5757;
+  background: var(--forest);
+}
+.care-headline {
+  font-family: var(--font-serif);
+  font-size: max(22px, calc(38 * var(--ru)));
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--on-forest);
+}
+.care-headline span {
+  display: block;
+}
+.care-name {
+  margin-top: calc(4 * var(--ru));
+  font-size: max(14px, calc(20 * var(--ru)));
+  color: #e6cd9c;
+}
+.care-points {
+  margin: calc(14 * var(--ru)) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 * var(--ru));
+}
+.care-points li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: max(15px, calc(21 * var(--ru)));
+  line-height: 1.4;
+  color: var(--on-forest);
+}
+.care-points .ti {
+  flex: none;
+  font-size: max(17px, calc(24 * var(--ru)));
+  color: #e6cd9c;
+}
+.care-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: max(48px, calc(96 * var(--ru)));
+  padding: 0 16px;
+  border-radius: 999px;
+  border: max(2px, calc(3 * var(--ru))) solid var(--brass);
+  background: #e6cd9c;
+  color: var(--forest);
+  font-size: max(16px, calc(28 * var(--ru)));
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.2s var(--ease-out);
+}
+.care-btn:active {
+  transform: scale(0.97);
+}
+.care-btn .ti {
+  font-size: max(18px, calc(32 * var(--ru)));
+}
+.care-btn:focus-visible {
+  outline: 3px solid #e6cd9c;
+  outline-offset: 3px;
+}
+.care-hint {
+  margin-top: calc(12 * var(--ru));
+  text-align: center;
+  font-size: max(13px, calc(16 * var(--ru)));
+  color: rgba(246, 241, 232, 0.6);
+}
+/* 網址文字：只在存圖時顯示（取代按鈕） */
+.care-url {
+  display: none;
+  text-align: center;
+}
+.care-url-k {
+  font-size: max(13px, calc(16 * var(--ru)));
+  color: rgba(246, 241, 232, 0.7);
+}
+.care-url-v {
+  margin-top: 4px;
+  font-family: var(--font-serif);
+  font-size: max(18px, calc(26 * var(--ru)));
+  font-weight: 600;
+  color: #e6cd9c;
+  overflow-wrap: anywhere;
+}
+.is-capturing .care-btn,
+.is-capturing .care-hint {
+  display: none;
+}
+.is-capturing .care-url {
+  display: block;
+}
+@media (min-width: 768px) {
+  .care-blk {
+    --ru: 0.72px;
+    padding: 24px 28px 28px;
+  }
+  .care-banner {
+    flex-direction: row;
+    align-items: center;
+  }
+  .care-main {
+    flex: 1.5 1 0;
+    min-width: 0;
+  }
+  .care-side {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  /* 平板寬：標題排成一行（忽略 \n） */
+  .care-headline span {
+    display: inline;
   }
 }
 

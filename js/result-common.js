@@ -1,7 +1,7 @@
 /* =========================================================
  * 鑑測結果頁共用程式（result.html SPPB、result-gait.html 行走測驗）；樣式在 css/result.css
  * 內容：共用小工具、資料讀取（紀錄、受測者，含一體機）、風險等級與五色半圓圖、頁首（返回、「報告」QR）、
- *      卡片輪迴輪播（拖曳、圓點、閒置提醒、進場）、同齡比較、推薦商品（js/recommend.js）、最新消息、風險切換示範鈕
+ *      卡片輪迴輪播（拖曳、圓點、閒置提醒、進場）、同齡比較、推薦商品（js/recommend.js）、最新消息、影片（js/video.js）、風險切換示範鈕
  * 各頁在載入本檔後定義 CONFIG（subjects、records），再呼叫這裡的函式
  * 注意：<script> 內字串裡的結束標籤一律寫成 <\/body>、<\/html>、<\/script>
  * ========================================================= */
@@ -41,6 +41,7 @@ function initDemoRisk(current, onPick) {
     const b = e.target.closest(".demo-btn");
     if (!b) return;
     const level = Number(b.dataset.level);
+    stopVideoCard(); // 切換等級：影片換回封面
     onPick(level);
     setDemoPressed(level);
   });
@@ -72,19 +73,7 @@ function daysAgo(n) {
   return isoOf(d);
 }
 
-/* =========================================================
- * 跌倒風險等級（固定的文字和顏色，不可更改）
- * name：完整名稱（風險說明、詳細頁）；short：結果總覽卡「風險等級：X」那一行用的短名稱
- * SEG_ORDER：半圓圖由左到右（低 → 危險）；行走測驗的 riskLevel 0–4 也是這個順序
- * ========================================================= */
-const RISK = {
-  vlow: { name: "低風險", short: "低", arc: "#4ffa00", bg: "#f0fdf4", border: "#86efac", text: "#166534", desc: "跌倒風險低，體能表現優異" },
-  low: { name: "稍低風險", short: "稍低", arc: "#8cff00", bg: "#f7fee7", border: "#bef264", text: "#3f6212", desc: "跌倒風險稍低，狀況良好" },
-  mid: { name: "中度風險", short: "中", arc: "#ffd039", bg: "#fefce8", border: "#fde047", text: "#854d0e", desc: "跌倒風險中等，持續關注為佳" },
-  high: { name: "高風險", short: "高", arc: "#ffa203", bg: "#fff7ed", border: "#fdba74", text: "#c2410c", desc: "跌倒風險較高，建議積極改善" },
-  danger: { name: "危險", short: "危險", arc: "#ff5757", bg: "#fef2f2", border: "#fca5a5", text: "#b91c1c", desc: "目前跌倒風險偏高，請特別注意" },
-};
-const SEG_ORDER = ["vlow", "low", "mid", "high", "danger"];
+/* 跌倒風險等級 RISK、SEG_ORDER、riskLevelText：js/risk.js（與詳細頁共用） */
 
 /* 跌倒風險半圓圖：圓心 (380, 340)、半徑 300、線寬 76；五段等寬（每段 36°），段與段之間留小縫
  * 指針畫成指向最左（180°），再用 rotate 轉到 angle（度，180 = 最左、0 = 最右） */
@@ -143,7 +132,7 @@ function sweepNeedle(svg, target) {
 // 結果總覽卡的「風險等級：短名稱」與風險說明（固定配色；行走頁沒有風險說明框）
 function renderRiskBlock(key) {
   const r = RISK[key];
-  $("#gaugeText").textContent = `風險等級：${r.short}`;
+  $("#gaugeText").textContent = riskLevelText(key);
   const risk = $("#risk");
   if (!risk) return;
   risk.style.setProperty("--risk-bg", r.bg);
@@ -358,19 +347,151 @@ function renderNewsOne(card, news) {
 }
 
 /* =========================================================
- * 輪迴卡片輪播（N 張一圈：行走頁 3 張、SPPB 5 張）
+ * 影片卡（最後一張；資料共用 js/video.js 的 KF_VIDEO）：卡片整張不存進圖片
+ * 一開始只顯示封面（YouTube 縮圖＋播放按鈕），在封面上左右滑照常換卡，「點一下」才換成 iframe 播放
+ * 播放中的 iframe 會吃掉觸控：下方顯示「滑動影片以外的地方切換卡片」；換到別張卡、或示範鈕切換等級時，移除 iframe（影片停止）
+ * 封面圖載入失敗（或 YouTube 回傳 120×90 的預設灰圖）：深綠漸層＋播放按鈕＋「點此播放影片」
+ * ========================================================= */
+const VIDEO_CARD = { card: null };
+function renderVideoCard(card) {
+  VIDEO_CARD.card = card;
+  const v = typeof KF_VIDEO !== "undefined" ? KF_VIDEO : null;
+  const head = `<div class="card-head"><h2 class="card-title serif">推薦影片</h2></div>`;
+  if (!v?.id) {
+    card.innerHTML = `${head}<p class="rec-empty">目前沒有影片</p>`;
+    return;
+  }
+  const title = videoTitleOf(v);
+  card.innerHTML = `${head}
+    <div class="vd-media">
+      <button class="vd-cover" type="button" aria-label="播放影片${title ? "：" + esc(title) : ""}">
+        <img class="vd-img" src="https://img.youtube.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg" alt="" draggable="false" />
+        <span class="vd-play"><i class="ti ti-player-play" aria-hidden="true"></i></span>
+        <span class="vd-fallback-text">點此播放影片</span>
+      </button>
+    </div>
+    <p class="vd-tip" hidden>滑動影片以外的地方切換卡片</p>
+    ${title ? `<h3 class="vd-title">${esc(title)}</h3>` : ""}
+    ${v.desc ? `<div class="vd-desc"><div class="vd-scroll" tabindex="0">${esc(v.desc)}</div></div>` : ""}`;
+  const media = card.querySelector(".vd-media");
+  const img = card.querySelector(".vd-img");
+  const fallback = () => media.classList.add("is-fallback");
+  img.addEventListener("error", fallback);
+  img.addEventListener("load", () => img.naturalWidth <= 120 && fallback());
+  // 只有「點一下」才播放：按下到放開移動超過 8px 算滑動（交給外層換卡）；旁邊露出的卡片點了是轉過來，不播放
+  const cover = card.querySelector(".vd-cover");
+  let start = null;
+  cover.addEventListener("pointerdown", (e) => (start = { x: e.clientX, y: e.clientY }));
+  cover.addEventListener("click", (e) => {
+    const moved = start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8;
+    start = null;
+    if (moved || card.classList.contains("is-side") || card.getAttribute("aria-hidden") === "true") return;
+    e.stopPropagation();
+    playVideoCard();
+  });
+}
+function playVideoCard() {
+  const card = VIDEO_CARD.card;
+  const media = card?.querySelector(".vd-media");
+  if (!media || media.classList.contains("is-playing")) return;
+  const f = document.createElement("iframe");
+  f.className = "vd-frame";
+  f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(KF_VIDEO.id)}?autoplay=1&rel=0&playsinline=1`;
+  f.title = videoTitleOf(KF_VIDEO) || "推薦影片";
+  f.allow = "autoplay; encrypted-media; picture-in-picture";
+  f.allowFullscreen = true;
+  f.referrerPolicy = "strict-origin-when-cross-origin";
+  media.append(f);
+  media.classList.add("is-playing");
+  card.querySelector(".vd-tip").hidden = false;
+}
+// 換回封面（移除 iframe，影片停止）
+function stopVideoCard() {
+  const card = VIDEO_CARD.card;
+  const media = card?.querySelector(".vd-media");
+  if (!media || !media.classList.contains("is-playing")) return;
+  media.querySelector(".vd-frame")?.remove();
+  media.classList.remove("is-playing");
+  card.querySelector(".vd-tip").hidden = true;
+}
+
+/* =========================================================
+ * 照護服務卡（js/referral.js）：getReferral(level) 有資料時插在結果總覽之後（第 2 張），沒有就移除
+ * 卡片數量、圓點跟著增減（示範鈕切換時也即時更新）；結果頁只顯示網址文字，不做可點擊的外部連結
+ * ========================================================= */
+let CAROUSEL = null;
+const CARE = { card: null };
+function renderCareCard(level) {
+  const data = typeof getReferral === "function" ? getReferral(level) : null;
+  if (!CARE.card) {
+    CARE.card = document.createElement("section");
+    CARE.card.className = "card card--care";
+    CARE.card.setAttribute("aria-label", "照護服務");
+  }
+  const card = CARE.card;
+  const shown = card.isConnected;
+  if (!data) {
+    if (shown) {
+      card.remove();
+      CAROUSEL?.refresh();
+    }
+    return;
+  }
+  const key = SEG_ORDER[level - 1];
+  const r = RISK[key];
+  const pill = level === 5 ? "危險等級建議" : level === 4 ? "高風險建議" : `${r.short}風險建議`;
+  const url = referralUrlText(data.url);
+  card.style.setProperty("--care-c", r.arc);
+  card.innerHTML = `
+    <div class="card-head care-head">
+      <h2 class="card-title serif">照護服務</h2>
+      <span class="care-pill">${esc(pill)}</span>
+    </div>
+    <div class="care-headline">${esc(data.headline)}</div>
+    <div class="care-name">${esc(data.name)}</div>
+    <ul class="care-points">${(data.points || []).map((p) => `<li><i class="ti ti-check" aria-hidden="true"></i>${esc(p)}</li>`).join("")}</ul>
+    <div class="care-bar">
+      <div class="care-l">
+        ${data.phone ? `<div class="care-k">諮詢專線</div><div class="care-phone">${esc(data.phone)}</div>` : ""}
+        ${data.hours ? `<div class="care-hours">${esc(data.hours)}</div>` : ""}
+      </div>
+      <div class="care-r">
+        <img class="care-qr" src="../img/qrcode-demo.png" alt="" draggable="false" />
+        ${url ? `<div class="care-url">${esc(url)}</div>` : ""}
+        ${QR_DEMO ? `<div class="care-demo">示意 QR，<br>正式版可掃描前往網站</div>` : ""}
+      </div>
+    </div>`;
+  if (!shown) {
+    document.querySelector(".card")?.after(card); // 結果總覽之後
+    CAROUSEL?.refresh();
+  }
+  fitCareUrl();
+}
+// 網址文字：放不下時從 15 縮到 13
+function fitCareUrl() {
+  const el = CARE.card?.querySelector(".care-url");
+  if (!el) return;
+  el.classList.remove("is-small");
+  if (el.scrollWidth > el.clientWidth + 1) el.classList.add("is-small");
+}
+
+/* =========================================================
+ * 輪迴卡片輪播（N 張一圈：行走頁 4 張、SPPB 6 張）
  * pos：連續的位置（每轉一張 ±1，可以一直累加）；目前頁 = pos 除以 3 的餘數
  * d：卡片與目前頁的距離，以 N 張為一圈換算到 −N/2～N/2（只顯示 −1、0、1 三張，其他透明）
  * 位移跟卡片寬度 W 連動：translateX = d × W × 0.81；translateZ = −min(|d|, 1.5) × W × 0.51
  * 三張卡片同一個高度（依舞台計算），內容不足留白、超出不捲動
- *   initCarousel({ pages: ["總覽", …], onMeasure })  pages：頁數圓點的 aria-label；onMeasure：卡片大小改變後呼叫
+ *   initCarousel({ onMeasure })  onMeasure：卡片大小改變後呼叫；頁數圓點的 aria-label 用各卡片的 aria-label
+ *   卡片增減（照護服務卡）後呼叫 refresh()
  * ========================================================= */
-function initCarousel({ pages, onMeasure = () => {} }) {
+function initCarousel({ onMeasure = () => {} } = {}) {
   const stage = $("#stage");
-  const cards = [...document.querySelectorAll(".card")];
-  const N = cards.length;
+  let cards = [...document.querySelectorAll(".card")];
+  let N = cards.length;
   const C = { pos: 0, W: 740 };
-  const lastD = cards.map(() => null); // 上一次「停住」時的位置（拖曳中不更新），用來判斷誰要「繞到另一側」
+  // 上一次「停住」時的位置（拖曳中不更新），用來判斷誰要「繞到另一側」
+  let lastD = cards.map(() => null);
+  cards.forEach((c, i) => (c.dataset.i = i)); // 照護服務卡可能在輪播建立前插入
   const mod = (n, m) => ((n % m) + m) % m;
   const indexOf = (pos) => mod(Math.round(pos), N);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -479,9 +600,11 @@ function initCarousel({ pages, onMeasure = () => {} }) {
 
   // step：往右轉一張 +1（顯示右邊那張）、往左轉一張 −1、0 = 彈回
   function turn(step) {
+    const before = indexOf(C.pos);
     C.pos = Math.round(C.pos) + step;
     layout(C.pos, true);
     renderDots();
+    if (indexOf(C.pos) !== before) stopVideoCard(); // 換到別張卡：影片停止
   }
   // 頁數圓點：走最短的方向
   function goToPage(k) {
@@ -489,9 +612,13 @@ function initCarousel({ pages, onMeasure = () => {} }) {
     turn(mod(k - indexOf(C.pos) + half, N) - half);
   }
 
-  $("#dots").innerHTML = pages
-    .map((name, k) => `<button class="dot" type="button" role="tab" data-i="${k}" aria-label="${esc(name)}"></button>`)
-    .join("");
+  // 頁數圓點：依目前的卡片產生（aria-label 用卡片的 aria-label）
+  function buildDots() {
+    $("#dots").innerHTML = cards
+      .map((c, k) => `<button class="dot" type="button" role="tab" data-i="${k}" aria-label="${esc(c.getAttribute("aria-label") || "")}"></button>`)
+      .join("");
+  }
+  buildDots();
   $("#dots").addEventListener("click", (e) => {
     const b = e.target.closest(".dot");
     if (b) goToPage(Number(b.dataset.i));
@@ -554,6 +681,7 @@ function initCarousel({ pages, onMeasure = () => {} }) {
     layout(C.pos);
     fitName();
     fitReport();
+    fitCareUrl();
     requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.remove("no-anim")));
   }).observe(stage);
 
@@ -582,7 +710,24 @@ function initCarousel({ pages, onMeasure = () => {} }) {
   document.addEventListener("keydown", resetIdle, true);
   resetIdle();
 
-  return { measure, turn, goToPage, get index() { return indexOf(C.pos); } };
+  // 卡片增減後（例如照護服務卡）：重新編號、重建圓點；目前所在的卡被移除時回到第 1 張
+  function refresh() {
+    const current = cards[indexOf(C.pos)];
+    cards = [...document.querySelectorAll(".card")];
+    N = cards.length;
+    cards.forEach((c, i) => (c.dataset.i = i));
+    lastD = cards.map(() => null);
+    const k = cards.indexOf(current);
+    C.pos = k < 0 ? 0 : k;
+    buildDots();
+    stage.classList.add("no-anim");
+    layout(C.pos);
+    renderDots();
+    requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.remove("no-anim")));
+    if (k < 0) stopVideoCard();
+  }
+  CAROUSEL = { refresh };
+  return { measure, turn, goToPage, refresh, get index() { return indexOf(C.pos); } };
 }
 
 /* 頁面共用的啟動收尾：顯示頁面、量頁首、字型載入後再量一次 */

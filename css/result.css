@@ -812,6 +812,255 @@ button {
   font-size: calc(30 * var(--cu));
 }
 
+/* =========================================================
+ * 影片卡（js/result-common.js renderVideoCard）：16:9 影片區｜（播放中）提示｜標題｜說明（太長時自己捲動）
+ * ========================================================= */
+.vd-media {
+  position: relative;
+  margin-top: calc(22 * var(--cu));
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: calc(24 * var(--cu));
+  border: 2px solid #e4dccd;
+  background: linear-gradient(135deg, #2e5649 0%, var(--forest) 55%, #172d27 100%);
+}
+.vd-cover {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  touch-action: pan-y; /* 左右滑交給外層換卡 */
+}
+.vd-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.vd-play {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(120 * var(--cu));
+  height: calc(120 * var(--cu));
+  border-radius: 50%;
+  border: 3px solid var(--brass);
+  background: var(--forest);
+  color: var(--on-forest);
+  font-size: calc(56 * var(--cu));
+  line-height: 1;
+}
+.vd-play .ti {
+  transform: translateX(calc(4 * var(--cu))); /* 三角形視覺置中 */
+}
+.vd-fallback-text {
+  display: none;
+}
+/* 封面圖載入失敗：深綠漸層＋播放按鈕＋文字 */
+.vd-media.is-fallback .vd-img {
+  display: none;
+}
+.vd-media.is-fallback .vd-cover {
+  align-content: center;
+  gap: calc(14 * var(--cu));
+}
+.vd-media.is-fallback .vd-fallback-text {
+  display: block;
+  font-size: max(var(--fmin), calc(26 * var(--cu)));
+  font-weight: 700;
+  color: var(--on-forest);
+}
+.vd-media.is-playing .vd-cover {
+  display: none;
+}
+.vd-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.vd-tip {
+  margin: calc(12 * var(--cu)) 0 0;
+  text-align: center;
+  font-size: max(var(--fmin), calc(22 * var(--cu)));
+  line-height: 1.4;
+  color: var(--muted);
+}
+.vd-title {
+  margin: calc(22 * var(--cu)) 0 0;
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin), calc(36 * var(--cu)));
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--forest);
+}
+/* 說明：佔掉剩下的高度，太長時自己捲動，底部淡出 */
+.card > .vd-desc {
+  position: relative;
+  flex: 1 1 0;
+  min-height: calc(60 * var(--cu));
+  margin-top: calc(10 * var(--cu));
+}
+.vd-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding-bottom: calc(28 * var(--cu));
+  font-size: max(var(--fmin), calc(25 * var(--cu)));
+  line-height: 1.75;
+  color: #3e463f;
+  white-space: pre-line;
+}
+.vd-desc::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(40 * var(--cu));
+  background: linear-gradient(rgba(255, 253, 249, 0), var(--paper));
+  pointer-events: none;
+}
+
+/* =========================================================
+ * 照護服務卡（危險等級；js/result-common.js renderCareCard）：外框用等級色（危險 #ff5757）
+ * ========================================================= */
+.card.card--care {
+  border: 3px solid var(--care-c, #ff5757);
+}
+.care-head {
+  align-items: center;
+  justify-content: space-between;
+}
+.care-pill {
+  flex: none;
+  padding: calc(6 * var(--cu)) calc(16 * var(--cu));
+  border-radius: 999px;
+  background: var(--care-c, #ff5757);
+  color: #fff;
+  font-size: max(var(--fmin), calc(20 * var(--cu)));
+  font-weight: 700;
+  line-height: 1.3;
+}
+.care-headline {
+  margin-top: calc(28 * var(--cu));
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin), calc(46 * var(--cu)));
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--forest);
+  white-space: pre-line;
+}
+.care-name {
+  margin-top: calc(6 * var(--cu));
+  font-size: max(var(--fmin), calc(24 * var(--cu)));
+  color: var(--muted);
+}
+.care-points {
+  /* 下方至少 24cu 才接底部資訊條（資訊條 margin-top:auto 貼齊卡片底部） */
+  margin: calc(18 * var(--cu)) 0 calc(24 * var(--cu));
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: calc(12 * var(--cu));
+}
+.care-points li {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--cu));
+  font-size: max(var(--fmin), calc(25 * var(--cu)));
+  line-height: 1.35;
+  color: var(--ink);
+}
+.care-points .ti {
+  flex: none;
+  color: var(--brass);
+}
+/* 底部資訊條：左欄電話與時間｜右欄 QR＋網址文字（不是連結） */
+.care-bar {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: calc(18 * var(--cu));
+  padding: calc(20 * var(--cu)) calc(22 * var(--cu));
+  border-radius: calc(22 * var(--cu));
+  background: var(--forest);
+}
+.care-l {
+  flex: 1;
+  min-width: 0;
+}
+.care-k {
+  font-size: max(var(--fmin), calc(19 * var(--cu)));
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: calc(3 * var(--cu));
+  color: #e6cd9c;
+}
+.care-phone {
+  margin-top: calc(4 * var(--cu));
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin), calc(38 * var(--cu)));
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--on-forest);
+  white-space: nowrap;
+}
+.care-hours {
+  margin-top: calc(6 * var(--cu));
+  font-size: max(var(--fmin), calc(18 * var(--cu)));
+  line-height: 1.4;
+  color: rgba(246, 241, 232, 0.75);
+}
+.care-r {
+  /* 約 190cu；平板上網址有 16px 最小字級，放不下時欄寬跟著網址加寬 */
+  flex: none;
+  min-width: calc(190 * var(--cu));
+  max-width: 48%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.care-qr {
+  display: block;
+  box-sizing: content-box;
+  width: calc(110 * var(--cu));
+  height: calc(110 * var(--cu));
+  padding: calc(7 * var(--cu));
+  border-radius: calc(10 * var(--cu));
+  background: #fff;
+  image-rendering: pixelated;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.care-url {
+  max-width: 100%;
+  margin-top: calc(8 * var(--cu));
+  overflow: hidden;
+  font-size: max(var(--fmin), calc(15 * var(--cu)));
+  line-height: 1.4;
+  color: #e6cd9c;
+  white-space: nowrap;
+}
+.care-url.is-small {
+  font-size: max(var(--fmin), calc(13 * var(--cu)));
+}
+.care-demo {
+  margin-top: calc(4 * var(--cu));
+  font-size: max(var(--fmin), calc(13 * var(--cu)));
+  line-height: 1.4;
+  color: rgba(246, 241, 232, 0.6);
+}
+
 /* 減少動態：不做 3D 旋轉，只顯示目前這一張，換頁淡入淡出 0.2s；提示不晃動 */
 @media (prefers-reduced-motion: reduce) {
   *,

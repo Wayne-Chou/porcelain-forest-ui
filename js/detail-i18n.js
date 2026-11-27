@@ -148,11 +148,6 @@
     "risk.lbl.medium": ["中", "中", "Mod."],
     "risk.lbl.high": ["高", "高", "High"],
     "risk.lbl.danger": ["危險", "危険", "Danger"],
-    "risk.desc.low2": ["跌倒風險低，體能表現優異", "転倒リスクは低く、体力はとても良好です", "Low fall risk with excellent physical performance"],
-    "risk.desc.low": ["跌倒風險稍低，狀況良好", "転倒リスクはやや低く、良好な状態です", "Slightly low fall risk; you are in good condition"],
-    "risk.desc.medium": ["跌倒風險中等，持續關注為佳", "転倒リスクは中程度です。引き続き気をつけましょう", "Moderate fall risk; keep an eye on it"],
-    "risk.desc.high": ["跌倒風險較高，建議積極改善", "転倒リスクが高めです。積極的な改善をおすすめします", "Higher fall risk; we recommend taking steps to improve"],
-    "risk.desc.danger": ["目前跌倒風險偏高，請特別注意", "現在、転倒リスクが高い状態です。特にご注意ください", "Your fall risk is currently high; please take extra care"],
 
     /* ── 步態數據、步行、晃動 ── */
     "sec.gait": ["步態指標", "歩行の指標", "Gait indicators"],
@@ -387,6 +382,10 @@
     "blk.videoEyebrow": ["影音衛教", "動画で学ぶ", "Watch & learn"],
     "blk.video": ["推薦影片", "おすすめ動画", "Recommended video"],
     "blk.recEyebrow": ["依您的結果", "あなたの結果から", "Based on your result"],
+    "care.title": ["照護服務", "介護サービス", "Care Services"],
+    "care.btn": ["前往照護服務網站", "介護サービスのサイトへ", "Visit the care service website"],
+    "care.newTab": ["將在新分頁開啟", "新しいタブで開きます", "Opens in a new tab"],
+    "care.site": ["照護服務網站", "介護サービスのサイト", "Care service website"],
     "blk.rec": ["推薦商品", "おすすめ商品", "Recommended product"],
     "mob.badge": ["身體晃動", "体の揺れ", "Body sway"],
     "video.open": ["在 YouTube 開啟", "YouTubeで開く", "Open in YouTube"],

@@ -73,10 +73,8 @@
           <div class="arch" id="resultCard">
             <div class="gauge-box">
               <svg class="gauge" id="gauge" viewBox="0 0 760 360" role="img" aria-hidden="true"></svg>
-              <div class="gauge-ends"><span data-i18n="risk.lbl.low2"></span><span data-i18n="risk.lbl.danger"></span></div>
             </div>
             <div class="gauge-value is-level" id="gaugeValue"></div>
-            <div class="risk-desc" id="riskDesc"></div>
             <div class="arch-base">
               <div class="base-col">
                 <div class="base-k" data-i18n="sppb.total"></div>
@@ -222,6 +220,32 @@
         </article>
       </section>
 
+      <!-- 照護服務（D1 深綠橫幅）：getReferral(level) 有資料時才出現（js/referral.js）；存圖時按鈕換成網址文字 -->
+      <section class="wrap blk" id="secCare" hidden>
+        <article class="blk-card reveal care-blk">
+          <div class="care-title">
+            <div class="blk-eyebrow" data-i18n="blk.recEyebrow"></div>
+            <h2 class="blk-title" data-i18n="care.title"></h2>
+          </div>
+          <div class="care-banner">
+            <div class="care-main">
+              <h3 class="care-headline" id="careHeadline"></h3>
+              <div class="care-name" id="careName"></div>
+              <ul class="care-points" id="carePoints"></ul>
+            </div>
+            <div class="care-side">
+              <a class="care-btn" id="careBtn" target="_blank" rel="noopener noreferrer"><span data-i18n="care.btn"></span><i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+              <p class="care-hint" data-i18n="care.newTab"></p>
+              <!-- 只在存圖時顯示：網址文字 -->
+              <div class="care-url">
+                <div class="care-url-k" data-i18n="care.site"></div>
+                <div class="care-url-v" id="careUrl"></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
       <!-- 推薦商品：依風險等級（js/recommend.js，與鑑測結果頁共用）；找不到對應等級時整個區塊隱藏；優惠券條不存進圖片 -->
       <section class="wrap blk" id="secRec" hidden>
         <article class="blk-card reveal rec-blk">
@@ -289,7 +313,7 @@
         </article>
       </section>
 
-      <!-- ⑨ 推薦影片：點擊縮圖才載入播放器（設定在 js/detail-common.js 的 REPORT_VIDEOS） -->
+      <!-- ⑨ 推薦影片：點擊縮圖才載入播放器（資料在 js/video.js 的 KF_VIDEO） -->
       <section class="wrap blk" id="secVideo">
         <div class="pv-box" data-pv="video" hidden data-html2canvas-ignore></div>
         <article class="blk-card reveal" id="videoCard">
@@ -334,6 +358,9 @@
     </script>
     <script src="../js/news.js"></script>
     <script src="../js/recommend.js"></script>
+    <script src="../js/risk.js"></script>
+    <script src="../js/video.js"></script>
+    <script src="../js/referral.js"></script>
     <script src="../js/detail-common.js"></script>
     <script>
       /* =========================================================

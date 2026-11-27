@@ -23,8 +23,11 @@
     <link rel="stylesheet" href="../css/news.css" />
     <link rel="stylesheet" href="../css/recommend.css" />
     <script src="../js/recommend.js"></script>
+    <script src="../js/risk.js"></script>
     <script src="../js/result-common.js"></script>
     <script src="../js/news.js"></script>
+    <script src="../js/video.js"></script>
+    <script src="../js/referral.js"></script>
     <style>
       /* =========================================================
        * 行走測驗鑑測結果頁：共用樣式在 css/result.css；這裡只有風險切換示範鈕
@@ -192,7 +195,7 @@
       <!-- 風險切換示範鈕（DEMO_RISK_SWITCH）：只切換畫面，不寫回紀錄 -->
       <div class="demo-risk" id="demoRisk" role="group" aria-label="示範：切換風險等級" hidden data-html2canvas-ignore></div>
 
-      <!-- 卡片舞台：三張排成一圈 -->
+      <!-- 卡片舞台：四張排成一圈 -->
       <main class="stage" id="stage" aria-roledescription="輪播">
         <!-- 卡片 1：結果總覽（版面同 result.html） -->
         <section class="card card--overview" data-i="0" aria-label="結果總覽">
@@ -220,6 +223,9 @@
 
         <!-- 卡片 3：最新消息（KF_NEWS 第一則；資料與詳細報告共用 js/news.js） -->
         <section class="card" data-i="2" id="newsCard" aria-label="最新消息"></section>
+
+        <!-- 卡片 4：推薦影片（js/video.js，與詳細報告共用；整張不存進圖片） -->
+        <section class="card" data-i="3" id="videoCard" aria-label="推薦影片" data-html2canvas-ignore></section>
       </main>
 
       <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
@@ -260,7 +266,6 @@
         ],
       };
       const DEFAULT_RISK = 1;
-      const PAGES = ["總覽", "推薦", "最新消息"]; // 頁數圓點的 aria-label
       // 同齡比較（B1 位置尺）：結果句與「您」標記的位置（%）
       const PEER_SCALE = {
         above50: { pre: "優於", num: "50%", pos: 65 },
@@ -299,6 +304,7 @@
         renderRiskBlock(key);
         renderPeerScale($("#peerBox"), norm);
         renderRecommend($("#recCard"), level + 1, recordSeed);
+        renderCareCard(level + 1); // 照護服務卡：危險等級時插在第 2 張（js/referral.js）
         setDemoPressed(level);
       }
 
@@ -338,8 +344,9 @@
         initDemoRisk(level, (lv) => renderLevel(DEMO.gait[lv].riskLevel, demoNorm(SEG_ORDER[lv]), false));
         renderLevel(level, normOf(record, SEG_ORDER[level]));
         renderNewsOne($("#newsCard"), getLatestNews());
+        renderVideoCard($("#videoCard"));
         showPage();
-        initCarousel({ pages: PAGES });
+        initCarousel();
       }
       init();
     </script>

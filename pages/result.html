@@ -25,6 +25,9 @@
     <link rel="stylesheet" href="../css/news.css" />
     <script src="../js/recommend.js"></script>
     <script src="../js/news.js"></script>
+    <script src="../js/video.js"></script>
+    <script src="../js/referral.js"></script>
+    <script src="../js/risk.js"></script>
     <script src="../js/result-common.js"></script>
     <style>
       /* =========================================================
@@ -238,7 +241,7 @@
       <!-- 風險切換示範鈕（js/result-common.js；DEMO_RISK_SWITCH）：只切換畫面，不寫回紀錄 -->
       <div class="demo-risk" id="demoRisk" role="group" aria-label="示範：切換風險等級" hidden data-html2canvas-ignore></div>
 
-      <!-- 卡片舞台：五張排成一圈 -->
+      <!-- 卡片舞台：六張排成一圈 -->
       <main class="stage" id="stage" aria-roledescription="輪播">
         <!-- 卡片 1：結果總覽 -->
         <section class="card" data-i="0" aria-label="結果總覽">
@@ -305,6 +308,9 @@
 
         <!-- 卡片 5：最新消息（getLatestNews()，與行走頁相同） -->
         <section class="card" data-i="4" id="newsCard" aria-label="最新消息"></section>
+
+        <!-- 卡片 6：推薦影片（js/video.js，與詳細報告共用；整張不存進圖片） -->
+        <section class="card" data-i="5" id="videoCard" aria-label="推薦影片" data-html2canvas-ignore></section>
       </main>
 
       <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
@@ -413,7 +419,7 @@
         ];
       }
 
-      /* SPPB 總分 → 跌倒風險等級（key 對應 js/result-common.js 的 RISK；文字和顏色在那裡，不可更改）；min～max 為各等級的分數區間 */
+      /* SPPB 總分 → 跌倒風險等級（key 對應 js/risk.js 的 RISK；文字和顏色在那裡，不可更改）；min～max 為各等級的分數區間 */
       const RISK_RANGES = [
         { key: "danger", min: 0, max: 2 },
         { key: "high", min: 3, max: 5 },
@@ -430,7 +436,6 @@
       const riskOf = (score) => RISK_RANGES.find((l) => score <= l.max);
       const viviOf = (score) => VIVIFRAIL.find((l) => score <= l.max);
 
-      const PAGES = ["總覽", "圖表", "數據", "推薦", "最新消息"]; // 頁數圓點的 aria-label
 
       // 共用小工具、資料讀取（紀錄、受測者含一體機）、半圓圖、頁首、輪播：js/result-common.js
 
@@ -515,6 +520,7 @@
           .join("");
         // 推薦商品：依風險等級（1–5）
         renderRecommend($("#recCard"), SEG_ORDER.indexOf(riskOf(score).key) + 1, recordSeed);
+        renderCareCard(SEG_ORDER.indexOf(riskOf(score).key) + 1); // 照護服務卡：危險等級時插在第 2 張（js/referral.js）
         fitVivi();
       }
       let recordSeed = "";
@@ -558,10 +564,11 @@
         recordSeed = record?.id || "preview"; // 產生示範券號用：同一筆紀錄每次打開都一樣
         renderResult(RESULT, normOf(record, riskOf(RESULT.score).key));
         renderNewsOne($("#newsCard"), getLatestNews());
+        renderVideoCard($("#videoCard"));
         // 風險切換示範鈕：換成該等級的示範數據（最新消息不變）；不寫回紀錄
         initDemoRisk(SEG_ORDER.indexOf(riskOf(RESULT.score).key), (lv) => renderResult(DEMO.sppb[lv], demoNorm(SEG_ORDER[lv])));
         showPage(fitVivi); // 字型載入後寬度會變，再量一次
-        initCarousel({ pages: PAGES, onMeasure: fitVivi });
+        initCarousel({ onMeasure: fitVivi });
       }
       init();
     </script>
