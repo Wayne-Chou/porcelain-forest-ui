@@ -1715,81 +1715,7 @@ button {
   }
 }
 
-/* ===== ⑥ 最新消息：森林插畫封面 ===== */
-.news-cover {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 170px;
-  background: var(--forest);
-}
-.news-art {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.news-cover-in {
-  position: relative;
-  padding: 24px 20px;
-}
-.news-cover-in .blk-eyebrow {
-  color: #d9bf8c;
-}
-.news-title {
-  margin-top: 4px;
-  font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: 27px;
-  line-height: 1.3;
-  color: var(--on-forest);
-  overflow-wrap: anywhere;
-}
-.news-body {
-  padding: 20px;
-}
-.news-box {
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: #f6f1e8;
-  font-size: var(--fs-body);
-  line-height: 1.7;
-  color: var(--ink);
-}
-.news-p + .news-p,
-.news-p + .news-dl {
-  margin-top: 10px;
-}
-.news-dl {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px 14px;
-}
-.news-dl dt {
-  font-weight: 700;
-  color: var(--brass-text);
-  white-space: nowrap;
-}
-.news-dl dd {
-  min-width: 0;
-  color: var(--ink);
-  overflow-wrap: anywhere;
-}
-@media (min-width: 768px) {
-  .news-cover {
-    min-height: 190px;
-  }
-  .news-cover-in {
-    padding: 30px 28px;
-  }
-
-  .news-body {
-    padding: 24px 28px;
-  }
-}
+/* ===== ⑥ 最新消息：樣式在 css/news.css（與鑑測結果頁共用） ===== */
 
 /* ===== ⑦ 推薦影片：點擊縮圖才載入播放器 ===== */
 .vid-head {
@@ -1940,9 +1866,6 @@ button {
     font-size: 30px;
   }
   .mob-title {
-    font-size: 34px;
-  }
-  .news-title {
     font-size: 34px;
   }
   .adv-main-title {

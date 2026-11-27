@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
     <link rel="stylesheet" href="../css/detail.css" />
+    <!-- 最新消息（與鑑測結果頁共用） -->
+    <link rel="stylesheet" href="../css/news.css" />
     <!-- 共用語系選擇（Language 按鈕＋滾輪彈窗）：與首頁共用 -->
     <link rel="stylesheet" href="../css/wheel.css" />
     <link rel="stylesheet" href="../css/lang-picker.css" />
@@ -253,6 +255,7 @@
     <script>
       window.PAGE_KEY = "gait";
     </script>
+    <script src="../js/news.js"></script>
     <script src="../js/detail-common.js"></script>
     <script>
       /* 行走測驗詳細報告：頁面專用的計分與渲染
@@ -407,16 +410,7 @@
         ],
       };
       // 內容混合：開頭沒有冒號的段落、「項目：內容」、以及一行沒有冒號的接續內容（接在「地點」後面）
-      const PREVIEW_NEWS = {
-        title: "長者六力 ICOPE 免費檢測開放預約",
-        content:
-          "65 歲以上長者每年可接受 1 次公費檢測，評估認知、視力、聽力、行動、營養、憂鬱六大面向。\n" +
-          "時間：每週二、四 上午 9:00–11:30\n" +
-          "地點：各區衛生所\n" +
-          "社區關懷據點也可預約\n" +
-          "攜帶：健保卡\n" +
-          "洽詢：(02) 2345-6789",
-      };
+      const PREVIEW_NEWS = getLatestNews(); // js/news.js：已上架中最新的一則（與鑑測結果頁同一份資料）
 
       function previewPayload(st) {
         const birth = new Date();

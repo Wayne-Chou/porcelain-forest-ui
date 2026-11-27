@@ -18,311 +18,13 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
+    <!-- 鑑測結果頁共用（與 result-gait.html 共用版面、卡片、半圓圖、輪播） -->
+    <link rel="stylesheet" href="../css/result.css" />
+    <script src="../js/result-common.js"></script>
     <style>
       /* =========================================================
-       * 瓷白森林 Porcelain Forest — SPPB 鑑測結果頁（響應式）
-       * 整頁 100dvh 直向排版：頁首｜卡片舞台（flex: 1）｜頁數圓點＋滑動提示，不捲動
-       * 頁首、底部的尺寸以 --u 計算（iPad 13 吋直式時 1 --u = 1px），與其他頁同一套做法
-       * 卡片內的尺寸都以 --cu（= 卡片寬 ÷ 740）為單位，iPad 13 吋時 --cu ≈ 1px
+       * SPPB 鑑測結果頁：共用樣式在 css/result.css；這裡只有 SPPB 卡片內容（VIVIFRAIL、總分、雷達圖、測量數據）
        * ========================================================= */
-      :root {
-        --bg: #ece7df; /* 暖瓷白：頁面底色 */
-        --card: #f7f4ee; /* 卡片底色 */
-        --card-deep: #e6dccb; /* 圖示底 */
-        --line: #d9cfbe; /* 邊框 */
-        --line-soft: #c7bba6; /* 虛線、未選中指示點 */
-        --forest: #1f3b33; /* 森林綠：主色 */
-        --brass: #b08d57; /* 黃銅：重點色 */
-        --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
-        --ink: #1a2420; /* 主要文字 */
-        --muted: #6f6656; /* 次要文字 */
-        --on-forest: #f6f1e8; /* 森林綠上的文字 */
-        --faint: #8a8170; /* 單位、未選中文字 */
-        --paper: #fffdf9; /* 結果卡片底色 */
-        --chip: #fbf8f2; /* 浮在背景上的按鈕、等級卡、提示膠囊 */
-        --divider: #efe9df; /* 卡片內分隔線 */
-
-        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
-        --font-serif: "Noto Serif TC", "Songti TC", serif;
-        /* 縮放單位：iPad 13 吋直式（1032 × 1376）時 1 --u = 1px；較小的 iPad 依「寬度」與「高度 × 0.75」中較小者等比縮小 */
-        --u: calc(min(100vw, 100dvh * 0.75) / 1032);
-        /* 橫式等內容比 1032 --u 寬時，左右各留白這麼多，內容置中 */
-        --gutter: max(0px, calc((100vw - 1032 * var(--u)) / 2));
-        /* 最小字級：一般 16px、按鈕 18px（手機上卡片內不強制，見下方媒體查詢） */
-        --fmin: 16px;
-        --bmin: 18px;
-        /* 字級：四頁共用，同一種用途用同一個變數（卡片內會依卡片寬度重新定義） */
-        --fs-display: max(var(--fmin), calc(72 * var(--u)));
-        --fs-hero-num: max(var(--fmin), calc(88 * var(--u)));
-        --fs-card-name: max(var(--fmin), calc(84 * var(--u)));
-        --fs-title: max(var(--fmin), calc(44 * var(--u)));
-        --fs-lead: max(var(--fmin), calc(32 * var(--u)));
-        --fs-button: max(var(--bmin), calc(30 * var(--u)));
-        --fs-body: max(var(--fmin), calc(26 * var(--u)));
-        --fs-small: max(var(--fmin), calc(24 * var(--u)));
-
-        /* 版面間距（iPad 13 吋直式時：上 48、左右 56、頁首與舞台 28、舞台與底部 20、底部 64 → 舞台高 960） */
-        --pad-x: calc(56 * var(--u));
-        --pad-top: calc(48 * var(--u));
-        --gap-head: calc(28 * var(--u));
-        --gap-foot: calc(20 * var(--u));
-        --pad-bottom: calc(44 * var(--u)); /* 提示膠囊加高 calc(20 * var(--u))，底部留白相應減少，舞台維持 960 */
-
-        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
-      }
-
-      * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-      }
-      html,
-      body {
-        margin: 0;
-        height: 100%;
-      }
-      html {
-        -webkit-text-size-adjust: 100%;
-      }
-      /* 背景：中央稍亮的瓷白放射漸層 */
-      body {
-        background: radial-gradient(60% 60% at 50% 48%, #f6f2ea, #e6dfd2);
-        background-color: #e6dfd2;
-        color: var(--ink);
-        font-family: var(--font-sans);
-        font-weight: 500;
-        -webkit-font-smoothing: antialiased;
-        user-select: none;
-        -webkit-user-select: none;
-        overflow: hidden; /* 整頁不捲動 */
-      }
-      .serif {
-        font-family: var(--font-serif);
-        font-weight: 600;
-      }
-      /* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
-      input,
-      textarea,
-      select,
-      input::placeholder,
-      textarea::placeholder {
-        font: inherit;
-      }
-      button {
-        font: inherit;
-        color: inherit;
-        border: none;
-        background: none;
-        padding: 0;
-        cursor: pointer;
-      }
-      [hidden] {
-        display: none !important;
-      }
-      /* 所有按鈕：按下縮小到 0.96 */
-      .press {
-        transition: transform 0.2s var(--ease-out);
-      }
-      .press:active {
-        transform: scale(0.96);
-      }
-
-      /* =========================================================
-       * 整頁：直向 flex
-       * ========================================================= */
-      /* 左右邊界只加在頁首和底部；卡片舞台撐滿整個寬度（兩側露出的卡片超出畫面的部分直接裁掉，不產生捲軸） */
-      .page {
-        height: 100vh;
-        height: 100dvh;
-        display: flex;
-        flex-direction: column;
-        padding: calc(var(--pad-top) + env(safe-area-inset-top)) 0
-          calc(var(--pad-bottom) + env(safe-area-inset-bottom));
-        overflow-x: clip;
-      }
-
-      /* ===== 頁首 ===== */
-      .header {
-        position: relative;
-        z-index: 2;
-        flex: 0 0 auto;
-        padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
-        display: flex;
-        align-items: center; /* 首頁按鈕（或「‹ 受測名單」）在左、「報告」說明＋QR Code 小卡在右，垂直置中 */
-        gap: calc(24 * var(--u));
-        animation: fadeIn 0.6s var(--ease-out) both;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-      }
-      .home-btn {
-        flex: 0 0 auto;
-        width: max(44px, calc(88 * var(--u)));
-        height: max(44px, calc(88 * var(--u)));
-        border-radius: 50%;
-        background: var(--chip);
-        border: 2px solid var(--line);
-        display: grid;
-        place-items: center;
-        font-size: max(var(--bmin), calc(42 * var(--u)));
-      }
-      /* 從測驗完成進入時：膠囊按鈕「‹ 受測名單」 */
-      .back-pill {
-        flex: 0 0 auto;
-        height: max(44px, calc(88 * var(--u)));
-        padding: 0 calc(32 * var(--u)) 0 calc(20 * var(--u));
-        border-radius: calc(999 * var(--u));
-        background: var(--chip);
-        border: 2px solid var(--line);
-        display: inline-flex;
-        align-items: center;
-        gap: calc(4 * var(--u));
-        font-size: max(var(--bmin), calc(30 * var(--u)));
-        font-weight: 700;
-        white-space: nowrap;
-      }
-      .back-pill i {
-        font-size: max(var(--bmin), calc(40 * var(--u)));
-      }
-      .who {
-        min-width: 0;
-        flex: 0 1 auto;
-      }
-      .who-name {
-        margin: 0;
-        font-size: max(var(--fmin), calc(56 * var(--u)));
-        line-height: 1.2;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .who-date {
-        margin-top: 2px;
-        font-size: max(var(--fmin), calc(24 * var(--u)));
-        line-height: 1.3;
-        color: var(--muted);
-        white-space: nowrap;
-      }
-      .who-date b {
-        margin-left: 0.25em; /* 加上前面的空白約 0.5em；窄螢幕時這個空白也是換行點 */
-        font-weight: 700;
-        color: var(--ink);
-        font-variant-numeric: tabular-nums;
-      }
-      /* 頁首右邊：報告 QR Code 小卡（樣式見下方 .qr-card）；首頁按鈕、姓名區塊和小卡靠上對齊 */
-      /* 窄螢幕：小卡仍在頁首右側；姓名放不下時換行，不和小卡重疊 */
-      @media (max-width: 599px) {
-        /* 手機：只有卡片內（依卡片寬度縮放）不強制最小字級；頁首和底部仍維持 16px／18px */
-        .stage {
-          --fmin: 0px;
-          --bmin: 0px;
-        }
-        .who-name {
-          white-space: normal;
-          overflow-wrap: anywhere;
-        }
-        /* 檢測日期放不下時，日期換到下一行（不跑到小卡底下） */
-        .who-date {
-          white-space: normal;
-        }
-        .who-date b {
-          display: inline-block;
-          margin-left: 0;
-          white-space: nowrap;
-        }
-        /* 從測驗完成進入（左邊是較寬的「‹ 受測名單」）：膠囊在第一列、姓名與日期在第二列，小卡跨兩列靠右
-         * 姓名與檢測日期暫時隱藏，這段兩列排法先註解（之後打開姓名時再恢復）
-        .header.has-back {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          align-items: start;
-          row-gap: calc(12 * var(--u));
-        }
-        .header.has-back .back-pill {
-          grid-row: 1;
-          justify-self: start;
-        }
-        .header.has-back .who {
-          grid-row: 2;
-        }
-        .header.has-back .qr-card {
-          grid-column: 2;
-          grid-row: 1 / span 2;
-          align-self: start;
-        }
-        */
-        /* 「報告」說明：隱藏第二行小字、箭頭縮短為 56 × 32 */
-        .report-sub {
-          display: none;
-        }
-        .report-arrow {
-          width: calc(56 * var(--u));
-          height: calc(32 * var(--u));
-        }
-      }
-
-      /* =========================================================
-       * 卡片舞台：輪迴卡片輪播（--card-w、--card-h 由 JS 依舞台大小設定）
-       * ========================================================= */
-      .stage {
-        --card-w: calc(740 * var(--u));
-        --card-h: calc(940 * var(--u));
-        --cu: calc(var(--card-w) / 740); /* 卡片內的單位：卡片寬 ÷ 740 */
-        position: relative;
-        z-index: 1;
-        flex: 1 1 auto;
-        min-height: 0;
-        margin-top: var(--gap-head);
-        perspective: calc(var(--card-w) * 2.973);
-        touch-action: none;
-      }
-      .card {
-        /* 卡片內的字級依卡片寬度縮放 */
-        --fs-small: max(var(--fmin), calc(24 * var(--cu)));
-        --fs-body: max(var(--fmin), calc(26 * var(--cu)));
-        --fs-button: max(var(--bmin), calc(30 * var(--cu)));
-        --fs-lead: max(var(--fmin), calc(32 * var(--cu)));
-        position: absolute;
-        left: calc(50% - var(--card-w) / 2);
-        top: 0;
-        width: var(--card-w);
-        height: var(--card-h);
-        padding: calc(40 * var(--cu)) calc(44 * var(--cu));
-        display: flex;
-        flex-direction: column;
-        background: var(--paper);
-        border-radius: calc(48 * var(--cu));
-        box-shadow:
-          0 0 0 calc(2 * var(--cu)) rgba(176, 141, 87, 0.35),
-          0 calc(36 * var(--cu)) calc(70 * var(--cu)) rgba(60, 45, 25, 0.2);
-        transform-origin: 50% 50%;
-        transition:
-          transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-          opacity 0.7s,
-          filter 0.7s;
-        will-change: transform, opacity;
-      }
-      .stage.is-dragging .card,
-      .stage.no-anim .card {
-        transition: none !important;
-      }
-      .card.is-side {
-        cursor: pointer;
-      }
-      .card-head {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: baseline;
-        gap: calc(14 * var(--cu));
-        white-space: nowrap;
-      }
-      .card-title {
-        margin: 0;
-        font-size: max(var(--fmin), calc(46 * var(--cu)));
-        line-height: 1.2;
-      }
       /* 「結果總覽」標題列：標題靠左、VIVIFRAIL 等級靠右，垂直置中；放不下時 JS 加 .is-stacked，改放在標題下方一行、靠左 */
       .card-head--vivi {
         align-items: center;
@@ -371,57 +73,6 @@
         font-weight: 700;
         line-height: 1;
       }
-      .card-kind {
-        font-size: max(var(--fmin), calc(28 * var(--cu)));
-        font-weight: 700;
-        color: var(--muted);
-      }
-      .sub {
-        margin-top: calc(18 * var(--cu));
-        font-size: max(var(--fmin), var(--fs-body));
-        font-weight: 700;
-        color: var(--muted);
-      }
-
-      /* 卡片 1：跌倒風險半圓圖 */
-      .gauge {
-        display: block;
-        width: calc(650 * var(--cu));
-        margin: calc(6 * var(--cu)) auto 0;
-      }
-      .gauge-text {
-        text-align: center;
-        font-size: max(var(--fmin), var(--fs-lead));
-        font-weight: 700;
-        line-height: 1.3;
-      }
-      .risk {
-        margin-top: calc(18 * var(--cu));
-        display: flex;
-        align-items: center;
-        gap: calc(18 * var(--cu));
-        padding: calc(20 * var(--cu)) calc(28 * var(--cu));
-        border-radius: calc(28 * var(--cu));
-        background: var(--risk-bg);
-        border: calc(3 * var(--cu)) solid var(--risk-border);
-        color: var(--risk-text);
-      }
-      .risk-dot {
-        flex: 0 0 auto;
-        width: calc(22 * var(--cu));
-        height: calc(22 * var(--cu));
-        border-radius: 50%;
-        background: var(--risk-arc);
-      }
-      .risk-title {
-        font-size: max(var(--fmin), var(--fs-lead));
-        font-weight: 700;
-        line-height: 1.3;
-      }
-      .risk-desc {
-        font-size: max(var(--fmin), var(--fs-body));
-        line-height: 1.4;
-      }
       .split {
         margin-top: auto;
         padding-top: calc(24 * var(--cu));
@@ -435,10 +86,6 @@
         align-self: stretch;
         background: var(--divider);
       }
-      .big {
-        line-height: 1;
-        font-variant-numeric: tabular-nums;
-      }
       .big-score {
         font-size: max(var(--fmin), calc(100 * var(--cu)));
       }
@@ -447,20 +94,7 @@
         font-weight: 700;
         color: var(--faint);
       }
-      .big-peer {
-        font-size: max(var(--fmin), calc(90 * var(--cu)));
-        color: var(--brass);
-      }
-      .split-k {
-        margin-top: calc(8 * var(--cu));
-        font-size: max(var(--fmin), var(--fs-small));
-        font-weight: 700;
-        line-height: 1.3;
-        color: var(--muted);
-      }
-      .split-k.ink {
-        color: var(--ink);
-      }
+
 
       /* 卡片 2：雷達圖＋三項分數 */
       .radar {
@@ -555,261 +189,6 @@
         color: var(--brass-text);
       }
 
-      /* =========================================================
-       * 底部列：頁數圓點＋滑動提示膠囊，水平置中；高度只容納這兩者
-       * ========================================================= */
-      .foot {
-        position: relative;
-        z-index: 2;
-        flex: 0 0 auto;
-        margin-top: var(--gap-foot);
-        padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
-        display: flex;
-        justify-content: center;
-        animation: fadeIn 0.6s 0.2s var(--ease-out) both;
-      }
-      .pager {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: calc(12 * var(--u));
-      }
-      /* 頁首右邊：「報告」說明＋黃銅箭頭＋QR Code 小卡，整組是同一個連結（前往詳細報告；讀螢幕只朗讀一次）
-       * 只有「點一下」才開啟，拖曳不開啟（initQrLink）；說明與箭頭沒有動畫 */
-      .report {
-        flex: 0 0 auto;
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: calc(12 * var(--u)); /* 箭頭尖端與小卡的間距 */
-        color: inherit;
-        text-decoration: none;
-        cursor: pointer;
-        touch-action: none;
-        -webkit-user-drag: none;
-        -webkit-touch-callout: none;
-      }
-      .report:focus-visible {
-        outline: 3px solid var(--forest);
-        outline-offset: 6px;
-        border-radius: calc(32 * var(--u));
-      }
-      .report-hint {
-        display: flex;
-        align-items: center;
-        gap: calc(16 * var(--u));
-      }
-      .report-text {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        text-align: right;
-      }
-      .report-title {
-        font-size: max(var(--fmin), calc(48 * var(--u)));
-        line-height: 1.1;
-        color: var(--forest);
-        white-space: nowrap;
-      }
-      .report-sub {
-        margin-top: calc(6 * var(--u));
-        font-size: max(16px, calc(24 * var(--u)));
-        font-weight: 700;
-        line-height: 1.3;
-        color: var(--muted);
-        white-space: nowrap;
-      }
-      /* 黃銅直線箭頭：水平線＋右端箭頭頭（座標用百分比，窄螢幕縮短時線條粗細不變） */
-      .report-arrow {
-        flex: none;
-        display: block;
-        width: calc(90 * var(--u));
-        height: calc(40 * var(--u));
-        overflow: visible;
-        stroke: #b08d57;
-        stroke-width: max(2px, calc(5 * var(--u)));
-        stroke-linecap: round;
-        fill: none;
-      }
-      /* 放不下時（JS 加上 is-below）：「報告」＋箭頭改放在 QR 小卡正下方置中，箭頭改為向上 */
-      .report.is-below {
-        flex-direction: column-reverse;
-        gap: calc(8 * var(--u));
-      }
-      .report.is-below .report-hint {
-        flex-direction: row-reverse;
-        gap: calc(8 * var(--u));
-      }
-      .report.is-below .report-arrow {
-        width: max(22px, calc(32 * var(--u)));
-        height: max(22px, calc(32 * var(--u)));
-        transform: rotate(-90deg);
-      }
-
-      /* 報告 QR Code 小卡：只剩 QR Code，按下時縮到 0.97
-       * QR Code 固定正方形 140～150px（13 吋 150px；較小的畫面不低於 140px，才掃得到）；內距與白色留白依 --u 縮小 */
-      .qr-card {
-        --qr: clamp(140px, calc(150 * var(--u)), 150px);
-        flex: 0 0 auto;
-        padding: calc(14 * var(--u)); /* 原本 18，跟著 QR 200 → 150 縮小 */
-        border-radius: calc(32 * var(--u));
-        background: #fffdf9;
-        box-shadow:
-          0 0 0 2px rgba(176, 141, 87, 0.35),
-          0 16px 36px rgba(60, 45, 25, 0.18);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        transition: transform 0.25s var(--ease-spring);
-      }
-      .qr-card:active {
-        transform: scale(0.97);
-      }
-      .qr-card img {
-        display: block;
-        box-sizing: content-box;
-        width: var(--qr);
-        height: var(--qr);
-        aspect-ratio: 1;
-        padding: max(6px, calc(9 * var(--u))); /* 白色 quiet zone（原本 12） */
-        background: #fff;
-        image-rendering: pixelated;
-        -webkit-user-drag: none;
-        -webkit-touch-callout: none;
-        pointer-events: none;
-      }
-      .dots {
-        height: max(44px, calc(44 * var(--u)));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: calc(18 * var(--u));
-      }
-      /* 圓點本身 calc(16 * var(--u))；用透明的 ::after 把可點擊範圍擴大到 44 × 44 */
-      .dot {
-        position: relative;
-        width: calc(16 * var(--u));
-        height: calc(16 * var(--u));
-        border-radius: calc(999 * var(--u));
-        background: #cfc5b4;
-        transition:
-          width 0.4s var(--ease-spring),
-          background 0.4s var(--ease-spring);
-      }
-      .dot::after {
-        content: "";
-        position: absolute;
-        /* 可點擊範圍：以圓點為中心至少 44 × 44px */
-        top: calc(50% - 22px);
-        bottom: calc(50% - 22px);
-        left: min(calc(50% - 22px), calc(-9 * var(--u)));
-        right: min(calc(50% - 22px), calc(-9 * var(--u)));
-      }
-      .dot.is-active {
-        width: calc(48 * var(--u));
-        background: var(--forest);
-      }
-      /* 滑動提示膠囊：一直顯示（iPad 13 吋：高 100、左右內距 44、文字 38、圖示 48） */
-      .hint {
-        --hint-shadow: 0 calc(12 * var(--u)) calc(28 * var(--u)) rgba(31, 59, 51, 0.28);
-        height: calc(100 * var(--u));
-        padding: 0 calc(44 * var(--u));
-        border-radius: calc(999 * var(--u));
-        background: var(--forest);
-        box-shadow: var(--hint-shadow);
-        display: flex;
-        align-items: center;
-        gap: calc(18 * var(--u));
-        font-size: max(var(--fmin), calc(38 * var(--u)));
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        color: var(--on-forest);
-        white-space: nowrap;
-      }
-      .hint i {
-        font-size: max(var(--fmin), calc(48 * var(--u)));
-        line-height: 1;
-        letter-spacing: 0;
-        color: #d9b77a;
-      }
-      .hint .hand {
-        animation: sway 1.2s ease-in-out infinite alternate;
-      }
-      .hint .to-left {
-        animation: nudgeLeft 0.9s ease-in-out infinite alternate;
-      }
-      .hint .to-right {
-        animation: nudgeRight 0.9s ease-in-out infinite alternate;
-      }
-      /* 手指左右擺動（2.4s 一個來回，位移約 calc(14 * var(--u))） */
-      @keyframes sway {
-        from {
-          transform: translateX(calc(-7 * var(--u))) rotate(-8deg);
-        }
-        to {
-          transform: translateX(calc(7 * var(--u))) rotate(8deg);
-        }
-      }
-      /* 雙箭頭往外晃動（1.8s 一個循環，位移 calc(12 * var(--u))） */
-      @keyframes nudgeLeft {
-        from {
-          transform: translateX(0);
-          opacity: 0.5;
-        }
-        to {
-          transform: translateX(calc(-12 * var(--u)));
-          opacity: 1;
-        }
-      }
-      @keyframes nudgeRight {
-        from {
-          transform: translateX(0);
-          opacity: 0.5;
-        }
-        to {
-          transform: translateX(calc(12 * var(--u)));
-          opacity: 1;
-        }
-      }
-
-      /* ===== 提示訊息 ===== */
-      .toast {
-        position: fixed;
-        left: 50%;
-        top: calc(calc(36 * var(--u)) + env(safe-area-inset-top));
-        transform: translate(-50%, calc(-24 * var(--u)));
-        padding: calc(22 * var(--u)) calc(40 * var(--u));
-        border-radius: calc(999 * var(--u));
-        background: var(--forest);
-        color: var(--on-forest);
-        font-size: max(var(--bmin), calc(30 * var(--u)));
-        font-weight: 700;
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.35s var(--ease-spring);
-        z-index: 600;
-        white-space: nowrap;
-      }
-      .toast.show {
-        opacity: 1;
-        transform: translate(-50%, 0);
-      }
-
-      /* 減少動態：不做 3D 旋轉，只顯示目前這一張，換頁淡入淡出 0.2s；提示不晃動 */
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-        }
-        .hint i {
-          animation: none !important;
-        }
-        .card {
-          transition: opacity 0.2s !important;
-        }
-      }
     </style>
   </head>
   <body>
@@ -859,7 +238,7 @@
             </div>
           </div>
           <div class="sub">跌倒風險評估</div>
-          <svg class="gauge" id="gauge" viewBox="0 0 760 420" role="img" aria-label="跌倒風險半圓圖"></svg>
+          <svg class="gauge" id="gauge" viewBox="0 0 760 362" role="img" aria-label="跌倒風險半圓圖"></svg>
           <div class="gauge-text" id="gaugeText"></div>
           <div class="risk" id="risk">
             <span class="risk-dot"></span>
@@ -874,7 +253,8 @@
               <div class="split-k">滿分 12 分</div>
             </div>
             <span class="split-line"></span>
-            <div>
+            <!-- 同齡比較（js/result-common.js renderPeer）：與 result-gait.html 同一段 -->
+            <div id="peerBox">
               <div class="big big-peer serif" id="peer"></div>
               <div class="split-k ink">優於同齡長者</div>
             </div>
@@ -909,8 +289,8 @@
       <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
       <footer class="foot">
         <nav class="pager" aria-label="頁面切換">
-          <div class="dots" id="dots" role="tablist"></div>
-          <div class="hint" id="hint" aria-hidden="true">
+          <div class="dots" id="dots" role="tablist" data-html2canvas-ignore></div>
+          <div class="hint" id="hint" aria-hidden="true" data-html2canvas-ignore>
             <i class="ti ti-hand-finger hand"></i>
             <i class="ti ti-chevrons-left chev to-left"></i>左右滑動查看<i class="ti ti-chevrons-right chev to-right"></i>
           </div>
@@ -994,7 +374,6 @@
       // TODO：之後依紀錄從 API 取得，例如 fetch(`/api/records/${record.id}/result`)
       const RESULT = {
         score: 9, // SPPB 總分 0～12
-        peer: 50, // 優於同齡長者 %
         items: { balance: 3, chair: 3, walk: 3 }, // 三項分數 0～4
         measures: [
           { label: "步行速度", value: "4.82", unit: "秒" },
@@ -1005,13 +384,13 @@
         ],
       };
 
-      /* 固定的分級規則（文字和顏色不可更改）；min～max 為各等級的分數區間 */
-      const RISK_LEVELS = [
-        { key: "danger", min: 0, max: 2, name: "危險", arc: "#ff5757", bg: "#fef2f2", border: "#fca5a5", text: "#b91c1c", desc: "目前跌倒風險偏高，請特別注意" },
-        { key: "high", min: 3, max: 5, name: "高風險", arc: "#ffa203", bg: "#fff7ed", border: "#fdba74", text: "#c2410c", desc: "跌倒風險較高，建議積極改善" },
-        { key: "mid", min: 6, max: 8, name: "中度風險", arc: "#ffd039", bg: "#fefce8", border: "#fde047", text: "#854d0e", desc: "跌倒風險中等，持續關注為佳" },
-        { key: "low", min: 9, max: 11, name: "稍低風險", arc: "#8cff00", bg: "#f7fee7", border: "#bef264", text: "#3f6212", desc: "跌倒風險稍低，狀況良好" },
-        { key: "vlow", min: 12, max: 12, name: "低風險", arc: "#4ffa00", bg: "#f0fdf4", border: "#86efac", text: "#166534", desc: "跌倒風險低，體能表現優異" },
+      /* SPPB 總分 → 跌倒風險等級（key 對應 js/result-common.js 的 RISK；文字和顏色在那裡，不可更改）；min～max 為各等級的分數區間 */
+      const RISK_RANGES = [
+        { key: "danger", min: 0, max: 2 },
+        { key: "high", min: 3, max: 5 },
+        { key: "mid", min: 6, max: 8 },
+        { key: "low", min: 9, max: 11 },
+        { key: "vlow", min: 12, max: 12 },
       ];
       const VIVIFRAIL = [
         { letter: "A", max: 3, text: "A級 (失能者)", color: "#DC3545" },
@@ -1019,92 +398,15 @@
         { letter: "C", max: 9, text: "C級 (衰弱前期者)", color: "#0D6EFD" },
         { letter: "D", max: 12, text: "D級 (健康者)", color: "#198754" },
       ];
-      const riskOf = (score) => RISK_LEVELS.find((l) => score <= l.max);
+      const riskOf = (score) => RISK_RANGES.find((l) => score <= l.max);
       const viviOf = (score) => VIVIFRAIL.find((l) => score <= l.max);
 
       const PAGES = ["總覽", "圖表", "數據"]; // 頁數圓點的 aria-label
 
-      /* =========================================================
-       * 共用功能
-       * ========================================================= */
-      const $ = (sel) => document.querySelector(sel);
-      const esc = (s) =>
-        String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-      let toastTimer;
-      function showToast(msg) {
-        const el = $("#toast");
-        el.textContent = msg;
-        el.classList.add("show");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
-      }
-      const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      function isoOf(d) {
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-      }
-      // 依今天往前推 n 天（"YYYY-MM-DD"），CONFIG.records 使用
-      function daysAgo(n) {
-        const d = new Date();
-        d.setDate(d.getDate() - n);
-        return isoOf(d);
-      }
+      // 共用小工具、資料讀取（紀錄、受測者含一體機）、半圓圖、頁首、輪播：js/result-common.js
 
-      /* =========================================================
-       * 資料（sessionStorage，關閉分頁即清除；讀取都包 try/catch）
-       * kf.records.<fieldId>：測驗頁完成 SPPB 時新增的紀錄
-       * kf.subjects.<fieldId>：{ added, done, edits }（與其他頁共用）
-       * ========================================================= */
-      function readJSON(key) {
-        try {
-          return JSON.parse(sessionStorage.getItem(key));
-        } catch (e) {
-          return null;
-        }
-      }
-      // 場域：kf.currentField（不論日期）→ kf.recentFields 第一筆
-      function currentFieldId() {
-        const cur = readJSON("kf.currentField");
-        if (cur?.id) return cur.id;
-        const recent = readJSON("kf.recentFields");
-        return Array.isArray(recent) && recent[0] ? recent[0].id || recent[0] : null;
-      }
-      // 所有紀錄：CONFIG.records ＋ sessionStorage 中所有 kf.records.*
-      function allRecords() {
-        const list = [...CONFIG.records];
-        try {
-          for (let i = 0; i < sessionStorage.length; i++) {
-            const key = sessionStorage.key(i);
-            if (!key || !key.startsWith("kf.records.")) continue;
-            const v = readJSON(key);
-            if (Array.isArray(v)) list.push(...v);
-          }
-        } catch (e) {}
-        return list;
-      }
-      // 受測者：後台匯入或現場新增，並套用 edits
-      function findSubject(record) {
-        const fid = record?.fieldId || currentFieldId();
-        const local = fid ? readJSON(`kf.subjects.${fid}`) : null;
-        const id = record?.subjectId;
-        const base =
-          (id ? CONFIG.subjects.find((s) => s.id === id) : CONFIG.subjects[0]) ||
-          (Array.isArray(local?.added) ? local.added.find((s) => s.id === id) : null);
-        if (!base) return null;
-        const e = local?.edits?.[base.id];
-        return e ? { ...base, name: e.name ?? base.name, gender: e.gender ?? base.gender, birth: e.birth ?? base.birth } : base;
-      }
-      const honorific = (s) => `${s.name} ${s.gender === "女" ? "女士" : "先生"}`;
-
-      /* =========================================================
-       * 圖表（SVG）
-       * ========================================================= */
-      const pt = (cx, cy, r, deg) => [cx + r * Math.cos((deg * Math.PI) / 180), cy - r * Math.sin((deg * Math.PI) / 180)];
-
-      /* 跌倒風險半圓圖：圓心 (380, 340)、半徑 300、線寬 76
-       * 五段等寬（每段 36°），由左到右：低風險、稍低、中度、高風險、危險，段與段之間留小縫
-       * 指針在所屬等級的那一段裡依分數換算位置：
+      /* 跌倒風險半圓圖（js/result-common.js drawGauge）：指針在所屬等級的那一段裡依分數換算位置
        *   區間只有 1 個分數 → 段的正中央；3 個分數 → 段內 1/6、3/6、5/6，分數越高越靠左 */
-      const SEG_ORDER = ["vlow", "low", "mid", "high", "danger"]; // 由左到右
       function needleAngle(score) {
         const level = riskOf(score);
         const k = SEG_ORDER.indexOf(level.key);
@@ -1112,23 +414,6 @@
         const slot = level.max - score; // 0 = 最高分（最靠左）
         const f = (2 * slot + 1) / (2 * count); // 段內位置（由左算起）
         return 180 - 36 * k - 36 * f;
-      }
-      function drawGauge(score) {
-        const cx = 380, cy = 340, R = 300, GAP = 0.9; // GAP：每段兩端各留的縫（度）
-        let html = "";
-        SEG_ORDER.forEach((key, k) => {
-          const l = RISK_LEVELS.find((x) => x.key === key);
-          const a1 = 180 - 36 * k - (k > 0 ? GAP : 0); // 左端
-          const a0 = 180 - 36 * (k + 1) + (k < 4 ? GAP : 0); // 右端
-          const [x1, y1] = pt(cx, cy, R, a1);
-          const [x0, y0] = pt(cx, cy, R, a0);
-          html += `<path data-level="${key}" d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${R} ${R} 0 0 1 ${x0.toFixed(1)} ${y0.toFixed(1)}" fill="none" stroke="${l.arc}" stroke-width="76" />`;
-        });
-        const ang = needleAngle(score);
-        const [nx, ny] = pt(cx, cy, 230, ang);
-        html += `<line data-angle="${ang}" x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1a2420" stroke-width="10" stroke-linecap="round" />`;
-        html += `<circle cx="${cx}" cy="${cy}" r="11" fill="#1a2420" /><circle cx="${cx}" cy="${cy}" r="5" fill="#fff" />`;
-        $("#gauge").innerHTML = html;
       }
 
       /* 雷達圖：平衡（上）、起坐（右下）、步行（左下），最大值 4，四層三角形格線 */
@@ -1155,13 +440,9 @@
       /* =========================================================
        * 填入內容
        * ========================================================= */
-      function renderResult(subject, date) {
+      function renderResult(subject, date, record) {
         const { score } = RESULT;
-        // 姓名與檢測日期目前隱藏（HTML 已註解）：找不到元素就略過
-        const nameEl = $("#whoName");
-        const dateEl = $("#whoDate");
-        if (nameEl) nameEl.textContent = honorific(subject);
-        if (dateEl) dateEl.textContent = date;
+        renderWho(subject, date);
 
         const v = viviOf(score);
         const vivi = $("#vivi");
@@ -1170,19 +451,13 @@
         $("#viviText").textContent = v.text;
         $("#viviLetter").textContent = v.letter;
 
-        const r = riskOf(score);
-        drawGauge(score);
-        $("#gaugeText").textContent = `風險等級：${r.name}`;
-        const risk = $("#risk");
-        risk.style.setProperty("--risk-bg", r.bg);
-        risk.style.setProperty("--risk-border", r.border);
-        risk.style.setProperty("--risk-text", r.text);
-        risk.style.setProperty("--risk-arc", r.arc);
-        risk.dataset.level = r.key;
-        $("#riskTitle").textContent = `目前風險等級：${r.name}`;
-        $("#riskDesc").textContent = r.desc;
+        // 跌倒風險：半圓圖、「風險等級：短名稱」、風險說明（完整名稱）
+        drawGauge($("#gauge"));
+        setNeedle($("#gauge"), needleAngle(score));
+        renderRiskBlock(riskOf(score).key);
+        // 同齡比較：讀紀錄的 norm；沒有時依風險等級推示範值（TODO：之後改成 API 回傳的值）
+        renderPeer($("#peerBox"), normOf(record, riskOf(score).key));
         $("#score1").textContent = score;
-        $("#peer").textContent = `${RESULT.peer}%`;
 
         drawRadar(RESULT.items);
         $("#score2").innerHTML = `${score} <small>/12</small>`;
@@ -1212,298 +487,11 @@
       }
 
 
-      /* =========================================================
-       * 輪迴卡片輪播
-       * pos：連續的位置（每轉一張 ±1，可以一直累加）；目前頁 = pos 除以 3 的餘數
-       * d：卡片與目前頁的距離，以三張為一圈換算到 −1.5～1.5（停住時是 −1、0、1）
-       * 位移跟卡片寬度 W 連動：translateX = d × W × 0.81；translateZ = −min(|d|, 1.5) × W × 0.51
-       * ========================================================= */
-      const stage = $("#stage");
-      const cards = [...document.querySelectorAll(".card")];
-      const N = cards.length;
-      const C = { pos: 0, W: 740 };
-      const lastD = cards.map(() => null); // 上一次「停住」時的位置（拖曳中不更新），用來判斷誰要「繞到另一側」
-      const mod = (n, m) => ((n % m) + m) % m;
-      const indexOf = (pos) => mod(Math.round(pos), N);
-      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-      const distance = (i, pos) => {
-        const d = i - pos;
-        return d - N * Math.round(d / N);
-      };
-
-      // 依舞台大小計算卡片：高 = 舞台高 × 0.98；寬 = min(舞台寬 × 0.72, 卡片高 × 0.79)
-      function measure() {
-        const w = stage.clientWidth;
-        const h = stage.clientHeight;
-        const ch = h * 0.98;
-        const cw = Math.min(w * 0.72, ch * 0.79);
-        C.W = cw;
-        stage.style.setProperty("--card-w", `${cw}px`);
-        stage.style.setProperty("--card-h", `${ch}px`);
-        fitVivi();
-      }
-
       // 「結果總覽」標題列：標題＋VIVIFRAIL 放不下（標題會被擠壓）時，VIVIFRAIL 改放在標題下方一行、靠左
       function fitVivi() {
         const head = $("#viviHead");
         head.classList.remove("is-stacked");
         if (head.scrollWidth > head.clientWidth + 1) head.classList.add("is-stacked");
-      }
-
-      function placeCard(card, d) {
-        const ad = Math.abs(d);
-        card.style.transform = `translateX(${d * C.W * 0.81}px) translateZ(${-Math.min(ad, 1.5) * C.W * 0.51}px) rotateY(${-clamp(d, -1.4, 1.4) * 42}deg)`;
-        card.style.opacity = ad > 1.45 ? 0 : 1 - Math.min(ad, 1) * 0.3;
-        card.style.filter = `brightness(${1 - Math.min(ad, 1) * 0.06})`;
-        card.style.zIndex = String(100 - Math.round(ad * 10)); // 越靠近中間越高
-        card.style.pointerEvents = ad > 1.45 ? "none" : "auto";
-        card.classList.toggle("is-side", Math.round(ad) === 1);
-      }
-
-      // settle：換頁定位（套用過場）；拖曳中只即時跟手
-      function layout(pos, settle = false) {
-        const current = indexOf(pos);
-        cards.forEach((card, i) => {
-          card.setAttribute("aria-hidden", i !== current);
-          if (REDUCED) {
-            // 減少動態：不做 3D 旋轉，只顯示目前這一張
-            card.style.transform = "none";
-            card.style.filter = "none";
-            card.style.opacity = i === current ? 1 : 0;
-            card.style.zIndex = i === current ? 2 : 1;
-            card.style.pointerEvents = i === current ? "auto" : "none";
-            return;
-          }
-          const d = distance(i, pos);
-          // 從一側繞到另一側的卡片：不要橫越中央，先直接放到新位置並透明，再淡入
-          if (settle && lastD[i] !== null && Math.abs(d - lastD[i]) > 1.5) {
-            card.style.transition = "none";
-            placeCard(card, d);
-            card.style.opacity = 0;
-            void card.offsetWidth;
-            card.style.transition = "opacity 0.5s 0.2s";
-            card.style.opacity = 1 - Math.min(Math.abs(d), 1) * 0.3;
-            clearTimeout(card._t);
-            card._t = setTimeout(() => (card.style.transition = ""), 750);
-          } else {
-            placeCard(card, d);
-          }
-          if (settle || lastD[i] === null) lastD[i] = d;
-        });
-      }
-
-      function renderDots() {
-        const i = indexOf(C.pos);
-        document.querySelectorAll(".dot").forEach((t, k) => {
-          t.classList.toggle("is-active", k === i);
-          t.setAttribute("aria-selected", k === i);
-        });
-      }
-
-      /* =========================================================
-       * 閒置提醒：6 秒沒有操作（拖曳、點擊、按鍵）時播放一次，之後每 8 秒重複；一操作就停止並重新計時
-       * 卡片：一起往左偏移卡片寬度的 6% 再彈回（用 translate 屬性疊加，不動到目前頁和原本的 transform）
-       * 提示膠囊：放大到 1.06 倍再恢復，外圍金色光暈往外擴散一次
-       * 減少動態：只播放光暈
-       * ========================================================= */
-      const IDLE = { first: 6000, repeat: 8000, timer: null, anims: [] };
-      function playNudge() {
-        stopNudge();
-        const hint = $("#hint");
-        const base = getComputedStyle(hint).getPropertyValue("--hint-shadow").trim();
-        IDLE.anims.push(
-          hint.animate(
-            [
-              { boxShadow: `${base}, 0 0 0 0 rgba(217, 183, 122, 0.6)` },
-              { boxShadow: `${base}, 0 0 0 28px rgba(217, 183, 122, 0)` },
-            ],
-            { duration: 1100, easing: "ease-out" },
-          ),
-        );
-        if (!REDUCED) {
-          IDLE.anims.push(
-            hint.animate([{ scale: 1 }, { scale: 1.06, offset: 0.4 }, { scale: 1 }], { duration: 900, easing: "ease-in-out" }),
-          );
-          const dx = -C.W * 0.06;
-          cards.forEach((card) =>
-            IDLE.anims.push(
-              card.animate(
-                [
-                  { translate: "0 0" },
-                  { translate: `${dx}px 0`, offset: 0.35, easing: "cubic-bezier(0.34, 1.4, 0.64, 1)" },
-                  { translate: "0 0" },
-                ],
-                { duration: 900, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
-              ),
-            ),
-          );
-        }
-        IDLE.timer = setTimeout(playNudge, IDLE.repeat);
-      }
-      function stopNudge() {
-        IDLE.anims.forEach((a) => a.cancel());
-        IDLE.anims = [];
-      }
-      // 有操作：立刻停止提醒動畫並重新計時
-      function resetIdle() {
-        stopNudge();
-        clearTimeout(IDLE.timer);
-        IDLE.timer = setTimeout(playNudge, IDLE.first);
-      }
-
-      // step：往右轉一張 +1（顯示右邊那張）、往左轉一張 −1、0 = 彈回
-      function turn(step) {
-        C.pos = Math.round(C.pos) + step;
-        layout(C.pos, true);
-        renderDots();
-      }
-      // 頁數圓點：走最短的方向（三張一圈，最多轉一張）
-      function goToPage(k) {
-        turn(mod(k - indexOf(C.pos) + 1, N) - 1); // −1、0、1
-      }
-
-      function initCarousel() {
-        $("#dots").innerHTML = PAGES.map(
-          (name, k) => `<button class="dot" type="button" role="tab" data-i="${k}" aria-label="${name}"></button>`,
-        ).join("");
-        $("#dots").addEventListener("click", (e) => {
-          const b = e.target.closest(".dot");
-          if (b) goToPage(Number(b.dataset.i));
-        });
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "ArrowRight") turn(1);
-          if (e.key === "ArrowLeft") turn(-1);
-        });
-
-        // 左右拖曳：跟著手指即時轉動，左右都沒有阻力；放開時超過卡片寬度 16% 就往該方向轉一張，否則彈回
-        let drag = null;
-        let suppressClick = false;
-        stage.addEventListener("pointerdown", (e) => {
-          drag = { x: e.clientX, dx: 0, moved: false, id: e.pointerId };
-        });
-        stage.addEventListener("pointermove", (e) => {
-          if (!drag || e.pointerId !== drag.id) return;
-          const dx = e.clientX - drag.x;
-          if (!drag.moved && Math.abs(dx) < 8) return;
-          if (!drag.moved) {
-            drag.moved = true;
-            stage.setPointerCapture(e.pointerId);
-            stage.classList.add("is-dragging");
-            cards.forEach((c) => (c.style.transition = "")); // 拖曳中不套用任何過場
-          }
-          drag.dx = dx;
-          if (!REDUCED) layout(C.pos - dx / (C.W * 0.81));
-        });
-        const end = () => {
-          if (!drag) return;
-          const { dx, moved } = drag;
-          drag = null;
-          stage.classList.remove("is-dragging");
-          if (!moved) return;
-          suppressClick = true; // 拖曳後的放開不算點擊
-          setTimeout(() => (suppressClick = false), 0);
-          const threshold = C.W * 0.16;
-          if (dx < -threshold) turn(1); // 往左滑：轉到右邊那張
-          else if (dx > threshold) turn(-1); // 往右滑：轉到左邊那張
-          else turn(0); // 彈回原位
-        };
-        stage.addEventListener("pointerup", end);
-        stage.addEventListener("pointercancel", end);
-
-        // 點兩側露出的卡片：轉到那一張
-        stage.addEventListener("click", (e) => {
-          if (suppressClick) return;
-          const card = e.target.closest(".card");
-          if (!card) return;
-          const d = Math.round(distance(Number(card.dataset.i), C.pos));
-          if (d) turn(d);
-        });
-
-        // 視窗大小改變（包含 iPad 旋轉）：即時重新計算卡片大小和位置（不播過場）
-        let first = true;
-        new ResizeObserver(() => {
-          if (first) return (first = false); // 第一次由 init 處理，避免打斷進場動畫
-          measure();
-          stage.classList.add("no-anim");
-          layout(C.pos);
-          fitName();
-          fitReport();
-          requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.remove("no-anim")));
-        }).observe(stage);
-      }
-
-      // 進場：卡片從遠處（translateZ −600px、透明）轉入定位（0.8s）
-      function enter() {
-        if (REDUCED) {
-          layout(C.pos);
-          return renderDots();
-        }
-        cards.forEach((c) => {
-          c.style.transition = "none";
-          c.style.transform = `translateZ(${-C.W * 0.81}px)`;
-          c.style.opacity = 0;
-        });
-        void document.body.offsetWidth;
-        requestAnimationFrame(() => {
-          cards.forEach((c) => (c.style.transition = "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.8s, filter 0.8s"));
-          layout(C.pos);
-          renderDots();
-          setTimeout(() => cards.forEach((c) => (c.style.transition = "")), 850);
-        });
-      }
-
-      /* 頁首右邊「報告」說明：和左邊的首頁鍵（或「‹ 受測名單」）至少保留 24 單位；放不下時改放在 QR 小卡正下方 */
-      function fitReport() {
-        const report = $("#qrCard");
-        const left = [$("#homeBtn"), $("#backBtn")].find((b) => b && !b.hidden);
-        if (!report || !left) return;
-        report.classList.remove("is-below");
-        const back = $("#backBtn");
-        if (back) {
-          back.style.alignSelf = "";
-          back.style.marginTop = "";
-        }
-        const u = Math.min(innerWidth, innerHeight * 0.75) / 1032;
-        const header = report.parentElement;
-        const r = report.getBoundingClientRect();
-        const gap = r.left - left.getBoundingClientRect().right;
-        // 頁首內容的右邊界（扣掉右側內距）：整組被擠出去也算放不下
-        const rightEdge = header.getBoundingClientRect().right - parseFloat(getComputedStyle(header).paddingRight);
-        if (gap < 24 * u - 0.5 || r.right > rightEdge + 0.5) report.classList.add("is-below");
-        // 「‹ 受測名單」：和 QR 小卡的垂直中心對齊（「報告」放到小卡下方時，頁首變高，置中會偏低）
-        // 首頁鍵維持原本的置中
-        if (back && !back.hidden) {
-          const qr = report.querySelector(".qr-card").getBoundingClientRect();
-          const top = header.getBoundingClientRect().top + parseFloat(getComputedStyle(header).paddingTop);
-          back.style.alignSelf = "flex-start";
-          back.style.marginTop = `${qr.top + qr.height / 2 - top - back.offsetHeight / 2}px`;
-        }
-      }
-
-      /* 報告 QR Code 小卡：只有「點一下」（按下到放開移動不超過 8px）才開啟詳細報告；拖曳時取消這次點擊 */
-      function initQrLink() {
-        const a = $("#qrCard");
-        a.href = REPORT_DETAIL_URL;
-        let start = null;
-        a.addEventListener("pointerdown", (e) => (start = { x: e.clientX, y: e.clientY }));
-        a.addEventListener("click", (e) => {
-          if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8) e.preventDefault();
-          start = null;
-        });
-        a.addEventListener("dragstart", (e) => e.preventDefault());
-      }
-
-      // 姓名放不下時（例如左上角是較寬的「‹ 受測名單」），以 2px 為單位縮小字級，最多縮到原本的 80%
-      function fitName() {
-        const el = $("#whoName");
-        if (!el) return; // 姓名目前隱藏
-        el.style.fontSize = "";
-        let size = parseFloat(getComputedStyle(el).fontSize);
-        const min = size * 0.8;
-        while (el.scrollWidth > el.clientWidth && size - 2 >= min) {
-          size -= 2;
-          el.style.fontSize = `${size}px`;
-        }
       }
 
       /* =========================================================
@@ -1530,36 +518,12 @@
           date = isoOf(new Date());
         }
 
-        // 從測驗完成進入：左上角改成「‹ 受測名單」，回到這個場域的 SPPB 名單
-        const fromAssess = params.get("from") === "assess";
-        $("#homeBtn").hidden = fromAssess;
-        $("#backBtn").hidden = !fromAssess;
-        document.querySelector(".header").classList.toggle("has-back", fromAssess);
-        $("#homeBtn").addEventListener("click", () => (location.href = "home.html"));
-        $("#backBtn").addEventListener("click", () => {
-          const fid = record?.fieldId || currentFieldId() || "";
-          location.href = `roster.html?test=sppb&field=${fid}`;
-        });
-
-        $("#reportQr").src = REPORT_QR_SRC;
-        initQrLink();
-        $("#page").hidden = false;
-        renderResult(subject, date);
-        fitName();
-        fitReport();
-        document.fonts?.ready.then(() => {
-          fitName();
-          fitReport();
-          fitVivi(); // 頁首高度若改變，舞台的 ResizeObserver 會重算卡片大小
-        }); // 字型載入後寬度會變，再量一次
-        measure();
-        initCarousel();
-        enter();
-
-        // 閒置提醒：任何拖曳、點擊、按鍵都算操作（capture 階段先處理，拖曳開始時提醒動畫已取消）
-        document.addEventListener("pointerdown", resetIdle, true);
-        document.addEventListener("keydown", resetIdle, true);
-        resetIdle();
+        // 左上角：從測驗完成進入是「‹ 受測名單」（回到這個場域的 SPPB 名單）；一體機回到歡迎頁（js/result-common.js）
+        initHeader("sppb", record, params);
+        initQrLink(REPORT_QR_SRC, REPORT_DETAIL_URL);
+        renderResult(subject, date, record);
+        showPage(fitVivi); // 字型載入後寬度會變，再量一次
+        initCarousel({ pages: PAGES, onMeasure: fitVivi });
       }
       init();
     </script>

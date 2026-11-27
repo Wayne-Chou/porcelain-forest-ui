@@ -1,0 +1,924 @@
+/* =========================================================
+ * 瓷白森林 Porcelain Forest — 鑑測結果頁共用樣式（result.html SPPB、result-gait.html 行走測驗）
+ * 各頁只寫自己卡片內容的樣式；版面、頁首「報告」QR、卡片外框、半圓圖、風險說明、圓點與滑動提示、推薦商品、最新消息都在這裡
+ * 整頁 100dvh 直向排版：頁首｜卡片舞台（flex: 1）｜頁數圓點＋滑動提示，不捲動
+ * 頁首、底部的尺寸以 --u 計算（iPad 13 吋直式時 1 --u = 1px），與其他頁同一套做法
+ * 卡片內的尺寸都以 --cu（= 卡片寬 ÷ 740）為單位，iPad 13 吋時 --cu ≈ 1px
+ * ========================================================= */
+:root {
+  --bg: #ece7df; /* 暖瓷白：頁面底色 */
+  --card: #f7f4ee; /* 卡片底色 */
+  --card-deep: #e6dccb; /* 圖示底 */
+  --line: #d9cfbe; /* 邊框 */
+  --line-soft: #c7bba6; /* 虛線、未選中指示點 */
+  --forest: #1f3b33; /* 森林綠：主色 */
+  --brass: #b08d57; /* 黃銅：重點色 */
+  --brass-text: #8f6e3c; /* 淺底上的黃銅文字 */
+  --ink: #1a2420; /* 主要文字 */
+  --muted: #6f6656; /* 次要文字 */
+  --on-forest: #f6f1e8; /* 森林綠上的文字 */
+  --faint: #8a8170; /* 單位、未選中文字 */
+  --paper: #fffdf9; /* 結果卡片底色 */
+  --chip: #fbf8f2; /* 浮在背景上的按鈕、等級卡、提示膠囊 */
+  --divider: #efe9df; /* 卡片內分隔線 */
+
+  --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+  --font-serif: "Noto Serif TC", "Songti TC", serif;
+  /* 縮放單位：iPad 13 吋直式（1032 × 1376）時 1 --u = 1px；較小的 iPad 依「寬度」與「高度 × 0.75」中較小者等比縮小 */
+  --u: calc(min(100vw, 100dvh * 0.75) / 1032);
+  /* 橫式等內容比 1032 --u 寬時，左右各留白這麼多，內容置中 */
+  --gutter: max(0px, calc((100vw - 1032 * var(--u)) / 2));
+  /* 最小字級：一般 16px、按鈕 18px（手機上卡片內不強制，見下方媒體查詢） */
+  --fmin: 16px;
+  --bmin: 18px;
+  /* 字級：四頁共用，同一種用途用同一個變數（卡片內會依卡片寬度重新定義） */
+  --fs-display: max(var(--fmin), calc(72 * var(--u)));
+  --fs-hero-num: max(var(--fmin), calc(88 * var(--u)));
+  --fs-card-name: max(var(--fmin), calc(84 * var(--u)));
+  --fs-title: max(var(--fmin), calc(44 * var(--u)));
+  --fs-lead: max(var(--fmin), calc(32 * var(--u)));
+  --fs-button: max(var(--bmin), calc(30 * var(--u)));
+  --fs-body: max(var(--fmin), calc(26 * var(--u)));
+  --fs-small: max(var(--fmin), calc(24 * var(--u)));
+
+  /* 版面間距（iPad 13 吋直式時：上 48、左右 56、頁首與舞台 28、舞台與底部 20、底部 64 → 舞台高 960） */
+  --pad-x: calc(56 * var(--u));
+  --pad-top: calc(48 * var(--u));
+  --gap-head: calc(28 * var(--u));
+  --gap-foot: calc(20 * var(--u));
+  --pad-bottom: calc(44 * var(--u)); /* 提示膠囊加高 calc(20 * var(--u))，底部留白相應減少，舞台維持 960 */
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+/* 背景：中央稍亮的瓷白放射漸層 */
+body {
+  background: radial-gradient(60% 60% at 50% 48%, #f6f2ea, #e6dfd2);
+  background-color: #e6dfd2;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden; /* 整頁不捲動 */
+}
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+/* 表單元素與 placeholder 繼承頁面字型（瀏覽器預設不會繼承） */
+input,
+textarea,
+select,
+input::placeholder,
+textarea::placeholder {
+  font: inherit;
+}
+button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+[hidden] {
+  display: none !important;
+}
+/* 所有按鈕：按下縮小到 0.96 */
+.press {
+  transition: transform 0.2s var(--ease-out);
+}
+.press:active {
+  transform: scale(0.96);
+}
+
+/* =========================================================
+ * 整頁：直向 flex
+ * ========================================================= */
+/* 左右邊界只加在頁首和底部；卡片舞台撐滿整個寬度（兩側露出的卡片超出畫面的部分直接裁掉，不產生捲軸） */
+.page {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--pad-top) + env(safe-area-inset-top)) 0
+    calc(var(--pad-bottom) + env(safe-area-inset-bottom));
+  overflow-x: clip;
+}
+
+/* ===== 頁首 ===== */
+.header {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
+  display: flex;
+  align-items: center; /* 首頁按鈕（或「‹ 受測名單」）在左、「報告」說明＋QR Code 小卡在右，垂直置中 */
+  gap: calc(24 * var(--u));
+  animation: fadeIn 0.6s var(--ease-out) both;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+.home-btn {
+  flex: 0 0 auto;
+  width: max(44px, calc(88 * var(--u)));
+  height: max(44px, calc(88 * var(--u)));
+  border-radius: 50%;
+  background: var(--chip);
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: max(var(--bmin), calc(42 * var(--u)));
+}
+/* 從測驗完成進入時：膠囊按鈕「‹ 受測名單」 */
+.back-pill {
+  flex: 0 0 auto;
+  height: max(44px, calc(88 * var(--u)));
+  padding: 0 calc(32 * var(--u)) 0 calc(20 * var(--u));
+  border-radius: calc(999 * var(--u));
+  background: var(--chip);
+  border: 2px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4 * var(--u));
+  font-size: max(var(--bmin), calc(30 * var(--u)));
+  font-weight: 700;
+  white-space: nowrap;
+}
+.back-pill i {
+  font-size: max(var(--bmin), calc(40 * var(--u)));
+}
+.who {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.who-name {
+  margin: 0;
+  font-size: max(var(--fmin), calc(56 * var(--u)));
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.who-date {
+  margin-top: 2px;
+  font-size: max(var(--fmin), calc(24 * var(--u)));
+  line-height: 1.3;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.who-date b {
+  margin-left: 0.25em; /* 加上前面的空白約 0.5em；窄螢幕時這個空白也是換行點 */
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+/* 頁首右邊：報告 QR Code 小卡（樣式見下方 .qr-card）；首頁按鈕、姓名區塊和小卡靠上對齊 */
+/* 窄螢幕：小卡仍在頁首右側；姓名放不下時換行，不和小卡重疊 */
+@media (max-width: 599px) {
+  /* 手機：只有卡片內（依卡片寬度縮放）不強制最小字級；頁首和底部仍維持 16px／18px */
+  .stage {
+    --fmin: 0px;
+    --bmin: 0px;
+  }
+  .who-name {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  /* 檢測日期放不下時，日期換到下一行（不跑到小卡底下） */
+  .who-date {
+    white-space: normal;
+  }
+  .who-date b {
+    display: inline-block;
+    margin-left: 0;
+    white-space: nowrap;
+  }
+  /* 從測驗完成進入（左邊是較寬的「‹ 受測名單」）：膠囊在第一列、姓名與日期在第二列，小卡跨兩列靠右
+   * 姓名與檢測日期暫時隱藏，這段兩列排法先註解（之後打開姓名時再恢復）
+  .header.has-back {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    row-gap: calc(12 * var(--u));
+  }
+  .header.has-back .back-pill {
+    grid-row: 1;
+    justify-self: start;
+  }
+  .header.has-back .who {
+    grid-row: 2;
+  }
+  .header.has-back .qr-card {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+  */
+  /* 「報告」說明：隱藏第二行小字、箭頭縮短為 56 × 32 */
+  .report-sub {
+    display: none;
+  }
+  .report-arrow {
+    width: calc(56 * var(--u));
+    height: calc(32 * var(--u));
+  }
+}
+
+/* =========================================================
+ * 卡片舞台：輪迴卡片輪播（--card-w、--card-h 由 JS 依舞台大小設定）
+ * ========================================================= */
+.stage {
+  --card-w: calc(740 * var(--u));
+  --card-h: calc(940 * var(--u));
+  --cu: calc(var(--card-w) / 740); /* 卡片內的單位：卡片寬 ÷ 740 */
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: var(--gap-head);
+  perspective: calc(var(--card-w) * 2.973);
+  touch-action: none;
+}
+.card {
+  /* 卡片內的字級依卡片寬度縮放 */
+  --fs-small: max(var(--fmin), calc(24 * var(--cu)));
+  --fs-body: max(var(--fmin), calc(26 * var(--cu)));
+  --fs-button: max(var(--bmin), calc(30 * var(--cu)));
+  --fs-lead: max(var(--fmin), calc(32 * var(--cu)));
+  position: absolute;
+  left: calc(50% - var(--card-w) / 2);
+  top: 0;
+  width: var(--card-w);
+  height: var(--card-h);
+  padding: calc(40 * var(--cu)) calc(44 * var(--cu));
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-radius: calc(48 * var(--cu));
+  border: calc(2 * var(--cu)) solid rgba(176, 141, 87, 0.35);
+  box-shadow: 0 calc(36 * var(--cu)) calc(70 * var(--cu)) rgba(60, 45, 25, 0.2);
+  overflow: hidden;
+  transform-origin: 50% 50%;
+  transition:
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.7s,
+    filter 0.7s;
+  will-change: transform, opacity;
+}
+.stage.is-dragging .card,
+.stage.no-anim .card {
+  transition: none !important;
+}
+.card.is-side {
+  cursor: pointer;
+}
+.card-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: calc(14 * var(--cu));
+  white-space: nowrap;
+}
+.card-title {
+  margin: 0;
+  font-size: max(var(--fmin), calc(46 * var(--cu)));
+  line-height: 1.2;
+}
+.card-kind {
+  font-size: max(var(--fmin), calc(28 * var(--cu)));
+  font-weight: 700;
+  color: var(--muted);
+}
+.sub {
+  margin-top: calc(18 * var(--cu));
+  font-size: max(var(--fmin), var(--fs-body));
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* 結果總覽：跌倒風險半圓圖（五色固定，見 js/result-common.js 的 RISK） */
+/* 半圓圖：650 × 310（SVG 已裁掉圓心下方的空白）；卡片放不下時由它先縮，最低 150 高 */
+.card > .gauge {
+  display: block;
+  flex: 0 1 calc(650 * 362 / 760 * var(--cu));
+  min-height: calc(150 * var(--cu));
+  width: 100%;
+  max-width: calc(650 * var(--cu));
+  margin: calc(6 * var(--cu)) auto 0;
+}
+.gauge-text {
+  text-align: center;
+  font-size: max(var(--fmin), var(--fs-lead));
+  font-weight: 700;
+  line-height: 1.3;
+}
+.risk {
+  margin-top: calc(18 * var(--cu));
+  display: flex;
+  align-items: center;
+  gap: calc(18 * var(--cu));
+  padding: calc(20 * var(--cu)) calc(28 * var(--cu));
+  border-radius: calc(28 * var(--cu));
+  background: var(--risk-bg);
+  border: calc(3 * var(--cu)) solid var(--risk-border);
+  color: var(--risk-text);
+}
+.risk-dot {
+  flex: 0 0 auto;
+  width: calc(22 * var(--cu));
+  height: calc(22 * var(--cu));
+  border-radius: 50%;
+  background: var(--risk-arc);
+}
+.risk-title {
+  font-size: max(var(--fmin), var(--fs-lead));
+  font-weight: 700;
+  line-height: 1.3;
+}
+.risk-desc {
+  font-size: max(var(--fmin), var(--fs-body));
+  line-height: 1.4;
+}
+/* =========================================================
+ * 底部列：頁數圓點＋滑動提示膠囊，水平置中；高度只容納這兩者
+ * ========================================================= */
+.foot {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  margin-top: var(--gap-foot);
+  padding: 0 calc(var(--pad-x) + var(--gutter)); /* 橫式時置中 */
+  display: flex;
+  justify-content: center;
+  animation: fadeIn 0.6s 0.2s var(--ease-out) both;
+}
+.pager {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(12 * var(--u));
+}
+/* 頁首右邊：「報告」說明＋黃銅箭頭＋QR Code 小卡，整組是同一個連結（前往詳細報告；讀螢幕只朗讀一次）
+ * 只有「點一下」才開啟，拖曳不開啟（initQrLink）；說明與箭頭沒有動畫 */
+.report {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--u)); /* 箭頭尖端與小卡的間距 */
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+.report:focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 6px;
+  border-radius: calc(32 * var(--u));
+}
+.report-hint {
+  display: flex;
+  align-items: center;
+  gap: calc(16 * var(--u));
+}
+.report-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.report-title {
+  font-size: max(var(--fmin), calc(48 * var(--u)));
+  line-height: 1.1;
+  color: var(--forest);
+  white-space: nowrap;
+}
+.report-sub {
+  margin-top: calc(6 * var(--u));
+  font-size: max(16px, calc(24 * var(--u)));
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* 黃銅直線箭頭：水平線＋右端箭頭頭（座標用百分比，窄螢幕縮短時線條粗細不變） */
+.report-arrow {
+  flex: none;
+  display: block;
+  width: calc(90 * var(--u));
+  height: calc(40 * var(--u));
+  overflow: visible;
+  stroke: #b08d57;
+  stroke-width: max(2px, calc(5 * var(--u)));
+  stroke-linecap: round;
+  fill: none;
+}
+/* 放不下時（JS 加上 is-below）：「報告」＋箭頭改放在 QR 小卡正下方置中，箭頭改為向上 */
+.report.is-below {
+  flex-direction: column-reverse;
+  gap: calc(8 * var(--u));
+}
+.report.is-below .report-hint {
+  flex-direction: row-reverse;
+  gap: calc(8 * var(--u));
+}
+.report.is-below .report-arrow {
+  width: max(22px, calc(32 * var(--u)));
+  height: max(22px, calc(32 * var(--u)));
+  transform: rotate(-90deg);
+}
+
+/* 報告 QR Code 小卡：只剩 QR Code，按下時縮到 0.97
+ * QR Code 固定正方形 140～150px（13 吋 150px；較小的畫面不低於 140px，才掃得到）；內距與白色留白依 --u 縮小 */
+.qr-card {
+  --qr: clamp(140px, calc(150 * var(--u)), 150px);
+  flex: 0 0 auto;
+  padding: calc(14 * var(--u)); /* 原本 18，跟著 QR 200 → 150 縮小 */
+  border-radius: calc(32 * var(--u));
+  background: #fffdf9;
+  box-shadow:
+    0 0 0 2px rgba(176, 141, 87, 0.35),
+    0 16px 36px rgba(60, 45, 25, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.25s var(--ease-spring);
+}
+.qr-card:active {
+  transform: scale(0.97);
+}
+.qr-card img {
+  display: block;
+  box-sizing: content-box;
+  width: var(--qr);
+  height: var(--qr);
+  aspect-ratio: 1;
+  padding: max(6px, calc(9 * var(--u))); /* 白色 quiet zone（原本 12） */
+  background: #fff;
+  image-rendering: pixelated;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+.dots {
+  height: max(44px, calc(44 * var(--u)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(18 * var(--u));
+}
+/* 圓點本身 calc(16 * var(--u))；用透明的 ::after 把可點擊範圍擴大到 44 × 44 */
+.dot {
+  position: relative;
+  width: calc(16 * var(--u));
+  height: calc(16 * var(--u));
+  border-radius: calc(999 * var(--u));
+  background: #cfc5b4;
+  transition:
+    width 0.4s var(--ease-spring),
+    background 0.4s var(--ease-spring);
+}
+.dot::after {
+  content: "";
+  position: absolute;
+  /* 可點擊範圍：以圓點為中心至少 44 × 44px */
+  top: calc(50% - 22px);
+  bottom: calc(50% - 22px);
+  left: min(calc(50% - 22px), calc(-9 * var(--u)));
+  right: min(calc(50% - 22px), calc(-9 * var(--u)));
+}
+.dot.is-active {
+  width: calc(48 * var(--u));
+  background: var(--forest);
+}
+/* 滑動提示膠囊：一直顯示（iPad 13 吋：高 100、左右內距 44、文字 38、圖示 48） */
+.hint {
+  --hint-shadow: 0 calc(12 * var(--u)) calc(28 * var(--u)) rgba(31, 59, 51, 0.28);
+  height: calc(100 * var(--u));
+  padding: 0 calc(44 * var(--u));
+  border-radius: calc(999 * var(--u));
+  background: var(--forest);
+  box-shadow: var(--hint-shadow);
+  display: flex;
+  align-items: center;
+  gap: calc(18 * var(--u));
+  font-size: max(var(--fmin), calc(38 * var(--u)));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--on-forest);
+  white-space: nowrap;
+}
+.hint i {
+  font-size: max(var(--fmin), calc(48 * var(--u)));
+  line-height: 1;
+  letter-spacing: 0;
+  color: #d9b77a;
+}
+.hint .hand {
+  animation: sway 1.2s ease-in-out infinite alternate;
+}
+.hint .to-left {
+  animation: nudgeLeft 0.9s ease-in-out infinite alternate;
+}
+.hint .to-right {
+  animation: nudgeRight 0.9s ease-in-out infinite alternate;
+}
+/* 手指左右擺動（2.4s 一個來回，位移約 calc(14 * var(--u))） */
+@keyframes sway {
+  from {
+    transform: translateX(calc(-7 * var(--u))) rotate(-8deg);
+  }
+  to {
+    transform: translateX(calc(7 * var(--u))) rotate(8deg);
+  }
+}
+/* 雙箭頭往外晃動（1.8s 一個循環，位移 calc(12 * var(--u))） */
+@keyframes nudgeLeft {
+  from {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateX(calc(-12 * var(--u)));
+    opacity: 1;
+  }
+}
+@keyframes nudgeRight {
+  from {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateX(calc(12 * var(--u)));
+    opacity: 1;
+  }
+}
+
+/* ===== 提示訊息 ===== */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(calc(36 * var(--u)) + env(safe-area-inset-top));
+  transform: translate(-50%, calc(-24 * var(--u)));
+  padding: calc(22 * var(--u)) calc(40 * var(--u));
+  border-radius: calc(999 * var(--u));
+  background: var(--forest);
+  color: var(--on-forest);
+  font-size: max(var(--bmin), calc(30 * var(--u)));
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s var(--ease-spring);
+  z-index: 600;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* =========================================================
+ * 卡片內的排版：一律不壓縮（放不下時只縮半圓圖、商品大圖、消息內文，見各自的 flex-shrink）
+ * ========================================================= */
+.card > * {
+  flex-shrink: 0;
+}
+
+/* =========================================================
+ * 同齡比較（js/result-common.js renderPeer）：沿用 SPPB 原本「50% 優於同齡長者」的樣式，兩頁共用
+ * ========================================================= */
+.big {
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.big-peer {
+  font-size: max(var(--fmin), calc(90 * var(--cu)));
+  color: var(--brass);
+}
+.split-k {
+  margin-top: calc(8 * var(--cu));
+  font-size: max(var(--fmin), var(--fs-small));
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.split-k.ink {
+  color: var(--ink);
+}
+
+/* =========================================================
+ * 第 2 張：依風險等級推薦（js/result-common.js renderRecommend）
+ * 五個等級同一種商品卡：圖片區｜名稱｜說明｜優惠券條（有 discount 才顯示）
+ * ========================================================= */
+.rec-empty {
+  margin: auto 0;
+  text-align: center;
+  font-size: max(var(--fmin), var(--fs-body));
+  color: var(--muted);
+}
+/* 商品圖片區：約 400，放不下時先縮這裡（最低 300） */
+.rec-media {
+  position: relative;
+  flex: 0 1 calc(400 * var(--cu));
+  min-height: calc(300 * var(--cu));
+  margin-top: calc(22 * var(--cu));
+  overflow: hidden;
+  border-radius: calc(24 * var(--cu));
+  border: 2px solid #e4dccd;
+  background: radial-gradient(70% 80% at 50% 45%, #fffdf9, #efe9de);
+  touch-action: pan-y; /* 左右滑由這裡處理（只換圖，不換卡） */
+}
+.rec-track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  transition: transform 0.35s var(--ease-out);
+}
+.rec-track.is-dragging {
+  transition: none;
+}
+.rec-slide {
+  flex: 0 0 100%;
+  display: grid;
+  place-items: center;
+  padding: calc(16 * var(--cu));
+}
+.rec-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+/* 還沒有商品圖：統一占位（圖示＋「商品圖片」） */
+.rec-ph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--cu));
+}
+.rec-ph .ti {
+  font-size: calc(80 * var(--cu));
+  line-height: 1;
+  color: #c7bba6;
+}
+.rec-ph span {
+  font-size: max(var(--fmin), calc(26 * var(--cu)));
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--muted);
+}
+/* 左上角膠囊：固定「依您的結果推薦」（系統帶入） */
+.rec-tag {
+  position: absolute;
+  left: calc(16 * var(--cu));
+  top: calc(16 * var(--cu));
+  padding: calc(6 * var(--cu)) calc(16 * var(--cu));
+  border-radius: 999px;
+  background: var(--forest);
+  color: #e6cd9c;
+  font-size: max(var(--fmin), calc(20 * var(--cu)));
+  font-weight: 700;
+  line-height: 1.3;
+}
+.rec-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(14 * var(--cu));
+  display: flex;
+  justify-content: center;
+  gap: calc(8 * var(--cu));
+}
+.rec-dots span {
+  width: calc(8 * var(--cu));
+  height: calc(8 * var(--cu));
+  border-radius: 999px;
+  background: #d9cfbe;
+  transition: width 0.3s var(--ease-out);
+}
+.rec-dots span.is-on {
+  width: calc(22 * var(--cu));
+  background: var(--forest);
+}
+.rec-name {
+  margin-top: calc(22 * var(--cu));
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin), calc(40 * var(--cu)));
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--forest);
+}
+/* 商品說明：最多 3 行 */
+.rec-desc {
+  margin-top: calc(10 * var(--cu));
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  font-size: max(var(--fmin), calc(25 * var(--cu)));
+  line-height: 1.7;
+  color: #3e463f;
+}
+/* 優惠券條：左區文字｜撕線｜右區 QR */
+/* 推到卡片底部 */
+.ticket {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  padding: calc(18 * var(--cu)) calc(22 * var(--cu));
+  border-radius: calc(20 * var(--cu));
+  background: var(--forest);
+}
+.ticket-l {
+  flex: 1;
+  min-width: 0;
+  padding-right: calc(20 * var(--cu));
+}
+.ticket-k {
+  font-size: max(var(--fmin), calc(18 * var(--cu)));
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: calc(3 * var(--cu));
+  color: #e6cd9c;
+}
+.ticket-title {
+  margin-top: calc(2 * var(--cu));
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin), calc(32 * var(--cu)));
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--on-forest);
+}
+.ticket-code {
+  margin-top: calc(4 * var(--cu));
+  font-size: max(var(--fmin), calc(18 * var(--cu)));
+  line-height: 1.4;
+  color: rgba(246, 241, 232, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+.ticket-r {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(6 * var(--cu));
+  padding-left: calc(20 * var(--cu));
+  border-left: 2px dashed rgba(201, 164, 106, 0.6);
+}
+.qr-mini {
+  display: block;
+  box-sizing: content-box;
+  width: calc(96 * var(--cu));
+  height: calc(96 * var(--cu));
+  padding: calc(6 * var(--cu));
+  border-radius: calc(8 * var(--cu));
+  background: #fff;
+  image-rendering: pixelated;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.ticket-use {
+  font-size: max(var(--fmin), calc(16 * var(--cu)));
+  font-weight: 700;
+  line-height: 1.3;
+  color: #e6cd9c;
+  white-space: nowrap;
+}
+
+/* =========================================================
+ * 第 3 張：最新消息（只放一則）
+ * 標題、圖片、日期、消息標題、底部提示固定；內容太長時自己捲動，底部淡出
+ * ========================================================= */
+#newsCard .card-head {
+  margin-bottom: calc(26 * var(--cu));
+}
+.nw-img {
+  display: block;
+  width: 100%;
+  height: calc(280 * var(--cu));
+  margin-bottom: calc(22 * var(--cu));
+  border-radius: calc(24 * var(--cu));
+  object-fit: cover;
+  -webkit-user-drag: none;
+}
+.nw-date {
+  font-size: max(var(--fmin), calc(22 * var(--cu)));
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: calc(2 * var(--cu));
+  color: var(--brass-text);
+  font-variant-numeric: tabular-nums;
+}
+/* 消息標題：左邊黃銅直條（高度跟標題等高） */
+.nw-title {
+  margin: calc(12 * var(--cu)) 0 0;
+  display: flex;
+  gap: calc(18 * var(--cu));
+  font-family: var(--font-serif);
+  font-size: max(var(--fmin), calc(46 * var(--cu)));
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--forest);
+}
+.nw-title.has-img {
+  font-size: max(var(--fmin), calc(40 * var(--cu)));
+}
+.nw-title::before {
+  content: "";
+  flex: none;
+  width: calc(8 * var(--cu));
+  border-radius: calc(4 * var(--cu));
+  background: var(--brass);
+}
+.nw-title span {
+  min-width: 0;
+}
+/* 內容：佔掉剩下的高度，太長時自己捲動（上下滑由這裡處理，左右滑仍是換卡）；保留後台輸入的換行 */
+.card > .nw-body {
+  position: relative;
+  flex: 1 1 0;
+  min-height: calc(60 * var(--cu));
+  margin-top: calc(26 * var(--cu));
+}
+.nw-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding-bottom: calc(28 * var(--cu));
+  font-size: max(var(--fmin), calc(26 * var(--cu)));
+  line-height: 1.85;
+  color: #3e463f;
+  white-space: pre-line;
+}
+.nw-body::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(40 * var(--cu));
+  background: linear-gradient(rgba(255, 253, 249, 0), var(--paper));
+  pointer-events: none;
+}
+/* 底部提示（固定文字，不能點） */
+.nw-cta {
+  margin-top: calc(16 * var(--cu));
+  height: calc(76 * var(--cu));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--cu));
+  border-radius: 999px;
+  border: 2px solid var(--forest);
+  color: var(--forest);
+  font-size: max(var(--fmin), calc(26 * var(--cu)));
+  font-weight: 700;
+}
+.nw-cta .ti {
+  font-size: calc(30 * var(--cu));
+}
+
+/* 減少動態：不做 3D 旋轉，只顯示目前這一張，換頁淡入淡出 0.2s；提示不晃動 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .hint i {
+    animation: none !important;
+  }
+  .card {
+    transition: opacity 0.2s !important;
+  }
+  .rec-track {
+    transition: none;
+  }
+}

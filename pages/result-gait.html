@@ -18,396 +18,200 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
     />
+    <!-- 鑑測結果頁共用（與 result.html 共用版面、卡片、半圓圖、同齡比較、輪播）；最新消息資料與詳細報告共用 -->
+    <link rel="stylesheet" href="../css/result.css" />
+    <link rel="stylesheet" href="../css/news.css" />
+    <script src="../js/result-common.js"></script>
+    <script src="../js/news.js"></script>
     <style>
       /* =========================================================
-       * 瓷白森林 Porcelain Forest — 行走測驗鑑測結果頁（響應式）
-       * 版面與樣式沿用 result.html（--u 響應式、背景、頁首、字型、卡片、報告 QR Code 小卡），只有一張置中的卡片
-       * 整頁 100dvh 直向排版：頁首｜卡片舞台（flex: 1）｜底部（報告 QR Code），不捲動
-       * 卡片內的尺寸都以 --cu（= 卡片寬 ÷ 740）為單位
+       * 行走測驗鑑測結果頁：共用樣式在 css/result.css；這裡只有風險切換示範鈕
+       * 三張卡：結果總覽 → 依風險推薦（商品或優惠券）→ 最新消息
        * ========================================================= */
-      :root {
-        --bg: #ece7df;
-        --card: #f7f4ee;
-        --card-deep: #e6dccb;
-        --line: #d9cfbe;
-        --line-soft: #c7bba6;
-        --forest: #1f3b33;
-        --brass: #b08d57;
-        --brass-text: #8f6e3c;
-        --ink: #1a2420;
-        --muted: #6f6656;
-        --on-forest: #f6f1e8;
-        --faint: #8a8170;
-        --paper: #fffdf9; /* 結果卡片底色 */
-        --chip: #fbf8f2;
-        --divider: #efe9df;
-
-        --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
-        --font-serif: "Noto Serif TC", "Songti TC", serif;
-        /* 縮放單位：iPad 13 吋直式（1032 × 1376）時 1 --u = 1px；較小的 iPad 依「寬度」與「高度 × 0.75」中較小者等比縮小 */
-        --u: calc(min(100vw, 100dvh * 0.75) / 1032);
-        --gutter: max(0px, calc((100vw - 1032 * var(--u)) / 2));
-        --fmin: 16px;
-        --bmin: 18px;
-        --fs-body: max(var(--fmin), calc(26 * var(--u)));
-
-        /* 版面間距（與 result.html 相同） */
-        --pad-x: calc(56 * var(--u));
-        --pad-top: calc(48 * var(--u));
-        --gap-head: calc(28 * var(--u));
-        --gap-foot: calc(20 * var(--u));
-        --pad-bottom: calc(44 * var(--u));
-
-        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-        --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+      /* =========================================================
+       * 結果總覽：同齡比較（B1 位置尺），在「風險等級：X」下方到卡片底部的剩餘空間裡垂直置中，左右留 10
+       * 最小間距：上方 48（「風險等級：X」的下邊距）、下方 40（卡片的下內距）
+       * 結果句｜位置尺（漸層橫條＋「您」標記＋50% 刻度）｜表現較弱・中間・表現較好
+       * ========================================================= */
+      .card--overview .gauge-text {
+        margin-bottom: calc(48 * var(--cu));
       }
-
-      * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
+      .peer {
+        margin: auto calc(10 * var(--cu));
       }
-      html,
-      body {
-        margin: 0;
-        height: 100%;
-      }
-      html {
-        -webkit-text-size-adjust: 100%;
-      }
-      body {
-        background: radial-gradient(60% 60% at 50% 48%, #f6f2ea, #e6dfd2);
-        background-color: #e6dfd2;
-        color: var(--ink);
-        font-family: var(--font-sans);
-        font-weight: 500;
-        -webkit-font-smoothing: antialiased;
-        user-select: none;
-        -webkit-user-select: none;
-        overflow: hidden; /* 整頁不捲動 */
-      }
-      .serif {
-        font-family: var(--font-serif);
-        font-weight: 600;
-      }
-      button {
-        font: inherit;
-        color: inherit;
-        border: none;
-        background: none;
-        padding: 0;
-        cursor: pointer;
-      }
-      [hidden] {
-        display: none !important;
-      }
-      .press {
-        transition: transform 0.2s var(--ease-out);
-      }
-      .press:active {
-        transform: scale(0.96);
-      }
-
-      /* ===== 整頁：直向 flex ===== */
-      .page {
-        height: 100vh;
-        height: 100dvh;
+      .peer-line {
         display: flex;
-        flex-direction: column;
-        padding: calc(var(--pad-top) + env(safe-area-inset-top)) 0
-          calc(var(--pad-bottom) + env(safe-area-inset-bottom));
-        overflow-x: clip;
-      }
-
-      /* ===== 頁首（與 result.html 相同，沒有 VIVIFRAIL） ===== */
-      .header {
-        position: relative;
-        z-index: 2;
-        flex: 0 0 auto;
-        padding: 0 calc(var(--pad-x) + var(--gutter));
-        display: flex;
-        align-items: center;
-        gap: calc(24 * var(--u));
-        animation: fadeIn 0.6s var(--ease-out) both;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-      }
-      .home-btn {
-        flex: 0 0 auto;
-        width: max(44px, calc(88 * var(--u)));
-        height: max(44px, calc(88 * var(--u)));
-        border-radius: 50%;
-        background: var(--chip);
-        border: 2px solid var(--line);
-        display: grid;
-        place-items: center;
-        font-size: max(var(--bmin), calc(42 * var(--u)));
-      }
-      .back-pill {
-        flex: 0 0 auto;
-        height: max(44px, calc(88 * var(--u)));
-        padding: 0 calc(32 * var(--u)) 0 calc(20 * var(--u));
-        border-radius: calc(999 * var(--u));
-        background: var(--chip);
-        border: 2px solid var(--line);
-        display: inline-flex;
-        align-items: center;
-        gap: calc(4 * var(--u));
-        font-size: max(var(--bmin), calc(30 * var(--u)));
-        font-weight: 700;
+        align-items: baseline;
+        justify-content: center;
+        gap: calc(14 * var(--cu));
+        color: var(--forest);
         white-space: nowrap;
       }
-      .back-pill i {
-        font-size: max(var(--bmin), calc(40 * var(--u)));
-      }
-      .who {
-        min-width: 0;
-        flex: 0 1 auto;
-      }
-      .who-name {
-        margin: 0;
-        font-size: max(var(--fmin), calc(56 * var(--u)));
+      .peer-word {
+        font-size: max(var(--fmin), calc(30 * var(--cu)));
+        font-weight: 700;
         line-height: 1.2;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
-      .who-date {
-        margin-top: 2px;
-        font-size: max(var(--fmin), calc(24 * var(--u)));
-        line-height: 1.3;
-        color: var(--muted);
-        white-space: nowrap;
-      }
-      .who-date b {
-        margin-left: 0.5em;
-        font-weight: 700;
-        color: var(--ink);
+      .peer-num {
+        font-family: var(--font-serif);
+        font-size: max(var(--fmin), calc(80 * var(--cu)));
+        font-weight: 600;
+        line-height: 1;
         font-variant-numeric: tabular-nums;
       }
-      @media (max-width: 599px) {
-        /* 手機：卡片內（依卡片寬度縮放）不強制最小字級；頁首和底部仍維持 16px／18px */
-        .stage {
-          --fmin: 0px;
-          --bmin: 0px;
+      /* 位置尺：--pos 為標記位置（%）；標籤寬固定，靠近邊緣時往內收（不超出橫條），三角形仍對準圓點
+       * 上方空間依標籤實際尺寸計算：標籤高＋三角形高＋圓點超出橫條的部分＋與圓點的間隔＋與結果句的空白 28 */
+      .peer-ruler {
+        --pos: 50%;
+        --bar-h: calc(20 * var(--cu));
+        --dot: calc(40 * var(--cu));
+        --dot-over: calc((var(--dot) - var(--bar-h)) / 2); /* 圓點超出橫條的部分 */
+        --tip-gap: calc(2 * var(--cu)); /* 三角形尖端與圓點的間隔 */
+        --tip-w: calc(28 * var(--cu));
+        --tip-h: calc(16 * var(--cu));
+        --tag-fs: max(var(--fmin), calc(34 * var(--cu)));
+        --tag-py: calc(10 * var(--cu));
+        --tag-h: calc(var(--tag-fs) * 1.3 + var(--tag-py) * 2 + 4px); /* 字高（行高 1.3）＋上下內距＋上下框 */
+        --tag-w: calc(var(--tag-fs) + 56 * var(--cu) + 4px); /* 「您」＋左右內距 28＋左右框 */
+        position: relative;
+        height: var(--bar-h);
+        margin-top: calc(var(--tag-h) + var(--tip-h) + var(--dot-over) + var(--tip-gap) + 28 * var(--cu));
+        border-radius: calc(10 * var(--cu));
+        background: linear-gradient(to right, #efe9de, #d9c3a0 50%, var(--forest));
+      }
+      .peer-mid {
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        width: calc(2 * var(--cu));
+        height: calc(16 * var(--cu));
+        margin-left: calc(-1 * var(--cu));
+        background: var(--brass);
+      }
+      .peer-dot,
+      .peer-tip,
+      .peer-tag {
+        position: absolute;
+        transition: left 0.3s var(--ease-out);
+      }
+      .peer-dot {
+        left: var(--pos);
+        top: 50%;
+        width: var(--dot);
+        height: var(--dot);
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: #fffdf9;
+        border: calc(6 * var(--cu)) solid var(--forest);
+      }
+      /* 朝下的小三角形：對準圓點 */
+      .peer-tip {
+        left: var(--pos);
+        bottom: calc(100% + var(--dot-over) + var(--tip-gap));
+        width: 0;
+        height: 0;
+        transform: translateX(-50%);
+        border-left: calc(var(--tip-w) / 2) solid transparent;
+        border-right: calc(var(--tip-w) / 2) solid transparent;
+        border-top: var(--tip-h) solid var(--forest);
+      }
+      .peer-tag {
+        left: clamp(0%, calc(var(--pos) - var(--tag-w) / 2), calc(100% - var(--tag-w)));
+        bottom: calc(100% + var(--dot-over) + var(--tip-gap) + var(--tip-h) - 1px); /* 和三角形接在一起 */
+        box-sizing: border-box;
+        width: var(--tag-w);
+        padding: var(--tag-py) 0;
+        border-radius: 999px;
+        border: 2px solid var(--brass);
+        background: var(--forest);
+        color: var(--on-forest);
+        font-size: var(--tag-fs);
+        font-weight: 700;
+        line-height: 1.3;
+        text-align: center;
+      }
+      .peer-ends {
+        position: relative;
+        margin-top: calc(26 * var(--cu));
+        display: flex;
+        justify-content: space-between;
+        font-size: max(var(--fmin), calc(22 * var(--cu)));
+        line-height: 1.3;
+        color: var(--muted);
+      }
+      .peer-ends .peer-c {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 700;
+        color: var(--brass-text);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .peer-dot,
+        .peer-tip,
+        .peer-tag {
+          transition: none;
         }
       }
 
-      /* =========================================================
-       * 卡片舞台：一張置中的卡片（--card-w、--card-h 由 JS 依舞台大小設定，算法同 result.html）
-       * ========================================================= */
-      .stage {
-        --card-w: calc(740 * var(--u));
-        --card-h: calc(940 * var(--u));
-        --cu: calc(var(--card-w) / 740);
-        position: relative;
-        z-index: 1;
-        flex: 1 1 auto;
-        min-height: 0;
-        margin-top: var(--gap-head);
-        perspective: calc(var(--card-w) * 2.973);
-      }
-      .card {
-        position: absolute;
-        left: calc(50% - var(--card-w) / 2);
-        top: 0;
-        width: var(--card-w);
-        height: var(--card-h);
-        padding: calc(40 * var(--cu)) calc(44 * var(--cu));
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        background: var(--paper);
-        border-radius: calc(48 * var(--cu));
-        box-shadow:
-          0 0 0 calc(2 * var(--cu)) rgba(176, 141, 87, 0.35),
-          0 calc(36 * var(--cu)) calc(70 * var(--cu)) rgba(60, 45, 25, 0.2);
-        transition:
-          transform 0.8s var(--ease-out),
-          opacity 0.8s;
-      }
-      .card.is-entering {
-        opacity: 0;
-        transform: translateZ(calc(var(--card-w) * -0.81));
-        transition: none;
-      }
-      .card-eyebrow {
-        font-size: max(var(--fmin), calc(28 * var(--cu)));
-        font-weight: 700;
-        letter-spacing: 0.24em;
-        line-height: 1.3;
-        color: var(--brass-text);
-      }
-      .card-title {
-        margin: calc(10 * var(--cu)) 0 0;
-        font-size: max(var(--fmin), calc(60 * var(--cu)));
-        line-height: 1.2;
-      }
-      /* 跌倒風險半圓圖：幾何、顏色、指針樣式同 result.html */
-      .gauge {
-        display: block;
-        width: calc(620 * var(--cu));
-        margin-top: calc(44 * var(--cu));
-      }
-      .gauge-ends {
-        width: calc(620 * var(--cu));
-        display: flex;
-        justify-content: space-between;
-        margin-top: calc(6 * var(--cu));
-        font-size: max(var(--fmin), calc(26 * var(--cu)));
-        font-weight: 700;
-        line-height: 1.3;
-        color: var(--faint);
-      }
-      .gauge-ends span {
-        width: 21%; /* 兩端色段寬度：文字置中在色段下方 */
-        text-align: center;
-      }
-      /* 風險標籤：固定配色表的底、框、字 */
-      .risk-pill {
-        margin-top: calc(40 * var(--cu));
-        display: inline-flex;
-        align-items: center;
-        gap: calc(14 * var(--cu));
-        padding: calc(16 * var(--cu)) calc(36 * var(--cu));
-        border-radius: calc(999 * var(--cu));
-        background: var(--risk-bg);
-        border: calc(3 * var(--cu)) solid var(--risk-border);
-        color: var(--risk-text);
-        font-size: max(var(--fmin), calc(40 * var(--cu)));
-        font-weight: 700;
-        line-height: 1.3;
-      }
-      .risk-pill i {
-        font-size: max(var(--fmin), calc(44 * var(--cu)));
-      }
-      .risk-desc {
-        margin-top: calc(22 * var(--cu));
-        font-size: max(var(--fmin), calc(32 * var(--cu)));
-        font-weight: 700;
-        line-height: 1.4;
-        color: var(--risk-text);
-      }
-
-      /* =========================================================
-       * 底部：右下角報告 QR Code 小卡（樣式與 result.html 相同）
-       * 底部列的高度等於小卡高度，舞台（flex: 1）相應變矮，結果卡片不會被小卡壓到
-       * ========================================================= */
-      .foot {
+      /* 風險切換示範鈕（DEMO_RISK_SWITCH）：頁首下方一排小按鈕，不擋卡片舞台 */
+      .demo-risk {
         position: relative;
         z-index: 2;
         flex: 0 0 auto;
-        margin-top: var(--gap-foot);
+        margin-top: calc(14 * var(--u));
         padding: 0 calc(var(--pad-x) + var(--gutter));
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        column-gap: calc(24 * var(--u));
-        animation: fadeIn 0.6s 0.2s var(--ease-out) both;
-      }
-      /* 報告 QR Code 小卡：可點擊的連結（前往詳細報告）；只有「點一下」才開啟，拖曳不開啟；按下時縮到 0.97 */
-      .qr-card {
-        grid-column: 3;
-        grid-row: 1;
-        justify-self: end;
-        margin: 0;
-        padding: calc(18 * var(--u));
-        border-radius: calc(32 * var(--u));
-        background: #fffdf9;
-        box-shadow:
-          0 0 0 2px rgba(176, 141, 87, 0.35),
-          0 16px 36px rgba(60, 45, 25, 0.18);
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: calc(10 * var(--u));
-        color: inherit;
-        text-decoration: none;
-        cursor: pointer;
-        touch-action: none;
-        -webkit-user-drag: none;
-        transition: transform 0.25s var(--ease-spring);
+        justify-content: center;
+        gap: max(6px, calc(10 * var(--u)));
       }
-      .qr-card:active {
-        transform: scale(0.97);
-      }
-      .qr-card:focus-visible {
-        outline: 3px solid var(--forest);
-        outline-offset: 4px;
-      }
-      .qr-card img {
-        display: block;
-        box-sizing: content-box;
-        width: max(140px, calc(200 * var(--u)));
-        height: max(140px, calc(200 * var(--u)));
-        padding: max(8px, calc(12 * var(--u)));
-        background: #fff;
-        image-rendering: pixelated;
-        -webkit-user-drag: none;
-        -webkit-touch-callout: none;
-        pointer-events: none;
-      }
-      .qr-card .qr-cap {
-        font-family: var(--font-sans);
-        font-size: var(--fs-body);
+      .demo-tag {
+        flex: none;
+        padding: 0 max(8px, calc(12 * var(--u)));
+        height: max(24px, calc(34 * var(--u)));
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        border: 1.5px dashed var(--line-soft);
+        color: var(--muted);
+        font-size: max(13px, calc(20 * var(--u)));
         font-weight: 700;
-        line-height: 1.3;
-        color: var(--ink);
-      }
-      /* 窄螢幕：右下角放不下，小卡改放在底部正中央 */
-      @media (max-width: 599px) {
-        .foot {
-          grid-template-columns: 1fr;
-        }
-        .qr-card {
-          grid-column: 1;
-          justify-self: center;
-        }
-      }
-
-      /* ===== 提示訊息 ===== */
-      .toast {
-        position: fixed;
-        left: 50%;
-        top: calc(calc(36 * var(--u)) + env(safe-area-inset-top));
-        transform: translate(-50%, calc(-24 * var(--u)));
-        padding: calc(22 * var(--u)) calc(40 * var(--u));
-        border-radius: calc(999 * var(--u));
-        background: var(--forest);
-        color: var(--on-forest);
-        font-size: max(var(--bmin), calc(30 * var(--u)));
-        font-weight: 700;
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.35s var(--ease-spring);
-        z-index: 600;
         white-space: nowrap;
       }
-      .toast.show {
-        opacity: 1;
-        transform: translate(-50%, 0);
+      .demo-btn {
+        flex: none;
+        min-width: max(44px, calc(76 * var(--u)));
+        height: max(32px, calc(44 * var(--u)));
+        padding: 0 max(8px, calc(14 * var(--u)));
+        border-radius: 999px;
+        border: 2px solid var(--risk-border);
+        background: var(--risk-bg);
+        color: var(--risk-text);
+        font-size: max(14px, calc(22 * var(--u)));
+        font-weight: 700;
+        white-space: nowrap;
+        transition: transform 0.2s var(--ease-out);
       }
-
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
+      .demo-btn[aria-pressed="true"] {
+        border-width: 4px;
+        transform: scale(1.08);
+      }
+      @media (max-width: 599px) {
+        .demo-risk {
+          gap: 4px;
+          padding: 0 12px;
         }
-        .card {
-          transition: opacity 0.2s !important;
+        .demo-btn {
+          min-width: 0;
+          padding: 0 8px;
         }
       }
     </style>
   </head>
   <body>
     <div class="page" id="page" hidden>
-      <!-- 頁首：返回、受測者（沒有 VIVIFRAIL） -->
+      <!-- 頁首：返回（左）、「報告」說明＋箭頭＋QR Code 小卡（右） -->
       <header class="header">
         <button class="home-btn press" id="homeBtn" type="button" aria-label="回首頁">
           <i class="ti ti-home"></i>
@@ -415,30 +219,70 @@
         <button class="back-pill press" id="backBtn" type="button" hidden>
           <i class="ti ti-chevron-left"></i>受測名單
         </button>
+        <!-- 姓名（含稱謂）與檢測日期：暫時隱藏，保留原始碼，之後可能再打開（同 result.html）
         <div class="who">
           <h1 class="who-name serif" id="whoName"></h1>
-          <div class="who-date">檢測日期<b id="whoDate"></b></div>
+          <div class="who-date">檢測日期 <b id="whoDate"></b></div>
         </div>
+        -->
+        <a class="report" id="qrCard" href="detail-gait.html?preview=1&amp;from=result" aria-label="開啟行走測驗詳細報告" draggable="false">
+          <span class="report-hint" aria-hidden="true">
+            <span class="report-text">
+              <span class="report-title serif">報告</span>
+              <span class="report-sub">手機掃描看詳細內容</span>
+            </span>
+            <svg class="report-arrow" focusable="false">
+              <line x1="4%" y1="50%" x2="94%" y2="50%" />
+              <line x1="94%" y1="50%" x2="76%" y2="18%" />
+              <line x1="94%" y1="50%" x2="76%" y2="82%" />
+            </svg>
+          </span>
+          <span class="qr-card"><img id="reportQr" alt="" draggable="false" /></span>
+        </a>
       </header>
 
-      <!-- 卡片舞台：一張置中的結果卡片 -->
-      <main class="stage" id="stage">
-        <section class="card is-entering" id="card" aria-label="跌倒風險評估">
-          <div class="card-eyebrow">行走測驗</div>
-          <h2 class="card-title serif">跌倒風險評估</h2>
-          <svg class="gauge" id="gauge" viewBox="0 0 760 360" role="img" aria-label="跌倒風險半圓圖"></svg>
-          <div class="gauge-ends" aria-hidden="true"><span>低</span><span>危險</span></div>
-          <div class="risk-pill" id="riskPill"><i class="ti ti-alert-triangle"></i></div>
-          <div class="risk-desc" id="riskDesc"></div>
+      <!-- 風險切換示範鈕（DEMO_RISK_SWITCH）：只切換畫面，不寫回紀錄 -->
+      <div class="demo-risk" id="demoRisk" role="group" aria-label="示範：切換風險等級" hidden data-html2canvas-ignore></div>
+
+      <!-- 卡片舞台：三張排成一圈 -->
+      <main class="stage" id="stage" aria-roledescription="輪播">
+        <!-- 卡片 1：結果總覽（版面同 result.html） -->
+        <section class="card card--overview" data-i="0" aria-label="結果總覽">
+          <div class="card-head">
+            <h2 class="card-title serif">結果總覽</h2>
+          </div>
+          <div class="sub">跌倒風險評估</div>
+          <svg class="gauge" id="gauge" viewBox="0 0 760 362" role="img" aria-label="跌倒風險半圓圖"></svg>
+          <div class="gauge-text" id="gaugeText"></div>
+          <!-- 同齡比較（B1 位置尺；資料規則同 result.html：js/result-common.js normOf） -->
+          <div class="peer" id="peerBox" role="img">
+            <div class="peer-line" aria-hidden="true"><span class="peer-word" data-f="pre"></span><span class="peer-num" data-f="num"></span><span class="peer-word">同齡長者</span></div>
+            <div class="peer-ruler" aria-hidden="true">
+              <span class="peer-mid"></span>
+              <span class="peer-tag">您</span>
+              <span class="peer-tip"></span>
+              <span class="peer-dot"></span>
+            </div>
+            <div class="peer-ends" aria-hidden="true"><span>表現較弱</span><span class="peer-c">中間</span><span>表現較好</span></div>
+          </div>
         </section>
+
+        <!-- 卡片 2：依風險等級推薦（js/result-common.js 的 RECOMMENDS） -->
+        <section class="card" data-i="1" id="recCard" aria-label="推薦商品"></section>
+
+        <!-- 卡片 3：最新消息（KF_NEWS 第一則；資料與詳細報告共用 js/news.js） -->
+        <section class="card" data-i="2" id="newsCard" aria-label="最新消息"></section>
       </main>
 
-      <!-- 底部：右下角報告 QR Code（點一下開啟行走詳細報告） -->
+      <!-- 底部列：頁數圓點＋滑動提示（水平置中） -->
       <footer class="foot">
-        <a class="qr-card" id="qrCard" href="detail-gait.html?preview=1&amp;from=result" aria-label="開啟行走測驗詳細報告" draggable="false">
-          <img id="reportQr" alt="" draggable="false" />
-          <span class="qr-cap">報告</span>
-        </a>
+        <nav class="pager" aria-label="頁面切換">
+          <div class="dots" id="dots" role="tablist" data-html2canvas-ignore></div>
+          <div class="hint" id="hint" aria-hidden="true" data-html2canvas-ignore>
+            <i class="ti ti-hand-finger hand"></i>
+            <i class="ti ti-chevrons-left chev to-left"></i>左右滑動查看<i class="ti ti-chevrons-right chev to-right"></i>
+          </div>
+        </nav>
       </footer>
     </div>
 
@@ -449,6 +293,8 @@
       const REPORT_QR_SRC = "../img/qrcode-demo.png";
       // 點 QR Code 小卡開啟的詳細報告（之後接 API 時換成帶 token 的網址）
       const REPORT_DETAIL_URL = "detail-gait.html?preview=1&from=result";
+      // 風險切換示範鈕（展示用）：頁首下方一排「低｜稍低｜中｜高｜危險」；正式上線改成 false
+      const DEMO_RISK_SWITCH = true;
 
       /* =========================================================
        * 設定區：受測人員、鑑測紀錄與其他頁重複，之後改成共用設定或 API
@@ -468,208 +314,69 @@
         ],
       };
       const DEFAULT_RISK = 1;
+      const PAGES = ["總覽", "推薦", "最新消息"]; // 頁數圓點的 aria-label
+      // 同齡比較（B1 位置尺）：結果句與「您」標記的位置（%）
+      const PEER_SCALE = {
+        above50: { pre: "優於", num: "50%", pos: 65 },
+        below50: { pre: "低於", num: "50%", pos: 35 },
+        behind80: { pre: "落後", num: "80%", pos: 12 },
+      };
 
-      /* 固定的分級規則（文字和顏色不可更改，與 result.html 相同）；riskLevel 0–4 依序為低、稍低、中、高、危險 */
-      const RISK_LEVELS = [
-        { key: "vlow", name: "低風險", arc: "#4ffa00", bg: "#f0fdf4", border: "#86efac", text: "#166534", desc: "跌倒風險低，體能表現優異" },
-        { key: "low", name: "稍低風險", arc: "#8cff00", bg: "#f7fee7", border: "#bef264", text: "#3f6212", desc: "跌倒風險稍低，狀況良好" },
-        { key: "mid", name: "中度風險", arc: "#ffd039", bg: "#fefce8", border: "#fde047", text: "#854d0e", desc: "跌倒風險中等，持續關注為佳" },
-        { key: "high", name: "高風險", arc: "#ffa203", bg: "#fff7ed", border: "#fdba74", text: "#c2410c", desc: "跌倒風險較高，建議積極改善" },
-        { key: "danger", name: "危險", arc: "#ff5757", bg: "#fef2f2", border: "#fca5a5", text: "#b91c1c", desc: "目前跌倒風險偏高，請特別注意" },
-      ];
-
-      /* =========================================================
-       * 共用功能
-       * ========================================================= */
-      const $ = (sel) => document.querySelector(sel);
-      let toastTimer;
-      function showToast(msg) {
-        const el = $("#toast");
-        el.textContent = msg;
-        el.classList.add("show");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
-      }
-      const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      function isoOf(d) {
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-      }
-      function daysAgo(n) {
-        const d = new Date();
-        d.setDate(d.getDate() - n);
-        return isoOf(d);
-      }
-
-      /* =========================================================
-       * 資料（sessionStorage，與 result.html 相同）
-       * kf.records.<fieldId>：測驗頁完成測驗時新增的紀錄（行走測驗含 riskLevel）
-       * kf.subjects.<fieldId>：{ added, done, edits }
-       * ========================================================= */
-      function readJSON(key) {
-        try {
-          return JSON.parse(sessionStorage.getItem(key));
-        } catch (e) {
-          return null;
-        }
-      }
-      function currentFieldId() {
-        const cur = readJSON("kf.currentField");
-        if (cur?.id) return cur.id;
-        const recent = readJSON("kf.recentFields");
-        return Array.isArray(recent) && recent[0] ? recent[0].id || recent[0] : null;
-      }
-      function allRecords() {
-        const list = [...CONFIG.records];
-        try {
-          for (let i = 0; i < sessionStorage.length; i++) {
-            const key = sessionStorage.key(i);
-            if (!key || !key.startsWith("kf.records.")) continue;
-            const v = readJSON(key);
-            if (Array.isArray(v)) list.push(...v);
-          }
-        } catch (e) {}
-        return list;
-      }
-      function findSubject(record) {
-        // 一體機（kf.records.kiosk）：紀錄裡直接附上訪客資料或讀卡資料；健保卡姓名遮罩中間字（王*明）
-        if (record?.visitor) return { ...record.visitor, visitor: true };
-        if (record?.card) return { ...record.card, name: maskName(record.card.name) };
-        const fid = record?.fieldId || currentFieldId();
-        const local = fid ? readJSON(`kf.subjects.${fid}`) : null;
-        const id = record?.subjectId;
-        const base =
-          (id ? CONFIG.subjects.find((s) => s.id === id) : CONFIG.subjects[0]) ||
-          (Array.isArray(local?.added) ? local.added.find((s) => s.id === id) : null);
-        if (!base) return null;
-        const e = local?.edits?.[base.id];
-        return e ? { ...base, name: e.name ?? base.name, gender: e.gender ?? base.gender, birth: e.birth ?? base.birth } : base;
-      }
-      function maskName(name) {
-        const c = [...String(name || "")];
-        if (c.length <= 1) return c.join("");
-        if (c.length === 2) return c[0] + "*";
-        return c[0] + "*".repeat(c.length - 2) + c[c.length - 1];
-      }
-      // 訪客（「訪客 V-1118-023」）不加先生／女士
-      const honorific = (s) => (s.visitor ? s.name : `${s.name} ${s.gender === "女" ? "女士" : "先生"}`);
-      // riskLevel：0–4 的整數才採用，其他（沒有、格式不對）一律預設 1
+      // 共用小工具、資料讀取（紀錄、受測者含一體機）、半圓圖、同齡比較、推薦、消息、頁首、輪播：js/result-common.js
+      // riskLevel：0–4（依序為低、稍低、中、高、危險，對應 SEG_ORDER）的整數才採用，其他一律預設 1
       function riskLevelOf(record) {
         const v = Number(record?.riskLevel);
         return record?.riskLevel !== undefined && record?.riskLevel !== null && Number.isInteger(v) && v >= 0 && v <= 4 ? v : DEFAULT_RISK;
       }
 
-      /* =========================================================
-       * 跌倒風險半圓圖：圓心 (380, 340)、半徑 300、線寬 76、五段等寬（每段 36°）、段與段之間留小縫（同 result.html）
-       * 指針放在該風險等級色段的中央；進場時從最左邊（180°）轉到目標位置
-       * ========================================================= */
-      const pt = (cx, cy, r, deg) => [cx + r * Math.cos((deg * Math.PI) / 180), cy - r * Math.sin((deg * Math.PI) / 180)];
-      const CX = 380, CY = 340;
-      const needleAngle = (level) => 180 - 36 * level - 18;
-      function drawGauge() {
-        const R = 300, GAP = 0.9;
-        let html = "";
-        RISK_LEVELS.forEach((l, k) => {
-          const a1 = 180 - 36 * k - (k > 0 ? GAP : 0);
-          const a0 = 180 - 36 * (k + 1) + (k < 4 ? GAP : 0);
-          const [x1, y1] = pt(CX, CY, R, a1);
-          const [x0, y0] = pt(CX, CY, R, a0);
-          html += `<path data-level="${l.key}" d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${R} ${R} 0 0 1 ${x0.toFixed(1)} ${y0.toFixed(1)}" fill="none" stroke="${l.arc}" stroke-width="76" />`;
+      // 同齡比較：分類不合法時整區隱藏；標記位置改變時有 0.3 秒位移（減少動態時直接定位）
+      function renderPeerScale(box, key) {
+        const p = Object.hasOwn(PEER_SCALE, key ?? "") ? PEER_SCALE[key] : null;
+        box.hidden = !p;
+        if (!p) return;
+        box.querySelector('[data-f="pre"]').textContent = p.pre;
+        box.querySelector('[data-f="num"]').textContent = p.num;
+        box.querySelector(".peer-ruler").style.setProperty("--pos", `${p.pos}%`);
+        box.setAttribute("aria-label", `${p.pre} ${p.num} 同齡長者`);
+        box.dataset.norm = key;
+      }
+
+      /* 依風險等級更新：半圓圖指針、「風險等級：短名稱」、同齡比較、第 2 張卡（推薦）
+       * norm：同齡比較分類；示範鈕切換時依示範規則（不讀紀錄） */
+      let recordSeed = "";
+      function renderLevel(level, norm, sweep = true) {
+        const key = SEG_ORDER[level];
+        $(".card--overview").dataset.level = level;
+        const angle = 180 - 36 * level - 18; // 指針在該等級色段的中央
+        if (sweep) sweepNeedle($("#gauge"), angle);
+        else setNeedle($("#gauge"), angle);
+        renderRiskBlock(key);
+        renderPeerScale($("#peerBox"), norm);
+        renderRecommend($("#recCard"), level + 1, recordSeed);
+        document.querySelectorAll(".demo-btn").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.level) === level)));
+      }
+
+      /* 風險切換示範鈕：只切換畫面，不寫回紀錄（重新整理後回到紀錄原本的等級） */
+      function initDemoRisk(current) {
+        const bar = $("#demoRisk");
+        if (!DEMO_RISK_SWITCH) return bar.remove();
+        bar.innerHTML =
+          `<span class="demo-tag">示範</span>` +
+          SEG_ORDER.map((key, i) => {
+            const r = RISK[key];
+            return `<button class="demo-btn" type="button" data-level="${i}" aria-pressed="${i === current}" style="--risk-bg:${r.bg};--risk-border:${r.border};--risk-text:${r.text}">${r.short}</button>`;
+          }).join("");
+        bar.hidden = false;
+        bar.addEventListener("click", (e) => {
+          const b = e.target.closest(".demo-btn");
+          if (!b) return;
+          const level = Number(b.dataset.level);
+          renderLevel(level, demoNorm(SEG_ORDER[level]), false);
         });
-        // 指針畫成指向最左（180°），再用 rotate 轉到目標角度
-        html += `<g id="needle" transform="rotate(0 ${CX} ${CY})"><line x1="${CX}" y1="${CY}" x2="${CX - 230}" y2="${CY}" stroke="#1a2420" stroke-width="10" stroke-linecap="round" /></g>`;
-        html += `<circle cx="${CX}" cy="${CY}" r="11" fill="#1a2420" /><circle cx="${CX}" cy="${CY}" r="5" fill="#fff" />`;
-        $("#gauge").innerHTML = html;
-      }
-      function setNeedle(angle) {
-        $("#needle").setAttribute("transform", `rotate(${(180 - angle).toFixed(2)} ${CX} ${CY})`);
-        $("#gauge").dataset.angle = angle.toFixed(2);
-      }
-      /* cubic-bezier 緩動：轉到目標位置略為超過再回來 */
-      function bezier(x1, y1, x2, y2) {
-        const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
-        const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-        const sx = (s) => ((ax * s + bx) * s + cx) * s;
-        const sy = (s) => ((ay * s + by) * s + cy) * s;
-        const dx = (s) => (3 * ax * s + 2 * bx) * s + cx;
-        return (x) => {
-          let s = x;
-          for (let i = 0; i < 8; i++) {
-            const e = sx(s) - x;
-            const d = dx(s);
-            if (Math.abs(e) < 1e-5 || !d) break;
-            s -= e / d;
-          }
-          return sy(Math.min(1, Math.max(0, s)));
-        };
-      }
-      const EASE_SWING = bezier(0.34, 1.2, 0.64, 1);
-      function sweepNeedle(target) {
-        if (REDUCED) return setNeedle(target);
-        setNeedle(180);
-        const t0 = performance.now() + 300; // 卡片轉入後再開始
-        const step = (now) => {
-          const p = Math.min(1, Math.max(0, (now - t0) / 1600));
-          setNeedle(180 + (target - 180) * EASE_SWING(p));
-          if (p < 1) requestAnimationFrame(step);
-        };
-        requestAnimationFrame(step);
-      }
-
-      function renderResult(subject, date, level) {
-        $("#whoName").textContent = honorific(subject);
-        $("#whoDate").textContent = date;
-        const r = RISK_LEVELS[level];
-        const card = $("#card");
-        card.dataset.level = level;
-        const pill = $("#riskPill");
-        pill.style.setProperty("--risk-bg", r.bg);
-        pill.style.setProperty("--risk-border", r.border);
-        pill.style.setProperty("--risk-text", r.text);
-        pill.append(r.name); // 文字直接放在膠囊裡
-        $("#riskDesc").style.setProperty("--risk-text", r.text);
-        $("#riskDesc").textContent = r.desc;
-        drawGauge();
-        sweepNeedle(needleAngle(level));
       }
 
       /* =========================================================
-       * 卡片大小：算法同 result.html（高 = 舞台高 × 0.98；寬 = min(舞台寬 × 0.72, 卡片高 × 0.79)）
-       * 底部 QR Code 小卡在版面流裡，舞台已扣掉它的高度，卡片不會被小卡遮到
-       * ========================================================= */
-      const stage = $("#stage");
-      function measure() {
-        const ch = stage.clientHeight * 0.98;
-        const cw = Math.min(stage.clientWidth * 0.72, ch * 0.79);
-        stage.style.setProperty("--card-w", `${cw}px`);
-        stage.style.setProperty("--card-h", `${ch}px`);
-      }
-      // 姓名放不下時，以 2px 為單位縮小字級，最多縮到原本的 80%（同 result.html）
-      function fitName() {
-        const el = $("#whoName");
-        el.style.fontSize = "";
-        let size = parseFloat(getComputedStyle(el).fontSize);
-        const min = size * 0.8;
-        while (el.scrollWidth > el.clientWidth && size - 2 >= min) {
-          size -= 2;
-          el.style.fontSize = `${size}px`;
-        }
-      }
-
-      /* 報告 QR Code 小卡：只有「點一下」（按下到放開移動不超過 8px）才開啟詳細報告；拖曳時取消這次點擊 */
-      function initQrLink() {
-        const a = $("#qrCard");
-        a.href = REPORT_DETAIL_URL;
-        let start = null;
-        a.addEventListener("pointerdown", (e) => (start = { x: e.clientX, y: e.clientY }));
-        a.addEventListener("click", (e) => {
-          if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8) e.preventDefault();
-          start = null;
-        });
-        a.addEventListener("dragstart", (e) => e.preventDefault());
-      }
-
-      /* =========================================================
-       * 啟動：result-gait.html?record=<id>[&from=assess]
+       * 啟動：result-gait.html?record=<id>[&from=assess|kiosk]
        * 沒有 record 時（預覽）：第一位受測者、今天、風險等級預設 1（可用 ?risk=0–4 切換）
        * ========================================================= */
       function init() {
@@ -693,33 +400,18 @@
           record = { riskLevel: params.get("risk") };
         }
 
-        // 從測驗完成進入：左上角改成「‹ 受測名單」，回到這個場域的行走測驗名單
-        const fromAssess = params.get("from") === "assess";
-        $("#homeBtn").hidden = fromAssess;
-        $("#backBtn").hidden = !fromAssess;
-        // 從一體機測驗（訪客或健保卡）進入（from=kiosk）：首頁按鈕回到一體機歡迎頁
-        const fromKiosk = params.get("from") === "kiosk";
-        if (fromKiosk) $("#homeBtn").setAttribute("aria-label", "回到一體機");
-        $("#homeBtn").addEventListener("click", () => (location.href = fromKiosk ? "kiosk.html" : "home.html"));
-        $("#backBtn").addEventListener("click", () => {
-          const fid = record?.fieldId || currentFieldId() || "";
-          location.href = `roster.html?test=gait&field=${fid}`;
-        });
-
-        $("#reportQr").src = REPORT_QR_SRC;
-        initQrLink();
-        $("#page").hidden = false;
-        renderResult(subject, date, riskLevelOf(record));
-        fitName();
-        document.fonts?.ready.then(fitName);
-        measure();
-        new ResizeObserver(() => {
-          measure();
-          fitName();
-        }).observe(stage);
-
-        // 進場：卡片從遠處（translateZ、透明）轉入定位（0.8s）
-        requestAnimationFrame(() => requestAnimationFrame(() => $("#card").classList.remove("is-entering")));
+        // 左上角：從測驗完成進入是「‹ 受測名單」（回到這個場域的行走測驗名單）；一體機回到歡迎頁
+        initHeader("gait", record, params);
+        initQrLink(REPORT_QR_SRC, REPORT_DETAIL_URL);
+        renderWho(subject, date);
+        drawGauge($("#gauge"));
+        const level = riskLevelOf(record);
+        recordSeed = record?.id || "preview"; // 產生示範券號用：同一筆紀錄每次打開都一樣
+        initDemoRisk(level);
+        renderLevel(level, normOf(record, SEG_ORDER[level]));
+        renderNewsOne($("#newsCard"), getLatestNews());
+        showPage();
+        initCarousel({ pages: PAGES });
       }
       init();
     </script>

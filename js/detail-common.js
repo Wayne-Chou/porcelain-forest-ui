@@ -525,62 +525,17 @@ function renderAdvice(level, list = I18N.actions(window.PAGE_KEY, level)) {
 
 /* =========================================================
  * 最新消息（森林封面；沒有消息時整個區塊隱藏，預覽時保留預覽框；標題與內容不翻譯）
- * 內容依換行切行：含「：」或「:」的行拆成「項目／內容」；沒有冒號的行接在上一項內容後面換行，
- * 前面還沒有項目時獨立成一段。一律用 textContent。半形冒號在數字之間（9:00）或網址（https://）不當作分隔
+ * 資料與內容排版在 js/news.js；樣式在 css/news.css
  * ========================================================= */
-function keyIndex(line) {
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === "：") return i;
-    if (c === ":") {
-      const isTime = /\d/.test(line[i - 1] || "") && /\d/.test(line[i + 1] || "");
-      const isUrl = line.slice(i + 1, i + 3) === "//";
-      if (!isTime && !isUrl) return i;
-    }
-  }
-  return -1;
-}
-function buildNewsContent(box, text) {
-  box.textContent = "";
-  let dl = null;
-  let lastDd = null;
-  String(text ?? "")
-    .split(/\r?\n/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .forEach((line) => {
-      const i = keyIndex(line);
-      const key = i > 0 ? line.slice(0, i).trim() : "";
-      if (key) {
-        if (!dl) {
-          dl = document.createElement("dl");
-          dl.className = "news-dl";
-          box.append(dl);
-        }
-        const dt = document.createElement("dt");
-        const dd = document.createElement("dd");
-        dt.textContent = key;
-        dd.textContent = line.slice(i + 1).trim();
-        dl.append(dt, dd);
-        lastDd = dd;
-      } else if (lastDd) {
-        lastDd.append(document.createElement("br"), document.createTextNode(line));
-      } else {
-        const p = document.createElement("p");
-        p.className = "news-p";
-        p.textContent = line;
-        box.append(p);
-      }
-    });
-}
+// 內容排版 buildNewsContent() 在 js/news.js（與鑑測結果頁共用）
 function renderNewsCard(news) {
   const has = !!news;
   $("#newsCard").hidden = !has;
   $("#secNews").hidden = !has && !PREVIEW;
   if (!has) return;
-  $("#newsTitle").textContent = news.title ?? "—";
+  $("#newsTitle").textContent = news.title ?? "—"; // 標題裡的 \n 由 css/news.css 的 white-space: pre-line 換行
   const box = $("#newsBox");
-  buildNewsContent(box, news.content);
+  buildNewsContent(box, newsText(news)); // js/news.js：body（相容 API 的 content）
   $("#newsBody").hidden = !box.childNodes.length;
 }
 
